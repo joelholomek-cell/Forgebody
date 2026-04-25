@@ -396,6 +396,34 @@ function MealPlanner(){
 }
 
 // ─── WORKOUT BUILDER ─────────────────────────────────────────────────────────
+function RestTimer({seconds,onDone}){
+  const[left,setLeft]=useState(seconds);
+  useEffect(()=>{
+    if(left<=0){onDone();return;}
+    const t=setTimeout(()=>setLeft(l=>l-1),1000);
+    return()=>clearTimeout(t);
+  },[left]);
+  const pct=(left/seconds)*100;
+  const r=54,circ=2*Math.PI*r;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:200,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"1.5rem"}}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}`}</style>
+      <div style={{fontSize:"0.75rem",fontWeight:800,letterSpacing:"0.2em",textTransform:"uppercase",color:C.mutedLight,fontFamily:"'Barlow Condensed',sans-serif"}}>Rest Time</div>
+      <div style={{position:"relative",width:"140px",height:"140px"}}>
+        <svg width="140" height="140" viewBox="0 0 140 140" style={{transform:"rotate(-90deg)"}}>
+          <circle cx="70" cy="70" r={r} fill="none" stroke={C.cardBorder} strokeWidth="6"/>
+          <circle cx="70" cy="70" r={r} fill="none" stroke={C.lime} strokeWidth="6" strokeDasharray={circ} strokeDashoffset={circ*(1-pct/100)} strokeLinecap="round"/>
+        </svg>
+        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+          <div style={{fontSize:"3rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,animation:left<=5?"pulse 1s infinite":"none"}}>{left}</div>
+          <div style={{fontSize:"0.7rem",color:C.muted,fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>seconds</div>
+        </div>
+      </div>
+      <button onClick={onDone} style={{...s.btnOutline,fontSize:"0.8rem",padding:"0.6rem 1.5rem"}}>Skip Rest</button>
+    </div>
+  );
+}
+
 function WorkoutBuilder(){
   const[step,setStep]=useState(0);
   const[split,setSplit]=useState("");
@@ -404,7 +432,12 @@ function WorkoutBuilder(){
   const[wGoal,setWGoal]=useState("");
   const[program,setProgram]=useState(null);
   const[activeDay,setActiveDay]=useState(0);
-  const[expandedEx,setExpandedEx]=useState(null);
+  // workout mode
+  const[mode,setMode]=useState("overview"); // overview | exercise
+  const[exIdx,setExIdx]=useState(0);
+  const[completedSets,setCompletedSets]=useState({});
+  const[showTimer,setShowTimer]=useState(false);
+  const[timerSecs,setTimerSecs]=useState(60);
 
   function buildProgram(goal){
     const splitData=SPLITS[split];
@@ -421,63 +454,208 @@ function WorkoutBuilder(){
       });
       return{...day,exercises:exList};
     });
-    setProgram(built);setActiveDay(0);setStep(4);
+    setProgram(built);setActiveDay(0);setStep(4);setMode("overview");
   }
 
-  if(step===4&&program){
+  function startWorkout(){setMode("exercise");setExIdx(0);setCompletedSets({});}
+  function getRestSecs(restStr){
+    if(!restStr)return 60;
+    const m=restStr.match(/(\d+)\s*min/);const s=restStr.match(/(\d+)\s*sec/);
+    return m?parseInt(m[1])*60:s?parseInt(s[1]):60;
+  }
+
+  function completeSet(exI,setI){
+    const key=`${exI}-${setI}`;
+    setCompletedSets(prev=>({...prev,[key]:true}));
+    const ex=program[activeDay].exercises[exI];
+    const totalSets=parseInt(ex.sets)||3;
+    const allDone=Array.from({length:totalSets},(_,i)=>i).every(i=>completedSets[`${exI}-${i}`]||(i===setI));
+    if(allDone){
+      setTimerSecs(getRestSecs(ex.rest));
+      setShowTimer(true);
+    }
+  }
+
+  // ── OVERVIEW ──
+  if(step===4&&program&&mode==="overview"){
     const day=program[activeDay];
+    const totalEx=day.exercises.length;
+    const muscles=[...new Set(day.exercises.map(e=>e.muscle))];
     return(
-      <div style={s.content}>
-        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1rem"}}>
-          <button onClick={()=>{setStep(0);setProgram(null);}} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`}}>← Reset</button>
-          <div><Eyebrow label={SPLITS[split]?.name}/><h2 style={{...s.sectionTitle,fontSize:"1.3rem",marginBottom:0}}>{day.label}</h2></div>
+      <div style={{...s.content,paddingBottom:"2rem"}}>
+        <style>{`@keyframes gradientSpin{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
+        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.25rem"}}>
+          <button onClick={()=>{setStep(0);setProgram(null);}} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`}}>← New</button>
+          <div><Eyebrow label={SPLITS[split]?.name}/></div>
         </div>
-        <div style={{display:"flex",gap:"0.4rem",overflowX:"auto",marginBottom:"1rem",paddingBottom:"4px"}}>
+
+        {/* Day selector */}
+        <div style={{display:"flex",gap:"0.4rem",overflowX:"auto",marginBottom:"1.25rem",paddingBottom:"4px"}}>
           {program.map((d,i)=>(
-            <button key={i} onClick={()=>{setActiveDay(i);setExpandedEx(null);}} style={{...s.btnSm,flexShrink:0,background:activeDay===i?C.lime:"transparent",color:activeDay===i?C.black:C.mutedLight,border:activeDay===i?"none":`1px solid ${C.cardBorder}`}}>{d.label}</button>
+            <button key={i} onClick={()=>{setActiveDay(i);setMode("overview");setCompletedSets({});}} style={{flexShrink:0,padding:"0.5rem 0.9rem",borderRadius:"6px",border:activeDay===i?`1.5px solid ${C.lime}`:`1px solid ${C.cardBorder}`,background:activeDay===i?`${C.lime}15`:"transparent",color:activeDay===i?C.lime:C.mutedLight,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase"}}>{d.label}</button>
           ))}
         </div>
+
+        {/* Day hero card */}
+        <div style={{background:"#111",border:`1px solid ${C.cardBorder}`,borderRadius:"12px",padding:"1.5rem",marginBottom:"1rem",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",inset:0,background:`linear-gradient(135deg, ${C.lime}08 0%, transparent 60%)`,pointerEvents:"none"}}/>
+          <div style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",lineHeight:1,marginBottom:"0.75rem"}}>{day.label}</div>
+          <div style={{display:"flex",gap:"1rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+            <div style={{textAlign:"center"}}><div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{totalEx}</div><div style={{fontSize:"0.6rem",color:C.muted,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>Exercises</div></div>
+            <div style={{width:"1px",background:C.cardBorder}}/>
+            <div style={{textAlign:"center"}}><div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{day.exercises.reduce((a,e)=>a+parseInt(e.sets||3),0)}</div><div style={{fontSize:"0.6rem",color:C.muted,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>Total Sets</div></div>
+            <div style={{width:"1px",background:C.cardBorder}}/>
+            <div style={{textAlign:"center"}}><div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>~{Math.round(totalEx*4.5)}m</div><div style={{fontSize:"0.6rem",color:C.muted,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>Est. Time</div></div>
+          </div>
+          <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"1.25rem"}}>
+            {muscles.map(m=><span key={m} style={s.tag}>{m}</span>)}
+          </div>
+          <button onClick={startWorkout} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"1rem",borderRadius:"8px"}}>Start Workout →</button>
+        </div>
+
+        {/* Exercise list overview */}
+        <div style={{...s.label,marginBottom:"0.75rem"}}>Exercise Overview</div>
         {day.exercises.map((ex,i)=>(
-          <div key={i} style={{...s.card,marginBottom:"0.5rem",cursor:"pointer"}} onClick={()=>setExpandedEx(expandedEx===i?null:i)}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontWeight:900,fontSize:"1rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.03em",marginBottom:"0.3rem"}}>{ex.name}</div>
-                <div style={{display:"flex",gap:"0.35rem",flexWrap:"wrap"}}>
-                  <span style={s.tag}>{ex.muscle}</span>
-                  <span style={s.tagGray}>{ex.sets} sets</span>
-                  <span style={s.tagGray}>{ex.reps} reps</span>
-                  <span style={s.tagGray}>Rest {ex.rest}</span>
-                </div>
-              </div>
-              <span style={{color:C.lime,fontSize:"1.2rem",marginLeft:"0.5rem"}}>{expandedEx===i?"−":"+"}</span>
+          <div key={i} style={{...s.card,marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"1rem"}}>
+            <div style={{width:"32px",height:"32px",borderRadius:"6px",background:`${C.lime}15`,border:`1px solid ${C.lime}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <span style={{fontWeight:900,fontSize:"0.85rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
             </div>
-            {expandedEx===i&&(
-              <div style={{marginTop:"0.75rem",paddingTop:"0.75rem",borderTop:`1px solid ${C.cardBorder}`,fontSize:"0.85rem",color:C.mutedLight,fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>
-                <strong style={{color:C.white}}>Coaching cue:</strong> {ex.cue}
+            <div style={{flex:1}}>
+              <div style={{fontWeight:900,fontSize:"0.92rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.02em"}}>{ex.name}</div>
+              <div style={{display:"flex",gap:"0.35rem",marginTop:"0.25rem",flexWrap:"wrap"}}>
+                <span style={s.tag}>{ex.muscle}</span>
+                <span style={s.tagGray}>{ex.sets}×{ex.reps}</span>
               </div>
-            )}
+            </div>
           </div>
         ))}
-        <div style={{...s.card,marginTop:"0.5rem",background:`${C.lime}06`,borderLeft:`3px solid ${C.lime}`,borderRadius:"0 6px 6px 0"}}>
-          <p style={{color:C.lime,fontWeight:800,fontSize:"0.65rem",letterSpacing:"0.15em",textTransform:"uppercase",margin:"0 0 0.35rem",fontFamily:"'Barlow Condensed',sans-serif"}}>Level: {level} · Goal: {wGoal}</p>
-          <p style={{color:C.mutedLight,margin:0,lineHeight:1.5,fontSize:"0.85rem",fontFamily:"'Barlow',sans-serif"}}>Progressive overload — increase weight or reps by 2-5% each week.</p>
+      </div>
+    );
+  }
+
+  // ── EXERCISE MODE (one at a time) ──
+  if(step===4&&program&&mode==="exercise"){
+    const day=program[activeDay];
+    const ex=day.exercises[exIdx];
+    const totalSets=parseInt(ex.sets)||3;
+    const isLast=exIdx===day.exercises.length-1;
+    const allSetsForThisEx=Array.from({length:totalSets},(_,i)=>`${exIdx}-${i}`).every(k=>completedSets[k]);
+    const completedExCount=day.exercises.filter((_,i)=>Array.from({length:parseInt(day.exercises[i].sets)||3},(_,j)=>`${i}-${j}`).every(k=>completedSets[k])).length;
+
+    return(
+      <div style={{minHeight:"100vh",background:C.black,paddingBottom:"80px"}}>
+        <style>{`
+          @keyframes gradientSpin{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+          @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        `}</style>
+
+        {showTimer&&<RestTimer seconds={timerSecs} onDone={()=>{setShowTimer(false);if(!isLast)setExIdx(i=>i+1);else setMode("done");}}/>}
+
+        {/* Progress bar */}
+        <div style={{height:"3px",background:C.cardBorder,position:"sticky",top:0,zIndex:50}}>
+          <div style={{height:"100%",background:C.lime,width:`${((exIdx)/day.exercises.length)*100}%`,transition:"width 0.4s ease"}}/>
+        </div>
+
+        <div style={{padding:"1rem 1.25rem"}}>
+          {/* Header */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1.5rem"}}>
+            <button onClick={()=>setMode("overview")} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`}}>← Overview</button>
+            <span style={{color:C.mutedLight,fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,letterSpacing:"0.1em"}}>{exIdx+1} / {day.exercises.length}</span>
+          </div>
+
+          {/* Active exercise card with animated gradient border */}
+          <div style={{position:"relative",borderRadius:"16px",padding:"2px",background:"linear-gradient(135deg,#CCFF00,#00ffaa,#CCFF00,#aaff00)",backgroundSize:"300% 300%",animation:"gradientSpin 3s ease infinite",marginBottom:"1.25rem",animation:"gradientSpin 3s ease infinite"}}>
+            <div style={{background:"#0f0f0f",borderRadius:"14px",padding:"1.5rem",animation:"fadeIn 0.3s ease"}}>
+              <div style={{marginBottom:"0.5rem"}}><Eyebrow label={ex.muscle}/></div>
+              <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",lineHeight:1.05,marginBottom:"1rem"}}>{ex.name}</div>
+
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.75rem",marginBottom:"1.25rem"}}>
+                {[{l:"Sets",v:ex.sets},{l:"Reps",v:ex.reps},{l:"Rest",v:ex.rest}].map((x,i)=>(
+                  <div key={i} style={{background:"#1a1a1a",borderRadius:"8px",padding:"0.75rem",textAlign:"center"}}>
+                    <div style={{fontSize:"1.2rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.v}</div>
+                    <div style={{fontSize:"0.6rem",color:C.muted,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",marginTop:"3px",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{background:"#1a1a1a",borderRadius:"8px",padding:"0.85rem",borderLeft:`3px solid ${C.lime}`}}>
+                <div style={{fontSize:"0.62rem",color:C.lime,fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.3rem"}}>Coaching Cue</div>
+                <div style={{fontSize:"0.88rem",color:C.mutedLight,fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>{ex.cue}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Set tracker */}
+          <div style={s.card}>
+            <div style={{...s.label,marginBottom:"0.75rem",color:C.white}}>Track Your Sets</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"0.5rem"}}>
+              {Array.from({length:totalSets},(_,i)=>{
+                const done=completedSets[`${exIdx}-${i}`];
+                return(
+                  <button key={i} onClick={()=>completeSet(exIdx,i)} style={{display:"flex",alignItems:"center",gap:"1rem",padding:"0.85rem 1rem",borderRadius:"8px",border:`1.5px solid ${done?C.lime:C.cardBorder}`,background:done?`${C.lime}12`:"#0f0f0f",cursor:"pointer",transition:"all 0.2s",width:"100%"}}>
+                    <div style={{width:"24px",height:"24px",borderRadius:"50%",border:`2px solid ${done?C.lime:C.cardBorder}`,background:done?C.lime:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}>
+                      {done&&<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                    <span style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.9rem",textTransform:"uppercase",letterSpacing:"0.05em",color:done?C.lime:C.white}}>Set {i+1}</span>
+                    <span style={{marginLeft:"auto",color:C.muted,fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{ex.reps} reps</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem",marginTop:"0.5rem"}}>
+            <button onClick={()=>exIdx>0&&setExIdx(i=>i-1)} disabled={exIdx===0} style={{...s.btnOutline,opacity:exIdx===0?0.3:1,padding:"0.85rem"}}>← Prev</button>
+            <button onClick={()=>{
+              if(isLast)setMode("done");
+              else{setTimerSecs(getRestSecs(ex.rest));setShowTimer(true);}
+            }} style={{...s.btn,padding:"0.85rem"}}>{isLast?"Finish 🔥":"Next →"}</button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ── DONE SCREEN ──
+  if(step===4&&program&&mode==="done"){
+    const day=program[activeDay];
+    return(
+      <div style={{...s.content,textAlign:"center",paddingTop:"3rem"}}>
+        <div style={{fontSize:"4rem",marginBottom:"1rem"}}>🔥</div>
+        <div style={{fontSize:"2.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.5rem"}}>Workout Done!</div>
+        <div style={{color:C.mutedLight,fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",marginBottom:"2rem"}}>Every rep counts. You just built a better body.</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.75rem",marginBottom:"2rem"}}>
+          {[{n:day.exercises.length,l:"Exercises"},{n:day.exercises.reduce((a,e)=>a+parseInt(e.sets||3),0),l:"Sets Done"},{n:"100%",l:"Complete"}].map((x,i)=>(
+            <div key={i} style={s.statCard}><div style={s.statNum}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
+          ))}
+        </div>
+        <button onClick={()=>setMode("overview")} style={{...s.btn,width:"100%",padding:"1rem",marginBottom:"0.75rem"}}>Back to Overview</button>
+        <button onClick={()=>{setStep(0);setProgram(null);}} style={{...s.btnOutline,width:"100%",padding:"1rem"}}>New Workout</button>
+      </div>
+    );
+  }
+
+  // ── SETUP FLOW ──
   return(
     <div style={s.content}>
       <Eyebrow label="Personalised Programme"/>
       <h2 style={s.sectionTitle}>Workout Builder</h2>
       <p style={s.sectionSub}>4 questions. Your exact programme.</p>
+
+      {/* Step progress */}
+      <div style={{display:"flex",gap:"4px",marginBottom:"1.5rem"}}>
+        {[0,1,2,3].map(i=><div key={i} style={{flex:1,height:"3px",borderRadius:"2px",background:step>i?C.lime:step===i?`${C.lime}60`:C.cardBorder,transition:"background 0.3s"}}/>)}
+      </div>
+
       {step===0&&(
         <div>
-          <label style={{...s.label,fontSize:"0.8rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Choose your training split</label>
-          {[{k:"ppl",l:"Push / Pull / Legs",d:"Best for 3-6 days. Classic bodybuilding split."},{k:"upper_lower",l:"Upper / Lower",d:"Best for 4 days. Great for strength & size."},{k:"muscle_group",l:"Muscle Group",d:"Best for 5 days. Dedicated focus per muscle."},{k:"full_body",l:"Full Body / HIIT",d:"Best for 3 days. Fat loss & conditioning."}].map(opt=>(
-            <div key={opt.k} onClick={()=>{setSplit(opt.k);setStep(1);}} style={{...s.card,cursor:"pointer",border:split===opt.k?`1px solid ${C.lime}`:undefined}}>
-              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",marginBottom:"0.2rem"}}>{opt.l}</div>
-              <div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div>
+          <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Choose your training split</label>
+          {[{k:"ppl",l:"Push / Pull / Legs",d:"3-6 days · Classic bodybuilding split",icon:"⚡"},{k:"upper_lower",l:"Upper / Lower",d:"4 days · Best for strength & size",icon:"💪"},{k:"muscle_group",l:"Muscle Group",d:"5 days · Dedicated focus per muscle",icon:"🎯"},{k:"full_body",l:"Full Body / HIIT",d:"3 days · Fat loss & conditioning",icon:"🔥"}].map(opt=>(
+            <div key={opt.k} onClick={()=>{setSplit(opt.k);setStep(1);}} style={{...s.card,cursor:"pointer",border:`1px solid ${split===opt.k?C.lime:C.cardBorder}`,background:split===opt.k?`${C.lime}08`:C.card,display:"flex",alignItems:"center",gap:"1rem",transition:"all 0.15s"}}>
+              <span style={{fontSize:"1.5rem",flexShrink:0}}>{opt.icon}</span>
+              <div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",marginBottom:"0.2rem"}}>{opt.l}</div><div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div></div>
+              <span style={{marginLeft:"auto",color:C.lime,fontSize:"1rem",flexShrink:0}}>→</span>
             </div>
           ))}
         </div>
@@ -485,10 +663,12 @@ function WorkoutBuilder(){
       {step===1&&(
         <div>
           <button onClick={()=>setStep(0)} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`,marginBottom:"1rem"}}>← Back</button>
-          <label style={{...s.label,fontSize:"0.8rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Days per week?</label>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.5rem"}}>
+          <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Days per week?</label>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.75rem"}}>
             {[3,4,5,6].map(d=>(
-              <button key={d} onClick={()=>{setDays(String(d));setStep(2);}} style={{...s.btn,background:days===String(d)?C.lime:"transparent",color:days===String(d)?C.black:C.white,border:`1px solid ${days===String(d)?C.lime:C.cardBorder}`,padding:"0.85rem"}}>{d} Days</button>
+              <button key={d} onClick={()=>{setDays(String(d));setStep(2);}} style={{background:days===String(d)?C.lime:"#0f0f0f",color:days===String(d)?C.black:C.white,border:`1px solid ${days===String(d)?C.lime:C.cardBorder}`,borderRadius:"10px",padding:"1.25rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.4rem",cursor:"pointer",transition:"all 0.15s"}}>
+                {d}<div style={{fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.1em",marginTop:"2px",opacity:0.7}}>DAYS/WEEK</div>
+              </button>
             ))}
           </div>
         </div>
@@ -496,11 +676,12 @@ function WorkoutBuilder(){
       {step===2&&(
         <div>
           <button onClick={()=>setStep(1)} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`,marginBottom:"1rem"}}>← Back</button>
-          <label style={{...s.label,fontSize:"0.8rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Experience level</label>
-          {[{k:"beginner",l:"Beginner",d:"Less than 1 year training"},{k:"intermediate",l:"Intermediate",d:"1-3 years consistent training"},{k:"advanced",l:"Advanced",d:"3+ years, knows all movements"}].map(opt=>(
-            <div key={opt.k} onClick={()=>{setLevel(opt.k);setStep(3);}} style={{...s.card,cursor:"pointer",border:level===opt.k?`1px solid ${C.lime}`:undefined}}>
-              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"0.2rem"}}>{opt.l}</div>
-              <div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div>
+          <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Experience level</label>
+          {[{k:"beginner",l:"Beginner",d:"Less than 1 year training",icon:"🌱"},{k:"intermediate",l:"Intermediate",d:"1-3 years consistent training",icon:"⚡"},{k:"advanced",l:"Advanced",d:"3+ years, knows all movements",icon:"🔥"}].map(opt=>(
+            <div key={opt.k} onClick={()=>{setLevel(opt.k);setStep(3);}} style={{...s.card,cursor:"pointer",border:`1px solid ${level===opt.k?C.lime:C.cardBorder}`,background:level===opt.k?`${C.lime}08`:C.card,display:"flex",alignItems:"center",gap:"1rem",transition:"all 0.15s"}}>
+              <span style={{fontSize:"1.5rem",flexShrink:0}}>{opt.icon}</span>
+              <div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"0.2rem"}}>{opt.l}</div><div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div></div>
+              <span style={{marginLeft:"auto",color:C.lime,fontSize:"1rem",flexShrink:0}}>→</span>
             </div>
           ))}
         </div>
@@ -508,11 +689,12 @@ function WorkoutBuilder(){
       {step===3&&(
         <div>
           <button onClick={()=>setStep(2)} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`,marginBottom:"1rem"}}>← Back</button>
-          <label style={{...s.label,fontSize:"0.8rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Primary goal</label>
-          {[{k:"muscle",l:"Muscle & Size",d:"Hypertrophy focus, moderate reps"},{k:"strength",l:"Strength",d:"Heavy compounds, low reps"},{k:"fat loss",l:"Fat Loss",d:"Higher reps, shorter rest"},{k:"athletic",l:"Athletic Performance",d:"Power, speed & conditioning"}].map(opt=>(
-            <div key={opt.k} onClick={()=>{setWGoal(opt.k);buildProgram(opt.k);}} style={{...s.card,cursor:"pointer",border:wGoal===opt.k?`1px solid ${C.lime}`:undefined}}>
-              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"0.2rem"}}>{opt.l}</div>
-              <div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div>
+          <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Primary goal</label>
+          {[{k:"muscle",l:"Muscle & Size",d:"Hypertrophy focus, moderate reps",icon:"💪"},{k:"strength",l:"Strength",d:"Heavy compounds, low reps",icon:"🏋️"},{k:"fat loss",l:"Fat Loss",d:"Higher reps, shorter rest",icon:"🔥"},{k:"athletic",l:"Athletic Performance",d:"Power, speed & conditioning",icon:"⚡"}].map(opt=>(
+            <div key={opt.k} onClick={()=>{setWGoal(opt.k);buildProgram(opt.k);}} style={{...s.card,cursor:"pointer",border:`1px solid ${wGoal===opt.k?C.lime:C.cardBorder}`,background:wGoal===opt.k?`${C.lime}08`:C.card,display:"flex",alignItems:"center",gap:"1rem",transition:"all 0.15s"}}>
+              <span style={{fontSize:"1.5rem",flexShrink:0}}>{opt.icon}</span>
+              <div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"0.2rem"}}>{opt.l}</div><div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div></div>
+              <span style={{marginLeft:"auto",color:C.lime,fontSize:"1rem",flexShrink:0}}>→</span>
             </div>
           ))}
         </div>
@@ -974,11 +1156,11 @@ function ProfileTab({user,onSignOut}){
 
 // ─── ICONS ───────────────────────────────────────────────────────────────────
 const Icons={
-  meal:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>,
-  workout:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg>,
-  macros:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12l-3-3"/></svg>,
-  coach:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  more:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>,
+  meal:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+  workout:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 9.5h1.5v5H3z"/><path d="M19.5 9.5H21v5h-1.5z"/><rect x="6" y="4" width="12" height="16" rx="2"/></svg>,
+  macros:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>,
+  coach:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill={a?`${C.lime}30`:"none"} stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  more:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
 };
 
 // ─── MORE MENU ───────────────────────────────────────────────────────────────
