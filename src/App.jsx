@@ -356,7 +356,7 @@ function AuthScreen({onSubscribe,preselectedPlan}){
 }
 
 // ─── LANDING PAGE ────────────────────────────────────────────────────────────
-function LandingPage({onSignIn,onSelectPlan}){
+function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
   const[slide,setSlide]=useState(0);
   const[isDragging,setIsDragging]=useState(false);
   const[dragStartX,setDragStartX]=useState(0);
@@ -386,7 +386,7 @@ function LandingPage({onSignIn,onSelectPlan}){
 
         {/* Nav */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
-          <div style={{fontSize:"1.3rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"Barlow Condensed,sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+          <div onClick={onLogoTap} style={{fontSize:"1.3rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"Barlow Condensed,sans-serif",cursor:"default",userSelect:"none"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
           <button onClick={onSignIn} style={{...s.btnSm,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.7)"}}>Sign In</button>
         </div>
 
@@ -409,13 +409,18 @@ function LandingPage({onSignIn,onSelectPlan}){
             AI-powered workouts, personalised meal plans, and a 24/7 coach. No trainer. No confusion. Just results.
           </p>
 
-          {/* Value props */}
-          <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",marginBottom:"1.5rem"}}>
+          {/* Value props - liquid glass pills */}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",marginBottom:"1.5rem"}}>
             {[
-              "✅ 12-week science-backed transformation programme included",
-              "✅ AI coach, meal plans & workout builder",
-              "✅ 7-day free trial — cancel anytime",
-            ].map((v,i)=><div key={i} style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",fontFamily:"Barlow,sans-serif"}}>{v}</div>)}
+              {icon:"📅",text:"7-day free trial — cancel anytime"},
+              {icon:"📚",text:"12-week science-backed programme included"},
+              {icon:"🤖",text:"AI coach, meal plans & workout builder"},
+            ].map((v,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"0.65rem 0.9rem",backdropFilter:"blur(10px)"}}>
+                <span style={{fontSize:"1rem",flexShrink:0}}>{v.icon}</span>
+                <span style={{color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem"}}>{v.text}</span>
+              </div>
+            ))}
           </div>
 
           <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem"}}>
@@ -669,6 +674,57 @@ function SubscriptionWall({onSignIn,onBack}){
         <p style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"0.7rem",fontFamily:"Barlow,sans-serif",padding:"0 1.25rem"}}>
           Secure payment via Stripe · Instant access · Cancel anytime
         </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── PAYMENT SUCCESS ─────────────────────────────────────────────────────────
+function PaymentSuccess({onContinue}){
+  const[count,setCount]=useState(5);
+  useEffect(()=>{
+    if(count<=0){onContinue();return;}
+    const t=setTimeout(()=>setCount(c=>c-1),1000);
+    return()=>clearTimeout(t);
+  },[count]);
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",position:"relative",textAlign:"center"}}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 40%,rgba(204,255,0,0.15) 0%,transparent 60%)",pointerEvents:"none"}}/>
+      <div style={{position:"relative",zIndex:1,maxWidth:"400px",width:"100%"}}>
+        {/* Animated checkmark */}
+        <div style={{width:"90px",height:"90px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",border:"2px solid rgba(204,255,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 1.5rem",boxShadow:"0 0 40px rgba(204,255,0,0.2)"}}>
+          <svg width="40" height="40" viewBox="0 0 50 50" fill="none">
+            <polyline points="10,25 20,35 40,15" stroke={C.lime} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{strokeDasharray:60,strokeDashoffset:0,animation:"none"}}/>
+          </svg>
+        </div>
+        <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.5rem",lineHeight:1}}>
+          Payment Successful!
+        </div>
+        <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"2rem"}}>
+          Welcome to ForgeBody. Your transformation starts now.
+        </div>
+        {/* What they unlocked */}
+        <div style={{...s.card,textAlign:"left",marginBottom:"1.5rem"}}>
+          <div style={{...s.label,color:C.lime,marginBottom:"0.75rem"}}>You now have access to</div>
+          {[
+            {icon:"🏋️",text:"Personalised workout programme"},
+            {icon:"🍽️",text:"AI meal plans with recipes"},
+            {icon:"🤖",text:"AI coaching chat 24/7"},
+            {icon:"📈",text:"Full progress tracking"},
+            {icon:"📚",text:"12-week science programme"},
+          ].map((item,i)=>(
+            <div key={i} style={{display:"flex",gap:"0.75rem",alignItems:"center",padding:"0.4rem 0",borderBottom:i<4?"1px solid rgba(255,255,255,0.05)":"none"}}>
+              <span style={{fontSize:"1.1rem"}}>{item.icon}</span>
+              <span style={{color:"rgba(255,255,255,0.65)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={onContinue} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.5rem"}}>
+          Enter ForgeBody →
+        </button>
+        <div style={{color:"rgba(255,255,255,0.25)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>
+          Auto-continuing in {count}s...
+        </div>
       </div>
     </div>
   );
@@ -1799,16 +1855,42 @@ export default function ForgeBodyApp(){
   const[profile,setProfile]=useState(null);
   const[showOnboarding,setShowOnboarding]=useState(false);
   const[showSubscription,setShowSubscription]=useState(false);
-  const[page,setPage]=useState("landing"); // landing | plans | signin | app
+  const[page,setPage]=useState("landing");
+  const[showSuccess,setShowSuccess]=useState(false);
   const[sidebarOpen,setSidebarOpen]=useState(false);
   const[workoutDayIndex,setWorkoutDayIndex]=useState(undefined);
   const[inWorkout,setInWorkout]=useState(false);
+  const[logoTaps,setLogoTaps]=useState(0);
+
+  // Secret dev bypass — tap logo 7 times on landing page
+  function handleLogoTap(){
+    const next=logoTaps+1;
+    setLogoTaps(next);
+    if(next>=7){
+      localStorage.setItem("fb_dev_bypass","true");
+      setPage("signin");
+      setLogoTaps(0);
+    }
+  }
+
+  // Detect Stripe success redirect (?session_id= or ?payment=success)
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    if(params.get("payment")==="success"||params.get("session_id")){
+      setShowSuccess(true);
+      window.history.replaceState({},"",window.location.pathname);
+    }
+  },[]);
 
   useEffect(()=>{
     supabase.auth.getSession().then(({data})=>{
       setSession(data.session);
-      if(data.session){checkProfile(data.session.user);}
-      else setPage("landing");
+      if(data.session)checkProfile(data.session.user);
+      else{
+        // Check dev bypass
+        if(localStorage.getItem("fb_dev_bypass")==="true")setPage("signin");
+        else setPage("landing");
+      }
       setLoading(false);
     });
     const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>{
@@ -1823,18 +1905,34 @@ export default function ForgeBodyApp(){
       const{data}=await supabase.from("profiles").select("*").eq("user_id",user.id).single();
       if(!data||!data.onboarded){setShowOnboarding(true);setPage("app");return;}
       setProfile(data);
-      if(!data.subscribed){setShowSubscription(true);}
+      // Dev bypass skips subscription check
+      const devBypass=localStorage.getItem("fb_dev_bypass")==="true";
+      if(!data.subscribed&&!devBypass)setShowSubscription(true);
       setPage("app");
-    }catch(e){
-      setShowOnboarding(true);setPage("app");
-    }
+    }catch(e){setShowOnboarding(true);setPage("app");}
   }
 
-  async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);setPage("landing");setShowSubscription(false);setShowOnboarding(false);}
+  async function signOut(){
+    await supabase.auth.signOut();
+    setSession(null);setProfile(null);
+    setPage("landing");setShowSubscription(false);setShowOnboarding(false);
+    localStorage.removeItem("fb_dev_bypass");
+  }
   function navigate(t,sub=null){setSidebarOpen(false);if(sub){setSidePanel({screen:sub});setTab("sidebar");}else{setTab(t);setSidePanel(null);}}
   function startWorkout(dayIdx){setWorkoutDayIndex(dayIdx);setInWorkout(true);}
 
   if(loading)return<div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",paddingBottom:0}}><style>{GLASS}</style><LoadingDots/></div>;
+
+  // Payment success screen
+  if(showSuccess){
+    return(
+      <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+        <style>{GLASS}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <PaymentSuccess onContinue={()=>{setShowSuccess(false);setPage("signin");}}/>
+      </div>
+    );
+  }
 
   // Landing page
   if(page==="landing"){
@@ -1842,7 +1940,7 @@ export default function ForgeBodyApp(){
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <LandingPage onSignIn={()=>setPage("signin")} onSelectPlan={()=>setPage("plans")}/>
+        <LandingPage onSignIn={()=>setPage("signin")} onSelectPlan={()=>setPage("plans")} onLogoTap={handleLogoTap}/>
       </div>
     );
   }
