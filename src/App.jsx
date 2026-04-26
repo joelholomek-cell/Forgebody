@@ -284,43 +284,384 @@ function MacroBar({p,c,f}){
 }
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────
-function AuthScreen(){
+function AuthScreen({onSubscribe}){
   const[email,setEmail]=useState("");const[sent,setSent]=useState(false);
   const[loading,setLoading]=useState(false);const[error,setError]=useState("");
+  const[mode,setMode]=useState("landing"); // landing | signin
+
   async function handleMagic(){
     if(!email)return;setLoading(true);setError("");
-    const{error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:window.location.href}});
+    const redirectTo=window.location.origin+window.location.pathname;
+    const{error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo}});
     setLoading(false);if(error)setError(error.message);else setSent(true);
   }
   async function handleGoogle(){
-    const{error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.href}});
+    const redirectTo=window.location.origin+window.location.pathname;
+    const{error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo,queryParams:{access_type:"offline",prompt:"consent"}}});
     if(error)setError(error.message);
   }
+
+  if(mode==="signin"){
+    return(
+      <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"1.5rem",position:"relative"}}>
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 10%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
+        <div style={{width:"100%",maxWidth:"400px",position:"relative",zIndex:1}}>
+          <button onClick={()=>setMode("landing")} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>← Back</button>
+          <div style={{textAlign:"center",marginBottom:"2rem"}}>
+            <div style={{...s.logo,fontSize:"2rem",marginBottom:"0.75rem",display:"block",cursor:"default"}}>FORGE<span style={s.logoSlash}>/</span>BODY</div>
+            <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif"}}>Sign in to your account</p>
+          </div>
+          <div style={s.card}>
+            {sent?<div style={s.successBanner}>✅ Magic link sent to <strong>{email}</strong>. Check your inbox and click the link — it'll open the app.</div>:(
+              <>
+                <button onClick={handleGoogle} style={{...s.btnGlass,width:"100%",marginBottom:"0.75rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                  Continue with Google
+                </button>
+                <div style={s.divider}><div style={s.dividerLine}/>or email<div style={s.dividerLine}/></div>
+                <label style={s.label}>Email address</label>
+                <input style={s.input} type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleMagic()}/>
+                {error&&<p style={{color:"#ff6b6b",fontSize:"0.82rem",marginTop:"-0.4rem",marginBottom:"0.6rem",fontFamily:"'Barlow',sans-serif"}}>{error}</p>}
+                <button onClick={handleMagic} disabled={loading||!email} style={{...s.btn,width:"100%",padding:"0.9rem",opacity:!email?0.5:1}}>{loading?"Sending link...":"Send Magic Link"}</button>
+                <p style={{textAlign:"center",color:"rgba(255,255,255,0.3)",fontSize:"0.72rem",marginTop:"1rem",fontFamily:"'Barlow',sans-serif"}}>We'll email you a secure sign-in link. No password needed.</p>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Landing / sales page
+  return <LandingPage onSignIn={()=>setMode("signin")} onSubscribe={onSubscribe}/>;
+}
+
+// ─── LANDING PAGE ────────────────────────────────────────────────────────────
+function LandingPage({onSignIn,onSubscribe}){
+  const[slide,setSlide]=useState(0);
+  const[isDragging,setIsDragging]=useState(false);
+  const[dragStartX,setDragStartX]=useState(0);
+  const[dragOffset,setDragOffset]=useState(0);
+  const trackRef=useRef(null);
+
+  const slides=[
+    {
+      icon:"🏋️",
+      title:"Train Smarter",
+      sub:"Personalised programmes built around your split, level and goal.",
+      detail:"Push/Pull/Legs · Upper/Lower · Muscle Group · HIIT",
+      color:"rgba(204,255,0,0.1)",
+      accent:C.lime,
+      stats:[{n:"80+",l:"Exercises"},{n:"4",l:"Splits"},{n:"∞",l:"Workouts"}],
+    },
+    {
+      icon:"🍽️",
+      title:"Eat Right",
+      sub:"AI meal plans with real ingredients and step-by-step cooking instructions.",
+      detail:"58+ meals · Full macros · Shopping lists included",
+      color:"rgba(59,130,246,0.1)",
+      accent:"#60a5fa",
+      stats:[{n:"58+",l:"Meals"},{n:"7",l:"Diet types"},{n:"100%",l:"Macro tracked"}],
+    },
+    {
+      icon:"🤖",
+      title:"AI Coach",
+      sub:"Your personal fitness coach. Available 24/7. Knows everything.",
+      detail:"Training · Nutrition · Recovery · Mindset",
+      color:"rgba(168,85,247,0.1)",
+      accent:"#c084fc",
+      stats:[{n:"24/7",l:"Available"},{n:"∞",l:"Questions"},{n:"0s",l:"Wait time"}],
+    },
+    {
+      icon:"📈",
+      title:"Track Progress",
+      sub:"Weight, measurements, workouts, macros, habits — all in one place.",
+      detail:"Real-time Supabase sync · Calendar · Streaks",
+      color:"rgba(251,146,60,0.1)",
+      accent:"#fb923c",
+      stats:[{n:"6",l:"Measurements"},{n:"10",l:"Daily habits"},{n:"Real",l:"Time sync"}],
+    },
+    {
+      icon:"💊",
+      title:"Supplement Guide",
+      sub:"Only evidence-based supplements. Ranked A+ to B. No BS.",
+      detail:"Creatine · Vitamin D · Omega-3 · Protein & more",
+      color:"rgba(34,197,94,0.1)",
+      accent:"#4ade80",
+      stats:[{n:"12+",l:"Supplements"},{n:"A+",l:"Top evidence"},{n:"0",l:"BS included"}],
+    },
+  ];
+
+  const total=slides.length;
+
+  function goTo(i){setSlide(Math.max(0,Math.min(total-1,i)));setDragOffset(0);}
+
+  function onTouchStart(e){setIsDragging(true);setDragStartX(e.touches[0].clientX);}
+  function onTouchMove(e){if(!isDragging)return;setDragOffset(e.touches[0].clientX-dragStartX);}
+  function onTouchEnd(){
+    if(dragOffset<-60&&slide<total-1)goTo(slide+1);
+    else if(dragOffset>60&&slide>0)goTo(slide-1);
+    else setDragOffset(0);
+    setIsDragging(false);
+  }
+  function onMouseDown(e){setIsDragging(true);setDragStartX(e.clientX);}
+  function onMouseMove(e){if(!isDragging)return;setDragOffset(e.clientX-dragStartX);}
+  function onMouseUp(){
+    if(dragOffset<-60&&slide<total-1)goTo(slide+1);
+    else if(dragOffset>60&&slide>0)goTo(slide-1);
+    else setDragOffset(0);
+    setIsDragging(false);
+  }
+
   return(
-    <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"1.5rem",position:"relative"}}>
-      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 10%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
-      <div style={{width:"100%",maxWidth:"400px",position:"relative",zIndex:1}}>
-        <div style={{textAlign:"center",marginBottom:"2rem"}}>
-          <div style={{...s.logo,fontSize:"2rem",marginBottom:"0.75rem",display:"block",cursor:"default"}}>FORGE<span style={s.logoSlash}>/</span>BODY</div>
-          <Eyebrow label="Member Access"/>
-          <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif",marginTop:"0.5rem"}}>Your AI transformation platform</p>
+    <div style={{minHeight:"100vh",background:"#0a0a0a",overflowX:"hidden",position:"relative"}}>
+      <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 10% 5%,rgba(204,255,0,0.13) 0%,transparent 55%),radial-gradient(ellipse 60% 45% at 90% 85%,rgba(120,220,0,0.07) 0%,transparent 50%)",pointerEvents:"none",zIndex:0}}/>
+      <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 6rem"}}>
+
+        {/* Nav */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
+          <div style={{fontSize:"1.3rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+          <button onClick={onSignIn} style={{...s.btnSm,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.7)"}}>Sign In</button>
         </div>
-        <div style={s.card}>
-          {sent?<div style={s.successBanner}>Magic link sent to <strong>{email}</strong>. Check your inbox.</div>:(
-            <>
-              <button onClick={handleGoogle} style={{...s.btnGlass,width:"100%",marginBottom:"0.75rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Continue with Google
-              </button>
-              <div style={s.divider}><div style={s.dividerLine}/>or<div style={s.dividerLine}/></div>
-              <label style={s.label}>Email address</label>
-              <input style={s.input} type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleMagic()}/>
-              {error&&<p style={{color:"#ff4444",fontSize:"0.82rem",marginTop:"-0.4rem",marginBottom:"0.6rem"}}>{error}</p>}
-              <button onClick={handleMagic} disabled={loading} style={{...s.btn,width:"100%",padding:"0.9rem"}}>{loading?"Sending...":"Send Magic Link"}</button>
-            </>
-          )}
-          <p style={{textAlign:"center",color:"rgba(255,255,255,0.28)",fontSize:"0.72rem",marginTop:"1.25rem",fontFamily:"'Barlow',sans-serif"}}>$19/month · Cancel anytime · PDF buyers: free lifetime access</p>
+
+        {/* Hero */}
+        <div style={{padding:"2rem 1.25rem 1.5rem"}}>
+          <div style={{...s.tag,marginBottom:"0.75rem",display:"inline-block"}}>AI Fitness Platform</div>
+          <h1 style={{fontSize:"clamp(3rem,11vw,5rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.92,color:C.white,marginBottom:"1.1rem"}}>
+            Forge The<br/>Body You<br/><span style={{color:C.lime}}>Want.</span>
+          </h1>
+          <p style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"1.5rem"}}>
+            AI workouts, personalised meal plans, and a coach in your pocket. No trainer. No confusion. Just results.
+          </p>
+          <button onClick={onSubscribe} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem"}}>
+            Start Your Transformation →
+          </button>
+          <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.85rem",fontSize:"0.85rem"}}>
+            Already a member? Sign In
+          </button>
         </div>
+
+        {/* Swipeable feature cards */}
+        <div style={{padding:"0 0 1.5rem"}}>
+          <div style={{padding:"0 1.25rem",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+            <div style={{...s.label,marginBottom:0,color:"rgba(255,255,255,0.45)"}}>What's inside — swipe to explore</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{slide+1}/{total}</div>
+          </div>
+
+          {/* Card track */}
+          <div style={{overflow:"hidden",position:"relative",touchAction:"pan-y"}}
+            onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+            onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
+          >
+            <div ref={trackRef} style={{display:"flex",transition:isDragging?"none":"transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",transform:`translateX(calc(-${slide*100}% + ${dragOffset}px))`,willChange:"transform"}}>
+              {slides.map((sl,i)=>(
+                <div key={i} style={{minWidth:"100%",padding:"0 1.25rem",userSelect:"none"}}>
+                  <div style={{background:`linear-gradient(135deg,${sl.color},rgba(255,255,255,0.04))`,border:`1px solid ${sl.accent}30`,borderRadius:"24px",padding:"1.75rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",position:"relative",overflow:"hidden",cursor:"grab"}}>
+                    {/* Glow orb */}
+                    <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:`${sl.accent}15`,filter:"blur(30px)",pointerEvents:"none"}}/>
+                    <div style={{position:"absolute",bottom:"-20px",left:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:`${sl.accent}08`,filter:"blur(20px)",pointerEvents:"none"}}/>
+
+                    <div style={{fontSize:"2.8rem",marginBottom:"0.9rem"}}>{sl.icon}</div>
+                    <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.7rem",color:C.white,letterSpacing:"-0.02em",lineHeight:1,marginBottom:"0.6rem"}}>{sl.title}</div>
+                    <div style={{color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif",fontSize:"0.92rem",lineHeight:1.55,marginBottom:"0.6rem"}}>{sl.sub}</div>
+                    <div style={{fontSize:"0.72rem",fontWeight:800,letterSpacing:"0.08em",color:`${sl.accent}`,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"1.25rem"}}>{sl.detail}</div>
+
+                    {/* Mini stats */}
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
+                      {sl.stats.map((stat,j)=>(
+                        <div key={j} style={{background:"rgba(0,0,0,0.3)",borderRadius:"12px",padding:"0.65rem",textAlign:"center",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                          <div style={{fontSize:"1.3rem",fontWeight:900,color:sl.accent,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{stat.n}</div>
+                          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>{stat.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dot indicators */}
+          <div style={{display:"flex",gap:"6px",justifyContent:"center",marginTop:"1rem",padding:"0 1.25rem"}}>
+            {slides.map((_,i)=>(
+              <div key={i} onClick={()=>goTo(i)} style={{height:"4px",borderRadius:"2px",background:i===slide?C.lime:"rgba(255,255,255,0.18)",width:i===slide?24:6,transition:"all 0.3s ease",cursor:"pointer"}}/>
+            ))}
+          </div>
+        </div>
+
+        {/* Social proof */}
+        <div style={{padding:"0 1.25rem 1.5rem"}}>
+          <div style={{...s.card,textAlign:"center",padding:"1.5rem"}}>
+            <div style={{display:"flex",justifyContent:"center",gap:"0.25rem",marginBottom:"0.5rem"}}>
+              {[...Array(5)].map((_,i)=><span key={i} style={{color:"#fbbf24",fontSize:"1rem"}}>★</span>)}
+            </div>
+            <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",color:"rgba(255,255,255,0.6)",lineHeight:1.55,fontStyle:"italic",marginBottom:"0.5rem"}}>
+              "Finally an app that actually gives me workouts AND tells me what to eat. The AI coach is insane."
+            </div>
+            <div style={{fontSize:"0.72rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
+          </div>
+        </div>
+
+        {/* Final CTA */}
+        <div style={{padding:"0 1.25rem"}}>
+          <button onClick={onSubscribe} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.5rem"}}>
+            See Plans & Start Training →
+          </button>
+          <p style={{textAlign:"center",color:"rgba(255,255,255,0.22)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>Cancel anytime · Instant access · No contracts</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SUBSCRIPTION WALL ───────────────────────────────────────────────────────
+function SubscriptionWall({user,onSubscribed,onSignOut}){
+  const[selected,setSelected]=useState("monthly");
+  const[loading,setLoading]=useState(false);
+  const[slide,setSlide]=useState(0);
+  const[isDragging,setIsDragging]=useState(false);
+  const[dragStartX,setDragStartX]=useState(0);
+  const[dragOffset,setDragOffset]=useState(0);
+
+  const plans=[
+    {
+      id:"monthly",
+      label:"Monthly",
+      price:"$19",
+      period:"per month",
+      billing:"Billed monthly",
+      priceNote:null,
+      badge:null,
+      highlight:false,
+      features:["Full app access","Cancel anytime","All future updates"],
+    },
+    {
+      id:"sixmonth",
+      label:"6 Months",
+      price:"$84",
+      period:"upfront",
+      billing:"$14/month · Billed once",
+      priceNote:"Save $30 vs monthly",
+      badge:"Popular",
+      highlight:true,
+      features:["Full app access","Save $30 total","All future updates"],
+    },
+    {
+      id:"yearly",
+      label:"Annual",
+      price:"$120",
+      period:"upfront",
+      billing:"$10/month · Billed once",
+      priceNote:"Save $108 vs monthly",
+      badge:"Best Value",
+      highlight:true,
+      features:["Full app access","Save $108 total","All future updates"],
+    },
+  ];
+
+  const total=plans.length;
+
+  function goTo(i){setSlide(Math.max(0,Math.min(total-1,i)));setDragOffset(0);setSelected(plans[Math.max(0,Math.min(total-1,i))].id);}
+  function onTouchStart(e){setIsDragging(true);setDragStartX(e.touches[0].clientX);}
+  function onTouchMove(e){if(!isDragging)return;setDragOffset(e.touches[0].clientX-dragStartX);}
+  function onTouchEnd(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
+  function onMouseDown(e){setIsDragging(true);setDragStartX(e.clientX);}
+  function onMouseMove(e){if(!isDragging)return;setDragOffset(e.clientX-dragStartX);}
+  function onMouseUp(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
+
+  async function handleSubscribe(){
+    setLoading(true);
+    await supabase.from("profiles").upsert({user_id:user.id,subscribed:true,plan:selected,subscribed_at:new Date().toISOString()},{onConflict:"user_id"});
+    setLoading(false);
+    onSubscribed();
+  }
+
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",overflowX:"hidden",position:"relative"}}>
+      <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 10% 5%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none",zIndex:0}}/>
+      <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 4rem"}}>
+
+        {/* Header */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
+          <div style={{fontSize:"1.2rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+          <button onClick={onSignOut} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.4)"}}>Sign Out</button>
+        </div>
+
+        {/* Hero */}
+        <div style={{padding:"1.75rem 1.25rem 1.25rem",textAlign:"center"}}>
+          <div style={{fontSize:"2.5rem",marginBottom:"0.5rem"}}>🔥</div>
+          <h2 style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.4rem",lineHeight:1,letterSpacing:"-0.02em"}}>Unlock ForgeBody</h2>
+          <p style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>Swipe to compare plans. Cancel anytime.</p>
+        </div>
+
+        {/* Swipeable plan cards */}
+        <div style={{overflow:"hidden",touchAction:"pan-y",marginBottom:"1rem"}}
+          onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+          onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
+        >
+          <div style={{display:"flex",transition:isDragging?"none":"transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",transform:`translateX(calc(-${slide*100}% + ${dragOffset}px))`,willChange:"transform"}}>
+            {plans.map((plan,i)=>(
+              <div key={plan.id} style={{minWidth:"100%",padding:"0 1.25rem",userSelect:"none"}}>
+                <div style={{
+                  background:plan.highlight?"linear-gradient(135deg,rgba(204,255,0,0.1),rgba(150,220,0,0.04))":"rgba(255,255,255,0.06)",
+                  border:`2px solid ${plan.highlight?"rgba(204,255,0,0.35)":"rgba(255,255,255,0.1)"}`,
+                  borderRadius:"24px",padding:"2rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+                  position:"relative",overflow:"hidden",cursor:"grab",
+                  boxShadow:plan.highlight?"0 0 40px rgba(204,255,0,0.08)":"none",
+                }}>
+                  {plan.highlight&&<div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(25px)",pointerEvents:"none"}}/>}
+
+                  {plan.badge&&(
+                    <div style={{position:"absolute",top:"16px",right:"16px",background:C.lime,color:"#000",fontSize:"0.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",padding:"4px 10px",borderRadius:"20px"}}>{plan.badge}</div>
+                  )}
+
+                  <div style={{marginBottom:"1.25rem"}}>
+                    <div style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:plan.highlight?C.lime:"rgba(255,255,255,0.45)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>{plan.label}</div>
+                    <div style={{display:"flex",alignItems:"flex-end",gap:"0.4rem",marginBottom:"0.2rem"}}>
+                      <div style={{fontSize:"3.8rem",fontWeight:900,color:plan.highlight?C.lime:C.white,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,letterSpacing:"-0.03em"}}>{plan.price}</div>
+                      <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",paddingBottom:"0.4rem"}}>{plan.period}</div>
+                    </div>
+                    <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>{plan.billing}</div>
+                    {plan.priceNote&&<div style={{fontSize:"0.75rem",fontWeight:800,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.06em",marginTop:"0.25rem"}}>🎉 {plan.priceNote}</div>}
+                  </div>
+
+                  <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"1rem",marginBottom:"1.5rem"}}>
+                    {["AI Meal Planner + recipes","Personalised workout builder","AI coach 24/7","Macro tracker","Progress tracking","Habit & mindset tools","Supplement guide","Nutrition articles",...plan.features].map((f,j)=>(
+                      <div key={j} style={{display:"flex",gap:"0.6rem",alignItems:"center",padding:"0.3rem 0"}}>
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill={plan.highlight?"rgba(204,255,0,0.15)":"rgba(255,255,255,0.08)"} stroke={plan.highlight?"rgba(204,255,0,0.3)":"rgba(255,255,255,0.12)"} strokeWidth="1"/><polyline points="4,8 7,11 12,5" fill="none" stroke={plan.highlight?C.lime:"rgba(255,255,255,0.5)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <span style={{color:j<8?"rgba(255,255,255,0.55)":"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",fontSize:"0.84rem",fontWeight:j>=8?600:400}}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button onClick={handleSubscribe} disabled={loading} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"0.95rem",background:plan.highlight?C.lime:"rgba(255,255,255,0.12)",color:plan.highlight?"#000":C.white,border:plan.highlight?"none":"1px solid rgba(255,255,255,0.15)",boxShadow:plan.highlight?"0 0 24px rgba(204,255,0,0.3)":"none"}}>
+                    {loading?"Setting up...":plan.id==="monthly"?"Start Monthly →":"Get Started →"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dot indicators */}
+        <div style={{display:"flex",gap:"6px",justifyContent:"center",marginBottom:"1.5rem"}}>
+          {plans.map((_,i)=>(
+            <div key={i} onClick={()=>goTo(i)} style={{height:"4px",borderRadius:"2px",background:i===slide?C.lime:"rgba(255,255,255,0.18)",width:i===slide?24:6,transition:"all 0.3s ease",cursor:"pointer"}}/>
+          ))}
+        </div>
+
+        {/* Plan labels */}
+        <div style={{display:"flex",justifyContent:"center",gap:"0.5rem",marginBottom:"1.5rem",padding:"0 1.25rem"}}>
+          {plans.map((p,i)=>(
+            <button key={p.id} onClick={()=>goTo(i)} style={{flex:1,padding:"0.55rem",borderRadius:"10px",border:`1px solid ${i===slide?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.1)"}`,background:i===slide?"rgba(204,255,0,0.08)":"transparent",color:i===slide?C.lime:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all 0.2s"}}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <p style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif",padding:"0 1.25rem",lineHeight:1.5}}>
+          Secure payment · Instant access · Cancel anytime
+        </p>
       </div>
     </div>
   );
@@ -548,59 +889,114 @@ function HomeScreen({profile,user,onNavigate}){
 }
 
 // ─── TRAIN TAB ───────────────────────────────────────────────────────────────
-function TrainScreen({onStartWorkout}){
+function TrainScreen({onStartWorkout,onSetupComplete}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
-  const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
-  const splitData=settings.split?SPLITS[settings.split]:null;
-  const daysKey=splitData?Object.keys(splitData).filter(k=>k!=="name").find(k=>k.includes(settings.days||"4"))||Object.keys(splitData).filter(k=>k!=="name")[0]:null;
-  const template=daysKey?splitData[daysKey]:null;
-  const todayIdx=template?new Date().getDay()%template.length:0;
+  const[settings,setSettings]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");}catch{return{};}});
+  const[setupStep,setSetupStep]=useState(0);
+  const[split,setSplit]=useState(settings.split||"");
+  const[days,setDays]=useState(settings.days||"");
+  const[level,setLevel]=useState(settings.level||"");
+  const[wGoal,setWGoal]=useState(settings.wGoal||"");
+
+  function saveAndGo(goal){
+    const newSettings={split,days,level,wGoal:goal};
+    localStorage.setItem("fb_workout_settings",JSON.stringify(newSettings));
+    setSettings(newSettings);
+    if(onSetupComplete)onSetupComplete(newSettings);
+  }
+
+  // If no settings, show inline setup
+  if(!settings.split){
+    return(
+      <div style={s.content}>
+        <Eyebrow label="Training"/>
+        <h2 style={s.sectionTitle}>Train</h2>
+        <p style={s.sectionSub}>Set up your programme once. Train forever.</p>
+        <div style={{display:"flex",gap:"4px",marginBottom:"1.5rem"}}>
+          {[0,1,2,3].map(i=><div key={i} style={{flex:1,height:"3px",borderRadius:"2px",background:setupStep>i?C.lime:setupStep===i?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>)}
+        </div>
+        {setupStep===0&&(
+          <div>
+            <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Choose your training split</label>
+            {[{k:"ppl",l:"Push / Pull / Legs",d:"3-6 days · Classic bodybuilding split",i:"⚡"},{k:"upper_lower",l:"Upper / Lower",d:"4 days · Best for strength & size",i:"💪"},{k:"muscle_group",l:"Muscle Group",d:"5 days · Dedicated focus per muscle",i:"🎯"},{k:"full_body",l:"Full Body / HIIT",d:"3 days · Fat loss & conditioning",i:"🔥"}].map(o=>(
+              <div key={o.k} onClick={()=>{setSplit(o.k);setSetupStep(1);}} style={{...s.card,cursor:"pointer",border:`1px solid ${split===o.k?C.lime:"rgba(255,255,255,0.1)"}`,background:split===o.k?"rgba(204,255,0,0.08)":s.card.background,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
+                <span style={{fontSize:"1.4rem"}}>{o.i}</span><div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,fontSize:"1rem"}}>{o.l}</div><div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{o.d}</div></div><span style={{marginLeft:"auto",color:C.lime}}>→</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {setupStep===1&&(
+          <div>
+            <button onClick={()=>setSetupStep(0)} style={{...s.btnSm,marginBottom:"1rem",background:"transparent",color:"rgba(255,255,255,0.4)"}}>← Back</button>
+            <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Days per week?</label>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.75rem"}}>
+              {[3,4,5,6].map(d=>(
+                <button key={d} onClick={()=>{setDays(String(d));setSetupStep(2);}} style={{background:days===String(d)?C.lime:"rgba(255,255,255,0.06)",color:days===String(d)?"#000":C.white,border:`1px solid ${days===String(d)?C.lime:"rgba(255,255,255,0.12)"}`,borderRadius:"14px",padding:"1.25rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.4rem",cursor:"pointer"}}>
+                  {d}<div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.1em",marginTop:"2px",opacity:0.7,textTransform:"uppercase"}}>Days/week</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {setupStep===2&&(
+          <div>
+            <button onClick={()=>setSetupStep(1)} style={{...s.btnSm,marginBottom:"1rem",background:"transparent",color:"rgba(255,255,255,0.4)"}}>← Back</button>
+            <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Experience level?</label>
+            {[{k:"beginner",l:"Beginner",d:"Less than 1 year training",i:"🌱"},{k:"intermediate",l:"Intermediate",d:"1-3 years consistent",i:"⚡"},{k:"advanced",l:"Advanced",d:"3+ years, knows all movements",i:"🔥"}].map(o=>(
+              <div key={o.k} onClick={()=>{setLevel(o.k);setSetupStep(3);}} style={{...s.card,cursor:"pointer",border:`1px solid ${level===o.k?C.lime:"rgba(255,255,255,0.1)"}`,background:level===o.k?"rgba(204,255,0,0.08)":s.card.background,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
+                <span style={{fontSize:"1.4rem"}}>{o.i}</span><div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{o.l}</div><div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{o.d}</div></div><span style={{marginLeft:"auto",color:C.lime}}>→</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {setupStep===3&&(
+          <div>
+            <button onClick={()=>setSetupStep(2)} style={{...s.btnSm,marginBottom:"1rem",background:"transparent",color:"rgba(255,255,255,0.4)"}}>← Back</button>
+            <label style={{...s.label,fontSize:"0.85rem",color:C.white,marginBottom:"0.75rem",display:"block"}}>Primary goal?</label>
+            {[{k:"muscle",l:"Muscle & Size",d:"Hypertrophy, moderate reps",i:"💪"},{k:"strength",l:"Strength",d:"Heavy compounds, low reps",i:"🏋️"},{k:"fat loss",l:"Fat Loss",d:"Higher reps, shorter rest",i:"🔥"},{k:"athletic",l:"Athletic Performance",d:"Power, speed & conditioning",i:"⚡"}].map(o=>(
+              <div key={o.k} onClick={()=>{setWGoal(o.k);saveAndGo(o.k);}} style={{...s.card,cursor:"pointer",border:`1px solid ${wGoal===o.k?C.lime:"rgba(255,255,255,0.1)"}`,background:wGoal===o.k?"rgba(204,255,0,0.08)":s.card.background,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
+                <span style={{fontSize:"1.4rem"}}>{o.i}</span><div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{o.l}</div><div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{o.d}</div></div><span style={{marginLeft:"auto",color:C.lime}}>→</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const splitData=SPLITS[settings.split];
+  const daysKey=Object.keys(splitData).filter(k=>k!=="name").find(k=>k.includes(settings.days||"4"))||Object.keys(splitData).filter(k=>k!=="name")[0];
+  const template=splitData[daysKey];
+  const todayIdx=new Date().getDay()%template.length;
 
   return(
     <div style={s.content}>
-      <Eyebrow label="Training"/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.25rem"}}>
+        <Eyebrow label="Training"/>
+        <button onClick={()=>{localStorage.removeItem("fb_workout_settings");setSettings({});setSetupStep(0);setSplit("");setDays("");setLevel("");setWGoal("");}} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.35)"}}>Change →</button>
+      </div>
       <h2 style={s.sectionTitle}>Train</h2>
-
-      {!settings.split?(
-        <div style={{...s.cardLime,textAlign:"center",padding:"2rem"}}>
-          <div style={{fontSize:"2.5rem",marginBottom:"0.75rem"}}>🏋️</div>
-          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.2rem",color:C.white,marginBottom:"0.5rem"}}>No Programme Set</div>
-          <div style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",marginBottom:"1.25rem"}}>Go to Profile → Training Settings to set up your programme.</div>
-        </div>
-      ):(
-        <>
-          {/* Today's day highlight */}
-          <div style={{...s.cardLime,position:"relative",overflow:"hidden",marginBottom:"0.75rem"}}>
-            <div style={{position:"absolute",top:"-15px",right:"-15px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(15px)",pointerEvents:"none"}}/>
-            <Eyebrow label="Today"/>
-            <div style={{fontSize:"1.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>{template[todayIdx].label}</div>
-            <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"1rem"}}>
-              {template[todayIdx].muscles.map(m=><span key={m} style={s.tag}>{m}</span>)}
-            </div>
-            <button onClick={onStartWorkout} style={{...s.btn,padding:"0.85rem 1.5rem"}}>Start Today's Workout →</button>
+      <div style={{...s.cardLime,position:"relative",overflow:"hidden",marginBottom:"0.75rem"}}>
+        <div style={{position:"absolute",top:"-15px",right:"-15px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(15px)",pointerEvents:"none"}}/>
+        <Eyebrow label="Today"/>
+        <div style={{fontSize:"1.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>{template[todayIdx].label}</div>
+        <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"1rem"}}>{template[todayIdx].muscles.map(m=><span key={m} style={s.tag}>{m}</span>)}</div>
+        <button onClick={()=>onStartWorkout(todayIdx)} style={{...s.btn,padding:"0.85rem 1.5rem"}}>Start Today's Workout →</button>
+      </div>
+      <div style={{...s.label,marginBottom:"0.6rem"}}>This Week's Programme</div>
+      {template.map((day,i)=>(
+        <div key={i} onClick={()=>onStartWorkout(i)} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem",cursor:"pointer",border:i===todayIdx?"1px solid rgba(204,255,0,0.3)":s.card.border,background:i===todayIdx?"rgba(204,255,0,0.06)":s.card.background}}>
+          <div style={{width:"32px",height:"32px",borderRadius:"8px",background:i===todayIdx?"rgba(204,255,0,0.15)":"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <span style={{fontWeight:900,fontSize:"0.85rem",color:i===todayIdx?C.lime:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
           </div>
-
-          {/* Week view */}
-          <div style={{...s.label,marginBottom:"0.6rem"}}>This Week's Programme</div>
-          {template.map((day,i)=>(
-            <div key={i} onClick={()=>onStartWorkout(i)} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem",cursor:"pointer",border:i===todayIdx?"1px solid rgba(204,255,0,0.3)":s.card.border,background:i===todayIdx?"rgba(204,255,0,0.06)":s.card.background}}>
-              <div style={{width:"32px",height:"32px",borderRadius:"8px",background:i===todayIdx?"rgba(204,255,0,0.15)":"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <span style={{fontWeight:900,fontSize:"0.85rem",color:i===todayIdx?C.lime:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
-              </div>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:900,fontSize:"0.92rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{day.label}</div>
-                <div style={{display:"flex",gap:"0.3rem",marginTop:"0.2rem",flexWrap:"wrap"}}>
-                  {day.muscles.slice(0,3).map(m=><span key={m} style={s.tagGray}>{m}</span>)}
-                </div>
-              </div>
-              {i===todayIdx&&<span style={s.tag}>Today</span>}
-            </div>
-          ))}
-
-          {/* Calendar */}
-          <WorkoutCalendar completedDates={completedDates}/>
-        </>
-      )}
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900,fontSize:"0.92rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{day.label}</div>
+            <div style={{display:"flex",gap:"0.3rem",marginTop:"0.2rem",flexWrap:"wrap"}}>{day.muscles.slice(0,3).map(m=><span key={m} style={s.tagGray}>{m}</span>)}</div>
+          </div>
+          {i===todayIdx&&<span style={s.tag}>Today</span>}
+        </div>
+      ))}
+      <WorkoutCalendar completedDates={completedDates}/>
     </div>
   );
 }
@@ -794,12 +1190,40 @@ function WorkoutSession({dayIndex,onDone}){
 }
 
 // ─── MEAL PLANNER ────────────────────────────────────────────────────────────
+const MEAL_DETAILS={
+  1:{ingredients:["3 large eggs","2 slices sourdough bread","1 tbsp butter","Salt & pepper","Optional: chives"],prep:"Crack eggs into bowl, whisk. Heat butter in pan over medium heat. Add eggs, stir gently until just set. Toast sourdough. Serve eggs on toast, season well.",time:"8 min"},
+  2:{ingredients:["200g Greek yogurt (full fat)","1 tbsp honey","30g granola","50g mixed berries","1 tsp chia seeds"],prep:"Spoon yogurt into bowl. Layer with granola and berries. Drizzle with honey and top with chia seeds. Eat immediately to keep crunch.",time:"5 min"},
+  3:{ingredients:["80g rolled oats","250ml milk or water","1 ripe banana","2 tbsp peanut butter","1 tsp cinnamon","1 tsp honey"],prep:"Cook oats in milk/water on stovetop or microwave 2-3 min. Slice banana on top. Add peanut butter and drizzle honey. Sprinkle cinnamon.",time:"5 min"},
+  4:{ingredients:["1 scoop whey protein","200ml milk","1 banana","1 tbsp almond butter","Handful of ice","Optional: 1 tbsp oats"],prep:"Add all ingredients to blender. Blend on high 30-45 seconds until smooth. Drink immediately or store in fridge up to 2 hours.",time:"3 min"},
+  5:{ingredients:["2 slices sourdough","1 ripe avocado","2 eggs","Lemon juice","Red chilli flakes","Salt & pepper"],prep:"Toast bread. Poach eggs 3-4 min in simmering water with splash of vinegar. Mash avocado with lemon, salt, chilli. Spread on toast, top with poached eggs.",time:"12 min"},
+  6:{ingredients:["200g low-fat cottage cheese","100g mixed berries","1 tsp honey","Optional: mint leaves"],prep:"Spoon cottage cheese into bowl. Top with berries. Drizzle honey. Eat immediately. High protein, low calorie — great for fat loss.",time:"3 min"},
+  7:{ingredients:["2 eggs","1 scoop protein powder","50ml milk","1 tsp vanilla","Cooking spray","Maple syrup"],prep:"Blend eggs, protein powder, milk and vanilla. Cook like regular pancakes on medium heat 2-3 min each side. Stack and drizzle with maple syrup.",time:"15 min"},
+  8:{ingredients:["80g rolled oats","200ml milk","1 tbsp chia seeds","1 tsp honey","50g mixed berries","1 tbsp almond butter"],prep:"Mix oats, chia, milk and honey in jar. Refrigerate overnight (min 4 hours). In morning, top with berries and almond butter. No cooking needed.",time:"5 min (night before)"},
+  16:{ingredients:["200g chicken breast","Mixed salad leaves","1 tomato","1/2 cucumber","1/4 red onion","Olive oil","Lemon juice","Salt & pepper"],prep:"Season chicken with salt, pepper, garlic powder. Grill or pan-fry 6-7 min each side until cooked through. Slice and serve over salad with olive oil and lemon dressing.",time:"20 min"},
+  17:{ingredients:["1 can tuna in water","150g cooked brown rice","1/2 avocado","Soy sauce","Sesame seeds","Spring onions","Sriracha (optional)"],prep:"Cook rice per packet instructions. Drain tuna. Build bowl: rice base, tuna, sliced avocado. Drizzle soy sauce and sriracha. Top with sesame seeds and spring onions.",time:"15 min"},
+  20:{ingredients:["200g chicken breast","150g sweet potato","1 tbsp olive oil","Paprika, garlic powder","Salt & pepper","Broccoli (optional)"],prep:"Dice sweet potato, toss in olive oil and seasoning, roast at 200°C for 25 min. Season chicken, pan-fry 6-7 min each side. Serve together with steamed broccoli.",time:"35 min"},
+  33:{ingredients:["200g salmon fillet","1 bunch asparagus","1 tbsp olive oil","Lemon","Garlic","Salt & pepper"],prep:"Preheat oven 200°C. Place salmon and asparagus on baking tray. Drizzle olive oil, add crushed garlic, season. Bake 15-18 min until salmon flakes. Squeeze lemon to finish.",time:"20 min"},
+  35:{ingredients:["150g lean beef mince","100g pasta","1 tin crushed tomatoes","1 onion","2 garlic cloves","Italian herbs","Parmesan"],prep:"Cook pasta. Fry onion and garlic, add mince until browned. Add tomatoes and herbs, simmer 15 min. Toss with pasta. Top with parmesan.",time:"30 min"},
+};
+
+function getDefaultPrep(meal){
+  const preps={
+    breakfast:`Prepare ingredients fresh. Aim to eat within 30 minutes of waking for best energy levels.`,
+    lunch:`Meal prep tip: prepare in bulk on Sunday for the week. Store in airtight containers in the fridge up to 4 days.`,
+    dinner:`Allow ingredients to reach room temperature before cooking for more even results. Season throughout cooking, not just at the end.`,
+    snack:`Keep pre-portioned and ready to grab. This prevents overeating and makes hitting your macros easier.`,
+  };
+  return preps[meal.meal]||"Prepare fresh and enjoy.";
+}
+
 function MealPlanner(){
   const profile=JSON.parse(localStorage.getItem("fb_profile")||"{}");
   const[diet,setDiet]=useState(profile.diet||"standard");
   const[targetCal,setTargetCal]=useState(2200);
   const[numMeals,setNumMeals]=useState(4);
   const[plan,setPlan]=useState(null);
+  const[expandedMeal,setExpandedMeal]=useState(null);
+
   function buildPlan(){
     const slots=numMeals===2?["breakfast","dinner"]:numMeals===3?["breakfast","lunch","dinner"]:numMeals===4?["breakfast","lunch","dinner","snack"]:numMeals===5?["breakfast","lunch","dinner","snack","snack"]:["breakfast","lunch","dinner","snack","snack","snack"];
     const counts={};slots.forEach(m=>counts[m]=(counts[m]||0)+1);
@@ -813,10 +1237,12 @@ function MealPlanner(){
       }
     }
     setPlan({meals:result,total:{cal:tCal,p:tP,c:tC,f:tF}});
+    setExpandedMeal(null);
   }
+
   return(
     <div style={s.content}>
-      <Eyebrow label="58+ Meals"/><h2 style={s.sectionTitle}>Meal Planner</h2><p style={s.sectionSub}>Personalised meals matched to your diet.</p>
+      <Eyebrow label="58+ Meals"/><h2 style={s.sectionTitle}>Meal Planner</h2><p style={s.sectionSub}>Personalised meals with full ingredients and instructions.</p>
       <div style={s.card}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
           <div><label style={s.label}>Target calories</label><input style={s.input} type="number" value={targetCal} onChange={e=>setTargetCal(+e.target.value)}/></div>
@@ -825,6 +1251,7 @@ function MealPlanner(){
         </div>
         <button onClick={buildPlan} style={{...s.btn,width:"100%",padding:"0.9rem"}}>Build My Meal Plan</button>
       </div>
+
       {plan&&(
         <>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.45rem",marginBottom:"0.75rem"}}>
@@ -832,16 +1259,68 @@ function MealPlanner(){
               <div key={i} style={s.statCard}><div style={{...s.statNum,fontSize:"1.2rem"}}>{x.v}</div><div style={s.statLabel}>{x.l}</div></div>
             ))}
           </div>
-          {plan.meals.map((meal,i)=>(
-            <div key={i} style={{...s.card,marginBottom:"0.5rem"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.35rem"}}>
-                <div><Eyebrow label={meal.slotLabel}/><div style={{fontWeight:800,fontSize:"0.95rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{meal.name}</div></div>
-                <div style={{textAlign:"right",flexShrink:0,marginLeft:"0.5rem"}}><div style={{color:C.lime,fontWeight:900,fontSize:"1.05rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{meal.cal}</div><div style={{color:"rgba(255,255,255,0.3)",fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.08em"}}>KCAL</div></div>
+
+          {plan.meals.map((meal,i)=>{
+            const details=MEAL_DETAILS[meal.id];
+            const isOpen=expandedMeal===i;
+            return(
+              <div key={i} style={{...s.card,marginBottom:"0.6rem"}}>
+                <div onClick={()=>setExpandedMeal(isOpen?null:i)} style={{cursor:"pointer"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.4rem"}}>
+                    <div style={{flex:1,marginRight:"0.5rem"}}>
+                      <Eyebrow label={meal.slotLabel}/>
+                      <div style={{fontWeight:900,fontSize:"1rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,lineHeight:1.15}}>{meal.name}</div>
+                    </div>
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <div style={{color:C.lime,fontWeight:900,fontSize:"1.1rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{meal.cal}</div>
+                      <div style={{color:"rgba(255,255,255,0.3)",fontSize:"0.55rem",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.08em"}}>KCAL</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:"0.35rem",flexWrap:"wrap",marginBottom:"0.35rem"}}>
+                    <span style={s.tagGray}>P {meal.p}g</span><span style={s.tagGray}>C {meal.c}g</span><span style={s.tagGray}>F {meal.f}g</span>
+                    {details?.time&&<span style={{...s.tagGray}}>⏱ {details.time}</span>}
+                  </div>
+                  <MacroBar p={meal.p} c={meal.c} f={meal.f}/>
+                  <div style={{color:C.lime,fontSize:"0.7rem",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.08em",marginTop:"0.5rem",textAlign:"right"}}>{isOpen?"▲ Hide":"▼ Ingredients & Instructions"}</div>
+                </div>
+
+                {isOpen&&(
+                  <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",marginTop:"0.75rem",paddingTop:"0.75rem",animation:"fadeUp 0.2s ease"}}>
+                    {details?(
+                      <>
+                        <div style={{marginBottom:"0.75rem"}}>
+                          <div style={{...s.label,color:C.lime,marginBottom:"0.5rem"}}>🛒 Ingredients</div>
+                          {details.ingredients.map((ing,j)=>(
+                            <div key={j} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.35rem 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                              <div style={{width:"6px",height:"6px",borderRadius:"50%",background:C.lime,flexShrink:0}}/>
+                              <span style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",color:"rgba(255,255,255,0.7)"}}>{ing}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div>
+                          <div style={{...s.label,color:C.lime,marginBottom:"0.5rem"}}>👨‍🍳 How to Make</div>
+                          <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{details.prep}</div>
+                        </div>
+                      </>
+                    ):(
+                      <div>
+                        <div style={{...s.label,color:C.lime,marginBottom:"0.5rem"}}>💡 Prep Note</div>
+                        <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{getDefaultPrep(meal)}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div style={{display:"flex",gap:"0.35rem",flexWrap:"wrap",marginBottom:"0.3rem"}}><span style={s.tagGray}>P {meal.p}g</span><span style={s.tagGray}>C {meal.c}g</span><span style={s.tagGray}>F {meal.f}g</span></div>
-              <MacroBar p={meal.p} c={meal.c} f={meal.f}/>
+            );
+          })}
+
+          <div style={{...s.card,background:"rgba(204,255,0,0.05)",borderColor:"rgba(204,255,0,0.15)"}}>
+            <div style={{...s.label,color:C.lime,marginBottom:"0.35rem"}}>🛒 Full Shopping List</div>
+            <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",lineHeight:1.6}}>
+              {plan.meals.map(m=>MEAL_DETAILS[m.id]?.ingredients).filter(Boolean).flat().filter((v,i,a)=>a.indexOf(v)===i).join(" · ")||"Tap each meal above to see its ingredients."}
             </div>
-          ))}
+          </div>
+
           <button onClick={buildPlan} style={{...s.btnGlass,width:"100%",marginTop:"0.25rem"}}>Regenerate Plan</button>
         </>
       )}
@@ -1292,125 +1771,145 @@ export default function ForgeBodyApp(){
   const[session,setSession]=useState(null);
   const[loading,setLoading]=useState(true);
   const[tab,setTab]=useState("home");
-  const[sidePanel,setSidePanel]=useState(null); // {screen: "progress"|"measurements"|etc}
+  const[sidePanel,setSidePanel]=useState(null);
   const[profile,setProfile]=useState(null);
   const[showOnboarding,setShowOnboarding]=useState(false);
+  const[showSubscription,setShowSubscription]=useState(false);
+  const[showLanding,setShowLanding]=useState(false);
   const[sidebarOpen,setSidebarOpen]=useState(false);
   const[workoutDayIndex,setWorkoutDayIndex]=useState(undefined);
   const[inWorkout,setInWorkout]=useState(false);
 
   useEffect(()=>{
-    supabase.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)checkProfile(data.session.user);setLoading(false);});
-    const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>{setSession(sess);if(sess)checkProfile(sess.user);});
+    supabase.auth.getSession().then(({data})=>{
+      setSession(data.session);
+      if(data.session)checkProfile(data.session.user);
+      else setShowLanding(true);
+      setLoading(false);
+    });
+    const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>{
+      if(sess){setSession(sess);setShowLanding(false);checkProfile(sess.user);}
+      else{setSession(null);setShowLanding(true);}
+    });
     return()=>listener.subscription.unsubscribe();
   },[]);
 
   async function checkProfile(user){
-    const{data}=await supabase.from("profiles").select("*").eq("user_id",user.id).single();
-    if(!data||!data.onboarded)setShowOnboarding(true);
-    else setProfile(data);
+    try{
+      const{data}=await supabase.from("profiles").select("*").eq("user_id",user.id).single();
+      if(!data||!data.onboarded){setShowOnboarding(true);return;}
+      setProfile(data);
+      // Check subscription (subscribed field in profile)
+      if(!data.subscribed){setShowSubscription(true);}
+    }catch(e){
+      // Profile doesn't exist yet — show onboarding
+      setShowOnboarding(true);
+    }
   }
 
-  async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);setSidePanel(null);}
+  async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);setShowLanding(true);setShowSubscription(false);setShowOnboarding(false);}
 
-  function navigate(t,sub=null){
-    setSidebarOpen(false);
-    if(sub){setSidePanel({screen:sub});setTab("sidebar");}
-    else{setTab(t);setSidePanel(null);}
-  }
-
+  function navigate(t,sub=null){setSidebarOpen(false);if(sub){setSidePanel({screen:sub});setTab("sidebar");}else{setTab(t);setSidePanel(null);}}
   function startWorkout(dayIdx){setWorkoutDayIndex(dayIdx);setInWorkout(true);}
 
   if(loading)return<div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",paddingBottom:0}}><style>{GLASS}</style><LoadingDots/></div>;
-  if(session&&showOnboarding)return<Onboarding user={session.user} onComplete={p=>{setProfile(p);setShowOnboarding(false);}}/>;
 
-  const TABS=["home","meal","coach","profile"];
+  // Not logged in → landing/auth
+  if(!session||showLanding){
+    return(
+      <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+        <style>{GLASS}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <AuthScreen onSubscribe={()=>{}}/>
+      </div>
+    );
+  }
+
+  // Logged in but needs onboarding
+  if(showOnboarding){
+    return(
+      <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+        <style>{GLASS}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <Onboarding user={session.user} onComplete={p=>{setProfile(p);setShowOnboarding(false);setShowSubscription(true);}}/>
+      </div>
+    );
+  }
+
+  // Logged in, onboarded, but not subscribed
+  if(showSubscription){
+    return(
+      <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+        <style>{GLASS}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <SubscriptionWall user={session.user} onSubscribed={()=>setShowSubscription(false)} onSignOut={signOut}/>
+      </div>
+    );
+  }
 
   return(
     <div style={s.app} className="fb-bg">
       <style>{GLASS}</style>
       <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
 
-      {!session?<AuthScreen/>:(
+      <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
+
+      {inWorkout?(
+        <WorkoutSession dayIndex={workoutDayIndex} onDone={()=>{setInWorkout(false);setTab("train");}}/>
+      ):(
         <>
-          <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
+          <nav style={s.nav}>
+            <button onClick={()=>setSidebarOpen(true)} style={{background:"transparent",border:"none",cursor:"pointer",padding:"6px",display:"flex",flexDirection:"column",gap:"5px",flexShrink:0}}>
+              <div style={{width:"20px",height:"2px",background:"#ffffff",borderRadius:"1px"}}/>
+              <div style={{width:"14px",height:"2px",background:"#ffffff",borderRadius:"1px"}}/>
+              <div style={{width:"20px",height:"2px",background:"#ffffff",borderRadius:"1px"}}/>
+            </button>
+            <button onClick={()=>{setTab("home");setSidePanel(null);setInWorkout(false);}} style={s.logo}>
+              FORGE<span style={s.logoSlash}>/</span>BODY
+            </button>
+            <div style={{width:"44px",textAlign:"right"}}>
+              {sidePanel
+                ?<button onClick={()=>{setSidePanel(null);setTab("home");}} style={{...s.btnSm,padding:"0.3rem 0.6rem",fontSize:"0.65rem",background:"transparent",color:"rgba(255,255,255,0.4)"}}>← Back</button>
+                :<span style={{color:"rgba(255,255,255,0.3)",fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif"}}>{profile?.name?.split(" ")[0]||""}</span>
+              }
+            </div>
+          </nav>
 
-          {/* If in workout session, show that */}
-          {inWorkout?(
-            <WorkoutSession dayIndex={workoutDayIndex} onDone={()=>{setInWorkout(false);setTab("train");}}/>
-          ):(
-            <>
-              <nav style={s.nav}>
-                {/* Hamburger - always white, always visible */}
-                <button onClick={()=>setSidebarOpen(true)} style={{background:"transparent",border:"none",cursor:"pointer",padding:"6px",display:"flex",flexDirection:"column",gap:"5px",flexShrink:0}}>
-                  <div style={{width:"20px",height:"2px",background:"#ffffff",borderRadius:"1px"}}/>
-                  <div style={{width:"14px",height:"2px",background:"#ffffff",borderRadius:"1px"}}/>
-                  <div style={{width:"20px",height:"2px",background:"#ffffff",borderRadius:"1px"}}/>
-                </button>
+          {tab==="home"&&!sidePanel&&<HomeScreen profile={profile} user={session.user} onNavigate={navigate}/>}
+          {tab==="meal"&&!sidePanel&&<MealPlanner/>}
+          {tab==="macros"&&!sidePanel&&<MacroTracker/>}
+          {tab==="coach"&&!sidePanel&&<AICoach/>}
+          {tab==="train"&&!sidePanel&&<TrainScreen onStartWorkout={startWorkout} onSetupComplete={()=>{}}/>}
+          {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
-                {/* Logo → Home */}
-                <button onClick={()=>{setTab("home");setSidePanel(null);setInWorkout(false);}} style={s.logo}>
-                  FORGE<span style={s.logoSlash}>/</span>BODY
-                </button>
+          {sidePanel?.screen==="progress"&&<Progress user={session.user}/>}
+          {sidePanel?.screen==="measurements"&&<BodyMeasurements user={session.user}/>}
+          {sidePanel?.screen==="history"&&<WorkoutHistory user={session.user}/>}
+          {sidePanel?.screen==="supplements"&&<SupplementGuide/>}
+          {sidePanel?.screen==="habits"&&<MindsetHabits/>}
+          {sidePanel?.screen==="articles"&&<NutritionTips/>}
+          {sidePanel?.screen==="calculator"&&<div style={s.content}><OneRMCalc/><WaterTracker/></div>}
 
-                {/* Back button if in sidebar panel */}
-                <div style={{width:"44px",textAlign:"right"}}>
-                  {(tab==="sidebar"||sidePanel)
-                    ?<button onClick={()=>{setSidePanel(null);setTab("home");}} style={{...s.btnSm,padding:"0.3rem 0.6rem",fontSize:"0.68rem",background:"transparent",color:"rgba(255,255,255,0.45)"}}>← Back</button>
-                    :<span style={{color:"rgba(255,255,255,0.3)",fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif"}}>{profile?.name?.split(" ")[0]||""}</span>
-                  }
-                </div>
-              </nav>
-
-              {/* Screen routing */}
-              {tab==="home"&&!sidePanel&&<HomeScreen profile={profile} user={session.user} onNavigate={navigate}/>}
-              {tab==="meal"&&!sidePanel&&<MealPlanner/>}
-              {tab==="macros"&&!sidePanel&&<MacroTracker/>}
-              {tab==="coach"&&!sidePanel&&<AICoach/>}
-              {tab==="train"&&!sidePanel&&<TrainScreen onStartWorkout={startWorkout}/>}
-              {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
-
-              {/* Sidebar panels */}
-              {sidePanel?.screen==="progress"&&<Progress user={session.user}/>}
-              {sidePanel?.screen==="measurements"&&<BodyMeasurements user={session.user}/>}
-              {sidePanel?.screen==="history"&&<WorkoutHistory user={session.user}/>}
-              {sidePanel?.screen==="supplements"&&<SupplementGuide/>}
-              {sidePanel?.screen==="habits"&&<MindsetHabits/>}
-              {sidePanel?.screen==="articles"&&<NutritionTips/>}
-              {sidePanel?.screen==="calculator"&&<div style={s.content}><OneRMCalc/><WaterTracker/></div>}
-
-              {/* Bottom nav */}
-              <nav style={s.bottomNav}>
-                {/* Home */}
-                <button onClick={()=>{setTab("home");setSidePanel(null);}} style={{...s.navBtn,color:tab==="home"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
-                  <NavIcon tab="home" active={tab==="home"&&!sidePanel}/>
-                  <span>Home</span>
-                </button>
-                {/* Meals */}
-                <button onClick={()=>{setTab("meal");setSidePanel(null);}} style={{...s.navBtn,color:tab==="meal"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
-                  <NavIcon tab="meal" active={tab==="meal"&&!sidePanel}/>
-                  <span>Meals</span>
-                </button>
-                {/* FORGE/BODY Train button - centre raised */}
-                <button onClick={()=>{setTab("train");setSidePanel(null);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",border:"none",background:"transparent",cursor:"pointer",padding:"0",position:"relative",top:"-12px"}}>
-                  <div style={{background:(tab==="train"||inWorkout)?C.lime:"rgba(255,255,255,0.07)",border:`2px solid ${(tab==="train"||inWorkout)?C.lime:"rgba(255,255,255,0.14)"}`,borderRadius:"50%",width:"56px",height:"56px",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:(tab==="train"||inWorkout)?"0 0 24px rgba(204,255,0,0.45)":"0 4px 20px rgba(0,0,0,0.5)",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
-                    <span style={{fontSize:"0.5rem",fontWeight:900,letterSpacing:"0.05em",color:(tab==="train"||inWorkout)?"#000":"rgba(255,255,255,0.55)",fontFamily:"'Barlow Condensed',sans-serif",textAlign:"center",lineHeight:1.1,textTransform:"uppercase"}}>FORGE<br/>/BODY</span>
-                  </div>
-                  <span style={{fontSize:"0.54rem",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:(tab==="train"||inWorkout)?C.lime:"rgba(255,255,255,0.38)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>Train</span>
-                </button>
-                {/* Coach */}
-                <button onClick={()=>{setTab("coach");setSidePanel(null);}} style={{...s.navBtn,color:tab==="coach"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
-                  <NavIcon tab="coach" active={tab==="coach"&&!sidePanel}/>
-                  <span>Coach</span>
-                </button>
-                {/* Profile */}
-                <button onClick={()=>{setTab("profile");setSidePanel(null);}} style={{...s.navBtn,color:tab==="profile"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
-                  <NavIcon tab="profile" active={tab==="profile"&&!sidePanel}/>
-                  <span>Profile</span>
-                </button>
-              </nav>
-            </>
-          )}
+          <nav style={s.bottomNav}>
+            <button onClick={()=>{setTab("home");setSidePanel(null);}} style={{...s.navBtn,color:tab==="home"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
+              <NavIcon tab="home" active={tab==="home"&&!sidePanel}/><span>Home</span>
+            </button>
+            <button onClick={()=>{setTab("meal");setSidePanel(null);}} style={{...s.navBtn,color:tab==="meal"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
+              <NavIcon tab="meal" active={tab==="meal"&&!sidePanel}/><span>Meals</span>
+            </button>
+            <button onClick={()=>{setTab("train");setSidePanel(null);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",border:"none",background:"transparent",cursor:"pointer",padding:"0",position:"relative",top:"-12px"}}>
+              <div style={{background:(tab==="train"||inWorkout)?C.lime:"rgba(255,255,255,0.07)",border:`2px solid ${(tab==="train"||inWorkout)?C.lime:"rgba(255,255,255,0.14)"}`,borderRadius:"50%",width:"56px",height:"56px",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:(tab==="train"||inWorkout)?"0 0 24px rgba(204,255,0,0.45)":"0 4px 20px rgba(0,0,0,0.5)",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+                <span style={{fontSize:"0.5rem",fontWeight:900,letterSpacing:"0.05em",color:(tab==="train"||inWorkout)?"#000":"rgba(255,255,255,0.55)",fontFamily:"'Barlow Condensed',sans-serif",textAlign:"center",lineHeight:1.1,textTransform:"uppercase"}}>FORGE<br/>/BODY</span>
+              </div>
+              <span style={{fontSize:"0.54rem",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:(tab==="train"||inWorkout)?C.lime:"rgba(255,255,255,0.38)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>Train</span>
+            </button>
+            <button onClick={()=>{setTab("coach");setSidePanel(null);}} style={{...s.navBtn,color:tab==="coach"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
+              <NavIcon tab="coach" active={tab==="coach"&&!sidePanel}/><span>Coach</span>
+            </button>
+            <button onClick={()=>{setTab("profile");setSidePanel(null);}} style={{...s.navBtn,color:tab==="profile"&&!sidePanel?C.lime:"rgba(255,255,255,0.38)"}}>
+              <NavIcon tab="profile" active={tab==="profile"&&!sidePanel}/><span>Profile</span>
+            </button>
+          </nav>
         </>
       )}
     </div>
