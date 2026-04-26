@@ -1265,7 +1265,8 @@ function WorkoutSession({dayIndex,onDone}){
 
   function completeSet(eI,sI){setPendingKey(`${eI}-${sI}`);setShowLogger(true);}
 
-  const[showPBCelebration,setShowPBCelebration]=useState(null); // {exName,weight,reps}
+  const[showPBCelebration,setShowPBCelebration]=useState(null);
+  const[showQuit,setShowQuit]=useState(false); // {exName,weight,reps}
 
   function saveLog(data){
     const k=pendingKey;
@@ -1354,6 +1355,64 @@ function WorkoutSession({dayIndex,onDone}){
     const completedCount=Array.from({length:totalSets},(_,i)=>completedSets[`${exIdx}-${i}`]).filter(Boolean).length;
     const allDone=completedCount===totalSets;
     const isLast=exIdx===exercises.length-1;
+
+    const QUIT_QUOTES=[
+      "Champions don't quit when it gets hard. They quit when they're done.",
+      "The pain you feel today is the strength you'll feel tomorrow.",
+      "You didn't come this far to only come this far.",
+      "Every rep you skip is a rep your competition is doing.",
+      "The only workout you regret is the one you didn't finish.",
+      "Quitting is permanent. Rest is temporary.",
+      "Your future self is watching. Don't let them down.",
+      "Iron never lies. Push through.",
+      "The last few reps are where the real gains happen.",
+      "One more set. That's all. Then decide.",
+    ];
+
+    const QuitModal=({onConfirm,onStay})=>{
+      const[qIdx,setQIdx]=useState(()=>Math.floor(Math.random()*QUIT_QUOTES.length));
+      useEffect(()=>{
+        const t=setInterval(()=>setQIdx(i=>(i+1)%QUIT_QUOTES.length),3000);
+        return()=>clearInterval(t);
+      },[]);
+      return(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
+          <div style={{width:"100%",maxWidth:"360px"}}>
+            {/* Glass card */}
+            <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"2rem",textAlign:"center",marginBottom:"0.75rem"}}>
+              <div style={{fontSize:"2.5rem",marginBottom:"1rem"}}>💪</div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.4rem",color:C.white,letterSpacing:"-0.01em",marginBottom:"0.5rem",lineHeight:1}}>
+                Are You Sure?
+              </div>
+              <div style={{fontSize:"0.75rem",fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"1.25rem"}}>
+                {exIdx+1} of {exercises.length} exercises · {Object.keys(completedSets).length} sets done
+              </div>
+              {/* Cycling motivation quote */}
+              <div style={{background:"rgba(204,255,0,0.06)",border:"1px solid rgba(204,255,0,0.18)",borderRadius:"14px",padding:"1.1rem",marginBottom:"1.5rem",minHeight:"70px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.92rem",color:"rgba(255,255,255,0.7)",lineHeight:1.55,fontStyle:"italic",transition:"opacity 0.5s ease"}}>
+                  "{QUIT_QUOTES[qIdx]}"
+                </div>
+              </div>
+              {/* Dot indicators */}
+              <div style={{display:"flex",gap:"4px",justifyContent:"center",marginBottom:"1.5rem"}}>
+                {QUIT_QUOTES.map((_,i)=>(
+                  <div key={i} style={{width:i===qIdx?16:5,height:"4px",borderRadius:"2px",background:i===qIdx?C.lime:"rgba(255,255,255,0.15)",transition:"all 0.3s"}}/>
+                ))}
+              </div>
+              {/* Keep going button */}
+              <button onClick={onStay} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"0.95rem",borderRadius:"12px",marginBottom:"0.6rem"}}>
+                Keep Going 🔥
+              </button>
+              {/* Quit button */}
+              <button onClick={onConfirm} style={{width:"100%",padding:"0.85rem",fontSize:"0.85rem",borderRadius:"12px",background:"rgba(255,60,60,0.1)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,60,60,0.25)",color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer"}}>
+                Yes, Quit Workout
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     return(
       <div style={{minHeight:"100vh",background:"#0a0a0a",paddingBottom:"80px",position:"relative"}}>
         <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 5%,rgba(204,255,0,0.09) 0%,transparent 55%)",pointerEvents:"none",zIndex:0}}/>
@@ -1365,6 +1424,7 @@ function WorkoutSession({dayIndex,onDone}){
           setShowTimer(true);
         }}/>}
         {showTimer&&<RestTimer seconds={timerSecs} onDone={()=>{setShowTimer(false);}}/>}
+        {showQuit&&<QuitModal onConfirm={()=>{setShowQuit(false);onDone();}} onStay={()=>setShowQuit(false)}/>}
         <div style={{height:"3px",background:"rgba(255,255,255,0.07)",position:"sticky",top:0,zIndex:50}}>
           <div style={{height:"100%",background:C.lime,width:`${(exIdx/exercises.length)*100}%`,transition:"width 0.4s ease",boxShadow:"0 0 8px rgba(204,255,0,0.5)"}}/>
         </div>
@@ -1372,6 +1432,7 @@ function WorkoutSession({dayIndex,onDone}){
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1.5rem"}}>
             <button onClick={()=>setMode("overview")} style={s.btnSm}>← Overview</button>
             <span style={{color:"rgba(255,255,255,0.35)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,letterSpacing:"0.1em"}}>{exIdx+1} / {exercises.length}</span>
+            <button onClick={()=>setShowQuit(true)} style={{background:"rgba(255,60,60,0.1)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(255,60,60,0.25)",borderRadius:"8px",padding:"0.4rem 0.85rem",color:"rgba(255,100,100,0.9)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.75rem",cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>Quit</button>
           </div>
           {/* Animated gradient border */}
           <div style={{position:"relative",borderRadius:"20px",padding:"2px",background:"linear-gradient(135deg,#CCFF00,#88ff00,#CCFF00,#aaee00)",backgroundSize:"300% 300%",animation:"gradSpin 3s ease infinite",marginBottom:"1.25rem",boxShadow:"0 0 24px rgba(204,255,0,0.12)"}}>
