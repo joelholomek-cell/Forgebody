@@ -391,57 +391,61 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
         </div>
 
         {/* Free trial banner */}
-        <div style={{margin:"1rem 1.25rem 0",background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(150,255,0,0.08))",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"14px",padding:"0.85rem 1.1rem",display:"flex",alignItems:"center",gap:"0.75rem",backdropFilter:"blur(10px)"}}>
-          <span style={{fontSize:"1.3rem",flexShrink:0}}>🎁</span>
+        <div style={{margin:"1rem 1.25rem 0",background:"linear-gradient(135deg,rgba(204,255,0,0.12),rgba(150,255,0,0.06))",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"14px",padding:"0.75rem 1rem",display:"flex",alignItems:"center",gap:"0.75rem",backdropFilter:"blur(10px)"}}>
+          <span style={{fontSize:"1.2rem",flexShrink:0}}>🎁</span>
           <div>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.lime,letterSpacing:"0.05em"}}>7-Day Free Trial Included</div>
-            <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif"}}>Try everything free. Cancel anytime before day 7.</div>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.lime,letterSpacing:"0.06em"}}>7-Day Free Trial — No Card Needed</div>
+            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>Cancel anytime. No commitment.</div>
           </div>
         </div>
 
-        {/* Hero */}
-        <div style={{padding:"2rem 1.25rem 1.5rem"}}>
-          <div style={{...s.tag,marginBottom:"0.75rem",display:"inline-block"}}>AI Fitness Platform</div>
-          <h1 style={{fontSize:"clamp(3.2rem,12vw,5.5rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.9,color:C.white,marginBottom:"1.25rem"}}>
-            Forge The<br/>Body You<br/><span style={{color:C.lime}}>Want.</span>
+        {/* Hero — Apple clean */}
+        <div style={{padding:"2.5rem 1.25rem 0.5rem"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:"6px",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",marginBottom:"1.25rem"}}>
+            <div style={{width:"6px",height:"6px",borderRadius:"50%",background:C.lime}}/>
+            <span style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow Condensed',sans-serif"}}>AI Fitness Platform</span>
+          </div>
+          <h1 style={{fontSize:"clamp(3.5rem,13vw,6rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.88,color:C.white,marginBottom:"1.25rem"}}>
+            <span style={{display:"block"}}>Forge The</span>
+            <span style={{display:"block"}}>Body You</span>
+            <span style={{display:"block",color:C.lime,textShadow:`0 0 40px rgba(204,255,0,0.3)`}}>Want.</span>
           </h1>
-          <p style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"1rem",lineHeight:1.65,marginBottom:"1.75rem",maxWidth:"340px"}}>
-            The only fitness app that combines AI workouts, meal plans, and a 24/7 personal coach — all in one place.
+          <p style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"1.05rem",lineHeight:1.65,marginBottom:"2rem",maxWidth:"320px"}}>
+            One app. AI workouts, meal plans, and a personal coach — built around you.
           </p>
-          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.15rem",fontSize:"1.05rem",borderRadius:"14px",marginBottom:"0.65rem",letterSpacing:"0.06em"}}>
+          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.65rem",boxShadow:"0 0 30px rgba(204,255,0,0.3)"}}>
             Start Free Trial →
           </button>
-          <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.9rem",fontSize:"0.88rem"}}>
+          <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.9rem",fontSize:"0.85rem"}}>
             Already a member? Sign In
           </button>
         </div>
 
-        {/* What's inside grid — 4 clean glass cards */}
-        <div style={{padding:"0 1.25rem 1.5rem"}}>
-          <div style={{...s.label,marginBottom:"0.85rem",color:"rgba(255,255,255,0.45)"}}>Everything inside ForgeBody</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.6rem"}}>
+        {/* Feature cards grid */}
+        <div style={{padding:"2rem 1.25rem 0.5rem"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
             {[
-              {icon:"🏋️",title:"Smart Workouts",desc:"PPL, Upper/Lower, Muscle Group & HIIT. Your level, your goals."},
-              {icon:"🍽️",title:"Meal Plans",desc:"58+ meals with ingredients, macros & cooking instructions."},
-              {icon:"🤖",title:"AI Coach 24/7",desc:"Ask anything. Get expert answers on training, nutrition & mindset."},
-              {icon:"📚",title:"12-Week Programme",desc:"Science-backed transformation course included with every plan."},
-              {icon:"📈",title:"Progress Tracking",desc:"Weight charts, measurements, PBs, habits & streaks."},
-              {icon:"💊",title:"Supplement Guide",desc:"Evidence-based only. Ranked A+ to B. No BS."},
+              {icon:"🏋️",title:"Smart Workouts",desc:"Your split, your level, your goals. Every rep tracked.",accent:"rgba(204,255,0,0.08)"},
+              {icon:"🍽️",title:"Meal Plans",desc:"58+ meals with ingredients and cooking steps.",accent:"rgba(59,130,246,0.08)"},
+              {icon:"🤖",title:"AI Coach",desc:"24/7 expert answers on training, nutrition & mindset.",accent:"rgba(168,85,247,0.08)"},
+              {icon:"📚",title:"12-Week Plan",desc:"Science-backed programme included free.",accent:"rgba(34,197,94,0.08)"},
+              {icon:"📈",title:"Track Progress",desc:"Weight charts, PBs, measurements & streaks.",accent:"rgba(251,146,60,0.08)"},
+              {icon:"💊",title:"Supplements",desc:"Evidence-based guide. A+ rated only. No BS.",accent:"rgba(239,68,68,0.08)"},
             ].map((item,i)=>(
-              <div key={i} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"1rem",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)"}}>
-                <div style={{fontSize:"1.6rem",marginBottom:"0.5rem"}}>{item.icon}</div>
-                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.25rem",lineHeight:1.1}}>{item.title}</div>
-                <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",lineHeight:1.45}}>{item.desc}</div>
+              <div key={i} style={{background:`linear-gradient(135deg,${item.accent},rgba(255,255,255,0.04))`,border:"1px solid rgba(255,255,255,0.09)",borderRadius:"18px",padding:"1.1rem",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",position:"relative",overflow:"hidden"}}>
+                <div style={{fontSize:"1.8rem",marginBottom:"0.6rem"}}>{item.icon}</div>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.white,marginBottom:"0.3rem",lineHeight:1.1,letterSpacing:"0.02em"}}>{item.title}</div>
+                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.38)",fontFamily:"'Barlow',sans-serif",lineHeight:1.45}}>{item.desc}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Swipeable feature cards */}
-        <div style={{marginBottom:"1.25rem"}}>
-          <div style={{padding:"0 1.25rem",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-            <div style={{...s.label,marginBottom:0,color:"rgba(255,255,255,0.4)"}}>See it in action</div>
-            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{slide+1}/{total}</div>
+        {/* Swipeable deep-dive cards */}
+        <div style={{marginBottom:"1.25rem",paddingTop:"1.5rem"}}>
+          <div style={{padding:"0 1.25rem",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.85rem"}}>
+            <div style={{fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif"}}>Go deeper</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.2)",fontFamily:"'Barlow',sans-serif"}}>{slide+1}/{total}</div>
           </div>
           <div style={{overflow:"hidden",touchAction:"pan-y"}}
             onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
@@ -1279,7 +1283,7 @@ function WorkoutSession({dayIndex,onDone}){
           setTimerSecs(getRest(exercises[eI].rest));
           setShowTimer(true);
         }}/>}
-        {showTimer&&<RestTimer seconds={timerSecs} onDone={()=>{setShowTimer(false);if(!isLast)setExIdx(i=>i+1);else finishWorkout();}}/>}
+        {showTimer&&<RestTimer seconds={timerSecs} onDone={()=>{setShowTimer(false);}}/>}
         <div style={{height:"3px",background:"rgba(255,255,255,0.07)",position:"sticky",top:0,zIndex:50}}>
           <div style={{height:"100%",background:C.lime,width:`${(exIdx/exercises.length)*100}%`,transition:"width 0.4s ease",boxShadow:"0 0 8px rgba(204,255,0,0.5)"}}/>
         </div>
@@ -1305,6 +1309,10 @@ function WorkoutSession({dayIndex,onDone}){
                 <div style={{fontSize:"0.6rem",color:C.lime,fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.25rem"}}>Coaching Cue</div>
                 <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>{ex.cue}</div>
               </div>
+              <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name+' exercise proper form tutorial')}`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginTop:"0.75rem",background:"rgba(255,0,0,0.1)",border:"1px solid rgba(255,0,0,0.2)",borderRadius:"10px",padding:"0.65rem",textDecoration:"none",backdropFilter:"blur(10px)"}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff4444"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                <span style={{fontSize:"0.78rem",fontWeight:800,color:"rgba(255,100,100,0.9)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.06em"}}>Watch Demo</span>
+              </a>
             </div>
           </div>
           {/* Set tracker - one at a time */}
@@ -1345,7 +1353,15 @@ function WorkoutSession({dayIndex,onDone}){
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.7rem",marginTop:"0.5rem"}}>
             <button onClick={()=>exIdx>0&&setExIdx(i=>i-1)} disabled={exIdx===0} style={{...s.btnGlass,opacity:exIdx===0?0.3:1,padding:"0.85rem"}}>← Prev</button>
-            <button onClick={()=>{if(isLast)finishWorkout();else{setTimerSecs(getRest(ex.rest));setShowTimer(true);}}} style={{...s.btn,padding:"0.85rem"}}>{isLast?"Finish 🔥":"Next →"}</button>
+            <button onClick={()=>{
+              if(!allDone){
+                // Shake/warn - not all sets done
+                alert(`Complete all ${totalSets} sets before moving on!`);
+                return;
+              }
+              if(isLast)finishWorkout();
+              else{setTimerSecs(getRest(ex.rest));setShowTimer(true);}
+            }} style={{...s.btn,padding:"0.85rem",opacity:allDone?1:0.5}}>{isLast?"Finish 🔥":"Next Exercise →"}</button>
           </div>
         </div>
       </div>
