@@ -363,11 +363,11 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
   const[dragOffset,setDragOffset]=useState(0);
 
   const slides=[
-    {icon:"🏋️",title:"Train Smarter",sub:"Personalised workout programmes built around your split, level and goal. Every set tracked.",detail:"PPL · Upper/Lower · Muscle Group · HIIT",color:"rgba(204,255,0,0.09)",accent:C.lime,stats:[{n:"80+",l:"Exercises"},{n:"4",l:"Splits"},{n:"∞",l:"Workouts"}]},
-    {icon:"🍽️",title:"Eat Right",sub:"AI meal plans with real ingredients and step-by-step cooking instructions for your diet.",detail:"58+ meals · Full macros · Shopping lists",color:"rgba(59,130,246,0.09)",accent:"#60a5fa",stats:[{n:"58+",l:"Meals"},{n:"7",l:"Diets"},{n:"100%",l:"Macro tracked"}]},
-    {icon:"🤖",title:"AI Coach 24/7",sub:"Your personal expert coach in your pocket. Ask anything. Get science-backed answers instantly.",detail:"Training · Nutrition · Recovery · Mindset",color:"rgba(168,85,247,0.09)",accent:"#c084fc",stats:[{n:"24/7",l:"Available"},{n:"∞",l:"Questions"},{n:"0s",l:"Wait"}]},
-    {icon:"📈",title:"Track Everything",sub:"Body weight, measurements, macros, workouts and habits — all synced in real time.",detail:"Live Supabase sync · Calendar · Streaks",color:"rgba(251,146,60,0.09)",accent:"#fb923c",stats:[{n:"6",l:"Measurements"},{n:"10",l:"Habits"},{n:"Live",l:"Sync"}]},
-    {icon:"📚",title:"12-Week Programme",sub:"A complete science-backed transformation course included with every plan. Sessions written. Meals planned.",detail:"Progressive overload · Periodisation · Nutrition",color:"rgba(34,197,94,0.09)",accent:"#4ade80",stats:[{n:"12",l:"Weeks"},{n:"84",l:"Sessions"},{n:"100%",l:"Written"}]},
+    {icon:"🏋️",title:"Train Smarter",sub:"Personalised programmes built around your split, level and goal. Every set tracked. Every rep counted.",detail:"PPL · Upper/Lower · Muscle Group · HIIT",color:"rgba(204,255,0,0.1)",accent:C.lime,stats:[{n:"80+",l:"Exercises"},{n:"4",l:"Splits"},{n:"∞",l:"Workouts"}]},
+    {icon:"🍽️",title:"Eat Right",sub:"AI meal plans with real ingredients and step-by-step cooking instructions. Built for your diet.",detail:"58+ meals · Full macros · Shopping lists",color:"rgba(59,130,246,0.1)",accent:"#60a5fa",stats:[{n:"58+",l:"Meals"},{n:"7",l:"Diets"},{n:"100%",l:"Macro tracked"}]},
+    {icon:"🤖",title:"AI Coach 24/7",sub:"Your personal expert coach in your pocket. Ask anything. Get science-backed answers instantly.",detail:"Training · Nutrition · Recovery · Mindset",color:"rgba(168,85,247,0.1)",accent:"#c084fc",stats:[{n:"24/7",l:"Available"},{n:"∞",l:"Questions"},{n:"0s",l:"Wait"}]},
+    {icon:"📈",title:"Track Everything",sub:"Body weight, measurements, macros, workouts and habits synced in real time.",detail:"Live sync · Calendar · Streaks · PBs",color:"rgba(251,146,60,0.1)",accent:"#fb923c",stats:[{n:"6",l:"Metrics"},{n:"10",l:"Habits"},{n:"Live",l:"Sync"}]},
+    {icon:"📚",title:"12-Week Programme",sub:"A complete science-backed transformation course included with every plan. Sessions written. Meals planned.",detail:"Progressive overload · Periodisation · Nutrition",color:"rgba(34,197,94,0.1)",accent:"#4ade80",stats:[{n:"12",l:"Weeks"},{n:"84",l:"Sessions"},{n:"Free",l:"Included"}]},
   ];
 
   const total=slides.length;
@@ -381,60 +381,126 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
 
   return(
     <div style={{minHeight:"100vh",background:"#0a0a0a",overflowX:"hidden",position:"relative"}}>
-      <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 10% 5%,rgba(204,255,0,0.13) 0%,transparent 55%),radial-gradient(ellipse 60% 45% at 90% 85%,rgba(120,220,0,0.07) 0%,transparent 50%)",pointerEvents:"none",zIndex:0}}/>
+      <style>{`
+        @keyframes heroGlow{0%,100%{opacity:0.6}50%{opacity:1}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+      `}</style>
+
+      {/* Background orbs */}
+      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-20%",left:"-20%",width:"70%",height:"70%",borderRadius:"50%",background:"radial-gradient(circle,rgba(204,255,0,0.15) 0%,transparent 70%)",animation:"heroGlow 4s ease-in-out infinite"}}/>
+        <div style={{position:"absolute",bottom:"-10%",right:"-10%",width:"50%",height:"50%",borderRadius:"50%",background:"radial-gradient(circle,rgba(100,200,0,0.1) 0%,transparent 70%)",animation:"heroGlow 4s ease-in-out infinite",animationDelay:"2s"}}/>
+        <div style={{position:"absolute",top:"40%",right:"10%",width:"30%",height:"30%",borderRadius:"50%",background:"radial-gradient(circle,rgba(204,255,0,0.06) 0%,transparent 70%)"}}/>
+      </div>
+
       <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 5rem"}}>
 
         {/* Nav */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
-          <div onClick={onLogoTap} style={{fontSize:"1.3rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"Barlow Condensed,sans-serif",cursor:"default",userSelect:"none"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
-          <button onClick={onSignIn} style={{...s.btnSm,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.7)"}}>Sign In</button>
+          <div onClick={onLogoTap} style={{fontSize:"1.4rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif",cursor:"default",userSelect:"none"}}>
+            FORGE<span style={{color:C.lime}}>/</span>BODY
+          </div>
+          <button onClick={onSignIn} style={{background:"rgba(255,255,255,0.08)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"20px",padding:"0.4rem 1rem",color:"rgba(255,255,255,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.78rem",cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>Sign In</button>
         </div>
 
-        {/* Free trial banner */}
-        <div style={{margin:"1rem 1.25rem 0",background:"linear-gradient(135deg,rgba(204,255,0,0.12),rgba(150,255,0,0.06))",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"14px",padding:"0.75rem 1rem",display:"flex",alignItems:"center",gap:"0.75rem",backdropFilter:"blur(10px)"}}>
-          <span style={{fontSize:"1.2rem",flexShrink:0}}>🎁</span>
-          <div>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.lime,letterSpacing:"0.06em"}}>7-Day Free Trial — No Card Needed</div>
-            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>Cancel anytime. No commitment.</div>
-          </div>
-        </div>
+        {/* Hero section */}
+        <div style={{padding:"2rem 1.25rem 0"}}>
 
-        {/* Hero — Apple clean */}
-        <div style={{padding:"2.5rem 1.25rem 0.5rem"}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:"6px",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",marginBottom:"1.25rem"}}>
-            <div style={{width:"6px",height:"6px",borderRadius:"50%",background:C.lime}}/>
-            <span style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow Condensed',sans-serif"}}>AI Fitness Platform</span>
+          {/* Badge pill */}
+          <div style={{display:"inline-flex",alignItems:"center",gap:"6px",background:"rgba(204,255,0,0.1)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"20px",padding:"5px 14px",marginBottom:"1.5rem"}}>
+            <div style={{width:"6px",height:"6px",borderRadius:"50%",background:C.lime,boxShadow:`0 0 8px ${C.lime}`}}/>
+            <span style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>AI Fitness Platform</span>
           </div>
-          <h1 style={{fontSize:"clamp(3.5rem,13vw,6rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.88,color:C.white,marginBottom:"1.25rem"}}>
-            <span style={{display:"block"}}>Forge The</span>
-            <span style={{display:"block"}}>Body You</span>
-            <span style={{display:"block",color:C.lime,textShadow:`0 0 40px rgba(204,255,0,0.3)`}}>Want.</span>
-          </h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"1.05rem",lineHeight:1.65,marginBottom:"2rem",maxWidth:"320px"}}>
-            One app. AI workouts, meal plans, and a personal coach — built around you.
+
+          {/* Headline */}
+          <div style={{marginBottom:"1.5rem"}}>
+            <div style={{fontSize:"clamp(4rem,14vw,6.5rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.88,color:C.white}}>
+              <div>FORGE</div>
+              <div>THE BODY</div>
+              <div style={{
+                background:"linear-gradient(135deg,#CCFF00,#aaff00,#CCFF00)",
+                backgroundSize:"200% auto",
+                WebkitBackgroundClip:"text",
+                WebkitTextFillColor:"transparent",
+                backgroundClip:"text",
+                animation:"shimmer 3s linear infinite",
+                filter:"drop-shadow(0 0 20px rgba(204,255,0,0.4))",
+              }}>YOU WANT.</div>
+            </div>
+          </div>
+
+          {/* Subheadline */}
+          <p style={{color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",fontSize:"1.05rem",lineHeight:1.65,marginBottom:"0.75rem"}}>
+            The AI fitness app that replaces your $150/hr personal trainer.
           </p>
-          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.65rem",boxShadow:"0 0 30px rgba(204,255,0,0.3)"}}>
+
+          {/* Price comparison card - GLASS */}
+          <div style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"1.1rem 1.25rem",marginBottom:"1.75rem"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"0.75rem",alignItems:"center"}}>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:"1.8rem",fontWeight:900,color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,textDecoration:"line-through"}}>$150</div>
+                <div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.3)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"3px"}}>Per PT session</div>
+              </div>
+              <div style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"1.2rem"}}>→</div>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>$19</div>
+                <div style={{fontSize:"0.62rem",color:C.lime,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"3px"}}>Per month</div>
+              </div>
+            </div>
+            <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",marginTop:"0.85rem",paddingTop:"0.75rem",textAlign:"center",color:"rgba(255,255,255,0.45)",fontSize:"0.8rem",fontFamily:"'Barlow',sans-serif"}}>
+              Same results. No appointment. No awkward small talk.
+            </div>
+          </div>
+
+          {/* Free trial banner - GLASS */}
+          <div style={{background:"linear-gradient(135deg,rgba(204,255,0,0.12),rgba(150,255,0,0.06))",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"0.9rem 1.1rem",marginBottom:"1.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
+            <div style={{width:"38px",height:"38px",borderRadius:"10px",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.2rem"}}>🎁</div>
+            <div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.lime,letterSpacing:"0.05em",marginBottom:"0.15rem"}}>7-Day Free Trial — No Card Needed</div>
+              <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>Try everything free. Cancel anytime. Zero risk.</div>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <button onClick={onSelectPlan} style={{width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem",background:C.lime,color:"#000",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 0 40px rgba(204,255,0,0.35)",transition:"all 0.2s"}}>
             Start Free Trial →
           </button>
-          <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.9rem",fontSize:"0.85rem"}}>
+          <button onClick={onSignIn} style={{width:"100%",padding:"0.9rem",fontSize:"0.85rem",borderRadius:"14px",background:"rgba(255,255,255,0.07)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.13)",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>
             Already a member? Sign In
           </button>
         </div>
 
-        {/* Feature cards grid */}
-        <div style={{padding:"2rem 1.25rem 0.5rem"}}>
+        {/* Social proof — glass card */}
+        <div style={{padding:"1.75rem 1.25rem 0"}}>
+          <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"20px",padding:"1.25rem"}}>
+            <div style={{display:"flex",gap:"1px",marginBottom:"0.5rem"}}>{[...Array(5)].map((_,i)=><span key={i} style={{color:"#fbbf24",fontSize:"1.1rem"}}>★</span>)}</div>
+            <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",color:"rgba(255,255,255,0.65)",lineHeight:1.6,fontStyle:"italic",marginBottom:"0.6rem"}}>"Cancelled my PT and switched to ForgeBody. Saved $600 a month and I'm in better shape than ever."</div>
+            <div style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
+          </div>
+        </div>
+
+        {/* What you get — glass feature grid */}
+        <div style={{padding:"1.75rem 1.25rem 0"}}>
+          <div style={{textAlign:"center",marginBottom:"1.25rem"}}>
+            <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.4rem"}}>Everything included</div>
+            <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,letterSpacing:"-0.01em"}}>One App.<br/>Everything You Need.</div>
+          </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
             {[
-              {icon:"🏋️",title:"Smart Workouts",desc:"Your split, your level, your goals. Every rep tracked.",accent:"rgba(204,255,0,0.08)"},
-              {icon:"🍽️",title:"Meal Plans",desc:"58+ meals with ingredients and cooking steps.",accent:"rgba(59,130,246,0.08)"},
-              {icon:"🤖",title:"AI Coach",desc:"24/7 expert answers on training, nutrition & mindset.",accent:"rgba(168,85,247,0.08)"},
-              {icon:"📚",title:"12-Week Plan",desc:"Science-backed programme included free.",accent:"rgba(34,197,94,0.08)"},
-              {icon:"📈",title:"Track Progress",desc:"Weight charts, PBs, measurements & streaks.",accent:"rgba(251,146,60,0.08)"},
-              {icon:"💊",title:"Supplements",desc:"Evidence-based guide. A+ rated only. No BS.",accent:"rgba(239,68,68,0.08)"},
+              {icon:"🏋️",title:"Smart Workouts",desc:"Your split, your level. Every rep tracked.",color:"rgba(204,255,0,0.08)",border:"rgba(204,255,0,0.15)"},
+              {icon:"🍽️",title:"Meal Plans",desc:"58+ meals with ingredients & macros.",color:"rgba(59,130,246,0.08)",border:"rgba(59,130,246,0.15)"},
+              {icon:"🤖",title:"AI Coach 24/7",desc:"Expert answers on training & nutrition.",color:"rgba(168,85,247,0.08)",border:"rgba(168,85,247,0.15)"},
+              {icon:"📚",title:"12-Week Plan",desc:"Science-backed programme included free.",color:"rgba(34,197,94,0.08)",border:"rgba(34,197,94,0.15)"},
+              {icon:"📈",title:"Track Progress",desc:"Weight charts, PBs & streaks.",color:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)"},
+              {icon:"💊",title:"Supplements",desc:"Evidence-based guide. No BS.",color:"rgba(239,68,68,0.08)",border:"rgba(239,68,68,0.15)"},
+              {icon:"🧠",title:"Mindset & Habits",desc:"Daily check-ins & habit streaks.",color:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.15)"},
+              {icon:"🏆",title:"Personal Bests",desc:"Auto-detect PBs. Celebrate every one.",color:"rgba(251,191,36,0.08)",border:"rgba(251,191,36,0.15)"},
             ].map((item,i)=>(
-              <div key={i} style={{background:`linear-gradient(135deg,${item.accent},rgba(255,255,255,0.04))`,border:"1px solid rgba(255,255,255,0.09)",borderRadius:"18px",padding:"1.1rem",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",position:"relative",overflow:"hidden"}}>
-                <div style={{fontSize:"1.8rem",marginBottom:"0.6rem"}}>{item.icon}</div>
-                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.white,marginBottom:"0.3rem",lineHeight:1.1,letterSpacing:"0.02em"}}>{item.title}</div>
+              <div key={i} style={{background:`linear-gradient(135deg,${item.color},rgba(255,255,255,0.03))`,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:`1px solid ${item.border}`,borderRadius:"18px",padding:"1.1rem",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:"-10px",right:"-10px",width:"40px",height:"40px",borderRadius:"50%",background:item.color,filter:"blur(12px)",pointerEvents:"none"}}/>
+                <div style={{fontSize:"1.7rem",marginBottom:"0.5rem"}}>{item.icon}</div>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.3rem",lineHeight:1.1}}>{item.title}</div>
                 <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.38)",fontFamily:"'Barlow',sans-serif",lineHeight:1.45}}>{item.desc}</div>
               </div>
             ))}
@@ -442,9 +508,9 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
         </div>
 
         {/* Swipeable deep-dive cards */}
-        <div style={{marginBottom:"1.25rem",paddingTop:"1.5rem"}}>
+        <div style={{paddingTop:"2rem",marginBottom:"1.25rem"}}>
           <div style={{padding:"0 1.25rem",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.85rem"}}>
-            <div style={{fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif"}}>Go deeper</div>
+            <div style={{fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>Explore features</div>
             <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.2)",fontFamily:"'Barlow',sans-serif"}}>{slide+1}/{total}</div>
           </div>
           <div style={{overflow:"hidden",touchAction:"pan-y"}}
@@ -455,16 +521,16 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
               {slides.map((sl,i)=>(
                 <div key={i} style={{minWidth:"100%",padding:"0 1.25rem"}}>
                   <div style={{background:`linear-gradient(135deg,${sl.color},rgba(255,255,255,0.03))`,border:`1px solid ${sl.accent}28`,borderRadius:"24px",padding:"1.75rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",position:"relative",overflow:"hidden",cursor:"grab"}}>
-                    <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:`${sl.accent}12`,filter:"blur(30px)",pointerEvents:"none"}}/>
+                    <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:`${sl.accent}15`,filter:"blur(30px)",pointerEvents:"none"}}/>
                     <div style={{fontSize:"2.8rem",marginBottom:"0.9rem"}}>{sl.icon}</div>
-                    <div style={{fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",fontSize:"1.7rem",color:C.white,letterSpacing:"-0.02em",lineHeight:1,marginBottom:"0.55rem"}}>{sl.title}</div>
-                    <div style={{color:"rgba(255,255,255,0.55)",fontFamily:"Barlow,sans-serif",fontSize:"0.9rem",lineHeight:1.55,marginBottom:"0.55rem"}}>{sl.sub}</div>
-                    <div style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.08em",color:sl.accent,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",marginBottom:"1.25rem"}}>{sl.detail}</div>
+                    <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.7rem",color:C.white,letterSpacing:"-0.02em",lineHeight:1,marginBottom:"0.55rem"}}>{sl.title}</div>
+                    <div style={{color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",lineHeight:1.55,marginBottom:"0.55rem"}}>{sl.sub}</div>
+                    <div style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.08em",color:sl.accent,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"1.25rem"}}>{sl.detail}</div>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
                       {sl.stats.map((stat,j)=>(
-                        <div key={j} style={{background:"rgba(0,0,0,0.3)",borderRadius:"12px",padding:"0.65rem",textAlign:"center",border:"1px solid rgba(255,255,255,0.06)"}}>
-                          <div style={{fontSize:"1.3rem",fontWeight:900,color:sl.accent,fontFamily:"Barlow Condensed,sans-serif",lineHeight:1}}>{stat.n}</div>
-                          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"Barlow Condensed,sans-serif",marginTop:"2px"}}>{stat.l}</div>
+                        <div key={j} style={{background:"rgba(0,0,0,0.3)",borderRadius:"12px",padding:"0.65rem",textAlign:"center",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                          <div style={{fontSize:"1.3rem",fontWeight:900,color:sl.accent,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{stat.n}</div>
+                          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>{stat.l}</div>
                         </div>
                       ))}
                     </div>
@@ -478,28 +544,34 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
           </div>
         </div>
 
-        {/* Social proof */}
-        <div style={{padding:"0 1.25rem 1.25rem"}}>
-          <div style={{...s.card,textAlign:"center",padding:"1.5rem"}}>
-            <div style={{display:"flex",justifyContent:"center",gap:"0.2rem",marginBottom:"0.5rem"}}>{[...Array(5)].map((_,i)=><span key={i} style={{color:"#fbbf24",fontSize:"1rem"}}>★</span>)}</div>
-            <div style={{fontFamily:"Barlow,sans-serif",fontSize:"0.9rem",color:"rgba(255,255,255,0.55)",lineHeight:1.55,fontStyle:"italic",marginBottom:"0.5rem"}}>"Finally an app that gives me workouts AND tells me what to eat. The AI coach knows my programme."</div>
-            <div style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
+        {/* Second testimonial */}
+        <div style={{padding:"0 1.25rem 1.5rem"}}>
+          <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"20px",padding:"1.25rem"}}>
+            <div style={{display:"flex",gap:"1px",marginBottom:"0.5rem"}}>{[...Array(5)].map((_,i)=><span key={i} style={{color:"#fbbf24",fontSize:"1.1rem"}}>★</span>)}</div>
+            <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",color:"rgba(255,255,255,0.65)",lineHeight:1.6,fontStyle:"italic",marginBottom:"0.6rem"}}>"The AI coach actually knows my programme. It's like having a PT in my pocket but way cheaper."</div>
+            <div style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
           </div>
         </div>
 
-        {/* Bottom CTA */}
+        {/* Final CTA */}
         <div style={{padding:"0 1.25rem"}}>
-          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.5rem"}}>
-            See Plans & Start Free Trial →
-          </button>
-          <p style={{textAlign:"center",color:"rgba(255,255,255,0.22)",fontSize:"0.72rem",fontFamily:"Barlow,sans-serif"}}>7-day free trial · Cancel anytime · No contracts</p>
+          <div style={{background:"linear-gradient(135deg,rgba(204,255,0,0.1),rgba(150,220,0,0.05))",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"24px",padding:"2rem 1.5rem",textAlign:"center",position:"relative",overflow:"hidden",marginBottom:"1rem"}}>
+            <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(25px)",pointerEvents:"none"}}/>
+            <div style={{fontSize:"2rem",marginBottom:"0.75rem"}}>🔥</div>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.6rem",letterSpacing:"-0.02em",color:C.white,marginBottom:"0.4rem",lineHeight:1}}>Ready to Forge<br/>Your Body?</div>
+            <div style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",marginBottom:"1.5rem",lineHeight:1.5}}>Join ForgeBody. Train smarter.<br/>Cancel anytime. 7 days free.</div>
+            <button onClick={onSelectPlan} style={{width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",background:C.lime,color:"#000",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 0 30px rgba(204,255,0,0.3)"}}>
+              Start Free Trial →
+            </button>
+          </div>
+          <p style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>7-day free trial · Cancel anytime · No contracts</p>
         </div>
+
       </div>
     </div>
   );
 }
 
-// ─── SUBSCRIPTION WALL ───────────────────────────────────────────────────────
 function SubscriptionWall({user,onBack,onSubscribed}){
   const[slide,setSlide]=useState(1);
   const[isDragging,setIsDragging]=useState(false);
@@ -2297,7 +2369,17 @@ export default function ForgeBodyApp(){
   const[sidebarOpen,setSidebarOpen]=useState(false);
   const[workoutDayIndex,setWorkoutDayIndex]=useState(undefined);
   const[inWorkout,setInWorkout]=useState(false);
-  const[logoTaps,setLogoTaps]=useState(0);
+  const[installPrompt,setInstallPrompt]=useState(null);
+  const[showInstallBanner,setShowInstallBanner]=useState(false);
+
+  useEffect(()=>{
+    window.addEventListener('beforeinstallprompt',(e)=>{
+      e.preventDefault();
+      setInstallPrompt(e);
+      // Show banner after 30 seconds if not dismissed
+      setTimeout(()=>setShowInstallBanner(true),30000);
+    });
+  },[]);
 
   // Secret dev bypass — tap logo 7 times on landing page
   function handleLogoTap(){
@@ -2487,6 +2569,21 @@ export default function ForgeBodyApp(){
       <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
 
       <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
+
+          {/* PWA install banner */}
+          {showInstallBanner&&installPrompt&&(
+            <div style={{position:"fixed",bottom:"80px",left:"1rem",right:"1rem",background:"rgba(10,10,10,0.95)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"1rem",zIndex:150,backdropFilter:"blur(20px)",display:"flex",alignItems:"center",gap:"0.75rem",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}}>
+              <div style={{width:"40px",height:"40px",borderRadius:"10px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.2rem"}}>💪</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.15rem"}}>Add to Home Screen</div>
+                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Install ForgeBody for the best experience</div>
+              </div>
+              <div style={{display:"flex",gap:"0.4rem",flexShrink:0}}>
+                <button onClick={()=>setShowInstallBanner(false)} style={{background:"transparent",border:"none",color:"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"1.2rem",padding:"0.25rem"}}>×</button>
+                <button onClick={async()=>{if(installPrompt){await installPrompt.prompt();setShowInstallBanner(false);}}} style={{...s.btn,padding:"0.45rem 0.85rem",fontSize:"0.75rem",borderRadius:"8px"}}>Install</button>
+              </div>
+            </div>
+          )}
 
       {inWorkout?(
         <WorkoutSession dayIndex={workoutDayIndex} onDone={()=>{setInWorkout(false);setTab("train");}}/>
