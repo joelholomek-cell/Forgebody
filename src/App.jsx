@@ -807,18 +807,132 @@ function RestTimer({seconds,onDone}){
   );
 }
 
+// ─── PB HELPERS ──────────────────────────────────────────────────────────────
+function getPBs(){try{return JSON.parse(localStorage.getItem("fb_pbs")||"{}");}catch{return{};}}
+function savePB(exName,weight,reps){
+  const pbs=getPBs();
+  const key=exName.toLowerCase().replace(/\s+/g,"_");
+  const est=Math.round(weight*(1+reps/30));
+  const prev=pbs[key];
+  const isNew=!prev||est>prev.est;
+  if(isNew){
+    pbs[key]={name:exName,weight,reps,est,date:new Date().toISOString()};
+    localStorage.setItem("fb_pbs",JSON.stringify(pbs));
+  }
+  return{isNew,prev,current:{weight,reps,est}};
+}
+
+// Confetti burst component
+function ConfettiCelebration({exName,weight,reps,onDone}){
+  const canvasRef=useRef(null);
+  useEffect(()=>{
+    const canvas=canvasRef.current;if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    const pieces=Array.from({length:120},()=>({
+      x:Math.random()*canvas.width,y:-20,
+      w:6+Math.random()*8,h:6+Math.random()*8,
+      r:Math.random()*Math.PI*2,
+      vx:(Math.random()-0.5)*6,vy:3+Math.random()*4,
+      vr:(Math.random()-0.5)*0.2,
+      color:["#CCFF00","#ffffff","#88ff00","#ffdd00","#ff88cc"][Math.floor(Math.random()*5)],
+      opacity:1,
+    }));
+    let frame;
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      pieces.forEach(p=>{
+        p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.opacity=Math.max(0,p.opacity-0.008);
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.globalAlpha=p.opacity;
+        ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
+      });
+      if(pieces.some(p=>p.opacity>0))frame=requestAnimationFrame(draw);
+    }
+    draw();
+    const t=setTimeout(onDone,3500);
+    return()=>{cancelAnimationFrame(frame);clearTimeout(t);};
+  },[]);
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.88)",backdropFilter:"blur(10px)"}}>
+      <canvas ref={canvasRef} style={{position:"absolute",inset:0,pointerEvents:"none"}}/>
+      <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"2rem"}}>
+        <div style={{fontSize:"4rem",marginBottom:"0.75rem"}}>🏆</div>
+        <div style={{fontSize:"1.1rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.25rem"}}>New Personal Best!</div>
+        <div style={{fontSize:"2.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.white,lineHeight:1,marginBottom:"0.5rem"}}>{exName}</div>
+        <div style={{fontSize:"3.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",color:C.lime,lineHeight:1,marginBottom:"0.25rem"}}>{weight}kg × {reps}</div>
+        <div style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",marginBottom:"2rem"}}>Estimated 1RM: {Math.round(weight*(1+reps/30))}kg</div>
+        <button onClick={onDone} style={{...s.btn,padding:"0.85rem 2rem",fontSize:"0.95rem",borderRadius:"12px"}}>Let's Go 🔥</button>
+      </div>
+    </div>
+  );
+}
+
+// PB History page
+function PBHistory(){
+  const pbs=getPBs();
+  const entries=Object.values(pbs).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Strength Records"/>
+      <h2 style={s.sectionTitle}>Personal Bests</h2>
+      <p style={s.sectionSub}>Your all-time max lifts. Keep pushing.</p>
+      {entries.length===0?(
+        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+          <div style={{fontSize:"2.5rem",marginBottom:"0.75rem"}}>🏋️</div>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No PBs yet</div>
+          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>Complete a workout and log your weights to start tracking personal bests.</div>
+        </div>
+      ):entries.map((pb,i)=>(
+        <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
+          <div style={{width:"42px",height:"42px",borderRadius:"10px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <span style={{fontSize:"1.3rem"}}>🏆</span>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.92rem",color:C.white,marginBottom:"0.2rem"}}>{pb.name}</div>
+            <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap"}}>
+              <span style={s.tag}>{pb.weight}kg × {pb.reps}</span>
+              <span style={s.tagGray}>Est. 1RM: {pb.est}kg</span>
+            </div>
+          </div>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{color:"rgba(255,255,255,0.3)",fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif"}}>{new Date(pb.date).toLocaleDateString("en-AU",{month:"short",day:"numeric"})}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SetLogger({ex,setNum,onSave}){
   const[weight,setWeight]=useState("");
   const[reps,setReps]=useState(ex.reps.split("-")[0]||"8");
+  // Show previous PB for this exercise
+  const pbs=getPBs();
+  const key=ex.name.toLowerCase().replace(/\s+/g,"_");
+  const prevPB=pbs[key];
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",backdropFilter:"blur(20px)",zIndex:299,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
       <div style={{...s.card,width:"100%",maxWidth:"360px",padding:"1.5rem"}}>
         <Eyebrow label={`Set ${setNum} Complete`}/>
-        <div style={{fontSize:"1.3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"1.25rem"}}>{ex.name}</div>
+        <div style={{fontSize:"1.3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.5rem"}}>{ex.name}</div>
+        {prevPB&&(
+          <div style={{background:"rgba(204,255,0,0.06)",border:"1px solid rgba(204,255,0,0.15)",borderRadius:"10px",padding:"0.6rem 0.85rem",marginBottom:"0.85rem",display:"flex",alignItems:"center",gap:"0.5rem"}}>
+            <span style={{fontSize:"0.9rem"}}>🏆</span>
+            <div>
+              <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>Your PB</div>
+              <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif"}}>{prevPB.weight}kg × {prevPB.reps} reps · Est. 1RM {prevPB.est}kg</div>
+            </div>
+          </div>
+        )}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem",marginBottom:"1rem"}}>
           <div><label style={s.label}>Weight (kg)</label><input style={s.input} type="number" placeholder="e.g. 80" value={weight} onChange={e=>setWeight(e.target.value)}/></div>
           <div><label style={s.label}>Reps done</label><input style={s.input} type="number" value={reps} onChange={e=>setReps(e.target.value)}/></div>
         </div>
+        {weight&&reps&&prevPB&&Math.round(parseFloat(weight)*(1+parseInt(reps)/30))>prevPB.est&&(
+          <div style={{background:"rgba(204,255,0,0.1)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"10px",padding:"0.6rem",textAlign:"center",marginBottom:"0.75rem"}}>
+            <span style={{fontSize:"0.82rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.06em"}}>🔥 New PB incoming!</span>
+          </div>
+        )}
         <button onClick={()=>onSave({weight:parseFloat(weight)||0,reps:parseInt(reps)||0})} style={{...s.btn,width:"100%",padding:"0.9rem"}}>Save & Rest →</button>
       </div>
     </div>
@@ -890,6 +1004,29 @@ function HomeScreen({profile,user,onNavigate}){
           </div>
         ))}
       </div>
+
+      {/* Recent PBs */}
+      {(()=>{
+        const pbs=Object.values(getPBs()).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+        if(pbs.length===0)return null;
+        return(
+          <div style={{...s.card,marginBottom:"0.75rem"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.6rem"}}>
+              <Eyebrow label="Strength Records"/>
+              <button onClick={()=>onNavigate("sidebar","pbs")} style={{...s.btnSm,fontSize:"0.65rem",padding:"0.25rem 0.6rem"}}>See all</button>
+            </div>
+            {pbs.map((pb,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.4rem 0",borderBottom:i<pbs.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                <span style={{fontSize:"1rem",flexShrink:0}}>🏆</span>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white}}>{pb.name}</div>
+                </div>
+                <span style={{...s.tag,fontSize:"0.65rem"}}>{pb.weight}kg × {pb.reps}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Calendar */}
       <WorkoutCalendar completedDates={completedDates}/>
@@ -1043,13 +1180,24 @@ function WorkoutSession({dayIndex,onDone}){
 
   function completeSet(eI,sI){setPendingKey(`${eI}-${sI}`);setShowLogger(true);}
 
+  const[showPBCelebration,setShowPBCelebration]=useState(null); // {exName,weight,reps}
+
   function saveLog(data){
     const k=pendingKey;
     setCompletedSets(p=>({...p,[k]:true}));
     setSetLogs(p=>({...p,[k]:data}));
     setShowLogger(false);
     const[eI]=k.split("-").map(Number);
-    setTimerSecs(getRest(exercises[eI].rest));
+    const ex=exercises[eI];
+    // Check for PB
+    if(data.weight>0&&data.reps>0){
+      const{isNew}=savePB(ex.name,data.weight,data.reps);
+      if(isNew){
+        setShowPBCelebration({exName:ex.name,weight:data.weight,reps:data.reps});
+        return; // Show celebration before timer
+      }
+    }
+    setTimerSecs(getRest(ex.rest));
     setShowTimer(true);
   }
 
@@ -1107,6 +1255,12 @@ function WorkoutSession({dayIndex,onDone}){
       <div style={{minHeight:"100vh",background:"#0a0a0a",paddingBottom:"80px",position:"relative"}}>
         <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 5%,rgba(204,255,0,0.09) 0%,transparent 55%)",pointerEvents:"none",zIndex:0}}/>
         {showLogger&&<SetLogger ex={ex} setNum={completedCount+1} onSave={saveLog}/>}
+        {showPBCelebration&&<ConfettiCelebration exName={showPBCelebration.exName} weight={showPBCelebration.weight} reps={showPBCelebration.reps} onDone={()=>{
+          const[eI]=pendingKey.split("-").map(Number);
+          setShowPBCelebration(null);
+          setTimerSecs(getRest(exercises[eI].rest));
+          setShowTimer(true);
+        }}/>}
         {showTimer&&<RestTimer seconds={timerSecs} onDone={()=>{setShowTimer(false);if(!isLast)setExIdx(i=>i+1);else finishWorkout();}}/>}
         <div style={{height:"3px",background:"rgba(255,255,255,0.07)",position:"sticky",top:0,zIndex:50}}>
           <div style={{height:"100%",background:C.lime,width:`${(exIdx/exercises.length)*100}%`,transition:"width 0.4s ease",boxShadow:"0 0 8px rgba(204,255,0,0.5)"}}/>
@@ -1684,6 +1838,7 @@ function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const[showTraining,setShowTraining]=useState(false);
   const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
   const items=[
+    {id:"pbs",label:"Personal Bests",desc:"Your all-time max lifts",icon:"🏆"},
     {id:"progress",label:"Progress Tracker",desc:"Weight & workout log",icon:"📈"},
     {id:"measurements",label:"Body Measurements",desc:"Track every inch",icon:"📏"},
     {id:"history",label:"Workout History",desc:"Every session logged",icon:"🗓️"},
@@ -1798,6 +1953,7 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         </div>}
         <div style={{padding:"0.5rem 0"}}>
           {[
+            {label:"Personal Bests",icon:"🏆",id:"pbs"},
             {label:"Workout History",icon:"🗓️",id:"history"},
             {label:"Body Measurements",icon:"📏",id:"measurements"},
             {label:"Progress Tracker",icon:"📈",id:"progress"},
@@ -2068,6 +2224,7 @@ export default function ForgeBodyApp(){
           {tab==="train"&&!sidePanel&&<TrainScreen onStartWorkout={startWorkout} onSetupComplete={()=>{}}/>}
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
+          {sidePanel?.screen==="pbs"&&<PBHistory/>}
           {sidePanel?.screen==="progress"&&<Progress user={session.user}/>}
           {sidePanel?.screen==="measurements"&&<BodyMeasurements user={session.user}/>}
           {sidePanel?.screen==="history"&&<WorkoutHistory user={session.user}/>}
