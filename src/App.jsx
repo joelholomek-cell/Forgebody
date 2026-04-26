@@ -1856,19 +1856,19 @@ export default function ForgeBodyApp(){
         <>
           <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
           <nav style={s.nav}>
-            {showBack
-              ?<button onClick={()=>setSubTab(null)} style={s.btnSm}>← Back</button>
-              :<button onClick={()=>setSidebarOpen(true)} style={{background:"transparent",border:"none",cursor:"pointer",padding:"4px",display:"flex",flexDirection:"column",gap:"5px"}}>
-                <div style={{width:"20px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
-                <div style={{width:"14px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
-                <div style={{width:"20px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
-              </button>
-            }
+            <button onClick={()=>setSidebarOpen(true)} style={{background:"transparent",border:"none",cursor:"pointer",padding:"4px",display:"flex",flexDirection:"column",gap:"5px",flexShrink:0}}>
+              <div style={{width:"20px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
+              <div style={{width:"14px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
+              <div style={{width:"20px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
+            </button>
             <button onClick={()=>handleTabChange("home")} style={{background:"transparent",border:"none",cursor:"pointer",...s.logo}}>
               FORGE<span style={s.logoSlash}>/</span>BODY
             </button>
             <div style={{width:"44px",textAlign:"right"}}>
-              {profile?.name&&<span style={{color:"rgba(255,255,255,0.35)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>{profile.name.split(" ")[0]}</span>}
+              {showBack
+                ?<button onClick={()=>setSubTab(null)} style={{...s.btnSm,padding:"0.3rem 0.6rem",fontSize:"0.7rem"}}>← Back</button>
+                :profile?.name&&<span style={{color:"rgba(255,255,255,0.35)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>{profile.name.split(" ")[0]}</span>
+              }
             </div>
           </nav>
 
