@@ -1439,8 +1439,8 @@ function WorkoutSession({dayIndex,onDone}){
                 alert(`Complete all ${totalSets} sets before moving on!`);
                 return;
               }
-              if(isLast)finishWorkout();
-              else{setTimerSecs(getRest(ex.rest));setShowTimer(true);}
+              if(isLast){finishWorkout();}
+              else{setExIdx(i=>i+1);}
             }} style={{...s.btn,padding:"0.85rem",opacity:allDone?1:0.4,cursor:allDone?"pointer":"not-allowed"}}>{isLast?"Finish 🔥":"Next Exercise →"}</button>
           </div>
         </div>
