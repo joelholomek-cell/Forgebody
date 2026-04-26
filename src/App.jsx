@@ -638,65 +638,37 @@ function SubscriptionWall({user,onBack,onSubscribed}){
 
 // ─── PAYMENT SUCCESS ─────────────────────────────────────────────────────────
 function PaymentSuccess({onContinue,onAlreadyPaid}){
-  const[count,setCount]=useState(5);
-  const[processing,setProcessing]=useState(true);
-
+  const[count,setCount]=useState(8);
   useEffect(()=>{
-    // Give Supabase update 3 seconds to complete before countdown
-    const wait=setTimeout(()=>setProcessing(false),3000);
-    return()=>clearTimeout(wait);
+    const t=setInterval(()=>setCount(c=>{
+      if(c<=1){clearInterval(t);setTimeout(onContinue,100);return 0;}
+      return c-1;
+    }),1000);
+    return()=>clearInterval(t);
   },[]);
-
-  useEffect(()=>{
-    if(processing)return;
-    if(count<=0){onContinue();return;}
-    const t=setTimeout(()=>setCount(c=>c-1),1000);
-    return()=>clearTimeout(t);
-  },[count,processing]);
-
   return(
     <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",position:"relative",textAlign:"center"}}>
       <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 40%,rgba(204,255,0,0.15) 0%,transparent 60%)",pointerEvents:"none"}}/>
       <div style={{position:"relative",zIndex:1,maxWidth:"400px",width:"100%"}}>
         <div style={{width:"90px",height:"90px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",border:"2px solid rgba(204,255,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 1.5rem",boxShadow:"0 0 40px rgba(204,255,0,0.2)"}}>
-          <svg width="40" height="40" viewBox="0 0 50 50" fill="none">
-            <polyline points="10,25 20,35 40,15" stroke={C.lime} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <svg width="40" height="40" viewBox="0 0 50 50" fill="none"><polyline points="10,25 20,35 40,15" stroke="#CCFF00" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </div>
-        <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.5rem",lineHeight:1}}>
-          Payment Successful!
-        </div>
-        <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"2rem"}}>
-          Welcome to ForgeBody. Your transformation starts now.
-        </div>
-        <div style={s.card}>
-          <div style={{...s.label,color:C.lime,marginBottom:"0.75rem"}}>You now have access to</div>
-          {[
-            {icon:"🏋️",text:"Personalised workout programme"},
-            {icon:"🍽️",text:"AI meal plans with recipes"},
-            {icon:"🤖",text:"AI coaching chat 24/7"},
-            {icon:"📈",text:"Full progress tracking"},
-            {icon:"📚",text:"12-week science programme"},
-          ].map((item,i)=>(
+        <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:"#CCFF00",marginBottom:"0.5rem",lineHeight:1}}>Payment Successful!</div>
+        <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"Barlow,sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"1.5rem"}}>Welcome to ForgeBody. Your transformation starts now.</div>
+        <div style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.11)",borderRadius:"18px",padding:"1.25rem",marginBottom:"1.25rem",backdropFilter:"blur(20px)",textAlign:"left"}}>
+          <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"#CCFF00",marginBottom:"0.75rem",fontFamily:"Barlow Condensed,sans-serif"}}>You now have access to</div>
+          {[{icon:"🏋️",text:"Personalised workout programme"},{icon:"🍽️",text:"AI meal plans with recipes"},{icon:"🤖",text:"AI coaching chat 24/7"},{icon:"📈",text:"Full progress tracking"},{icon:"📚",text:"12-week science programme"}].map((item,i)=>(
             <div key={i} style={{display:"flex",gap:"0.75rem",alignItems:"center",padding:"0.4rem 0",borderBottom:i<4?"1px solid rgba(255,255,255,0.05)":"none"}}>
               <span style={{fontSize:"1.1rem"}}>{item.icon}</span>
-              <span style={{color:"rgba(255,255,255,0.65)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>{item.text}</span>
+              <span style={{color:"rgba(255,255,255,0.65)",fontFamily:"Barlow,sans-serif",fontSize:"0.88rem"}}>{item.text}</span>
             </div>
           ))}
         </div>
-
-        <button onClick={onContinue} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.75rem"}}>
-          {processing?"Setting up your account...":"Enter ForgeBody →"}
+        <button onClick={onContinue} style={{background:"#CCFF00",color:"#000",border:"none",borderRadius:"12px",padding:"1rem",fontFamily:"Barlow Condensed,sans-serif",fontWeight:800,fontSize:"1rem",cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",width:"100%",marginBottom:"0.5rem",boxShadow:"0 0 20px rgba(204,255,0,0.2)"}}>
+          Enter ForgeBody →
         </button>
-
-        {!processing&&(
-          <div style={{color:"rgba(255,255,255,0.25)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif",marginBottom:"1.5rem"}}>
-            Auto-continuing in {count}s...
-          </div>
-        )}
-
-        {/* Failsafe — only visible on success screen */}
-        <button onClick={onAlreadyPaid} style={{background:"transparent",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"0.65rem 1rem",color:"rgba(255,255,255,0.35)",fontSize:"0.78rem",fontFamily:"'Barlow',sans-serif",cursor:"pointer",width:"100%"}}>
+        <div style={{color:"rgba(255,255,255,0.3)",fontSize:"0.75rem",fontFamily:"Barlow,sans-serif",marginBottom:"1.25rem"}}>Auto-continuing in {count}s...</div>
+        <button onClick={onAlreadyPaid} style={{background:"transparent",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"0.65rem 1rem",color:"rgba(255,255,255,0.3)",fontSize:"0.78rem",fontFamily:"Barlow,sans-serif",cursor:"pointer",width:"100%"}}>
           Having trouble accessing the app? Tap here
         </button>
       </div>
@@ -1855,18 +1827,23 @@ export default function ForgeBodyApp(){
       window.history.replaceState({},"",window.location.pathname);
       supabase.auth.getSession().then(async({data})=>{
         if(data.session){
+          const uid=data.session.user.id;
           const plan=localStorage.getItem("fb_pending_plan")||"monthly";
-          await supabase.from("profiles").upsert({
-            user_id:data.session.user.id,
-            subscribed:true,
-            plan,
-            subscribed_at:new Date().toISOString(),
-          },{onConflict:"user_id"});
+          // Try update first, then insert if no row exists
+          const{error:updateErr}=await supabase.from("profiles")
+            .update({subscribed:true,plan,subscribed_at:new Date().toISOString()})
+            .eq("user_id",uid);
+          if(updateErr){
+            // Row doesn't exist yet — insert it
+            await supabase.from("profiles").insert({
+              user_id:uid,subscribed:true,plan,
+              subscribed_at:new Date().toISOString(),onboarded:false
+            });
+          }
           localStorage.removeItem("fb_pending_plan");
           localStorage.removeItem("fb_pending_user");
           setShowSubscription(false);
-          // Re-fetch profile so app knows they're subscribed
-          const{data:profileData}=await supabase.from("profiles").select("*").eq("user_id",data.session.user.id).single();
+          const{data:profileData}=await supabase.from("profiles").select("*").eq("user_id",uid).single();
           if(profileData)setProfile(profileData);
         }
       });
@@ -1924,9 +1901,18 @@ export default function ForgeBodyApp(){
           onContinue={()=>{setShowSuccess(false);if(session)setPage("app");else setPage("signin");}}
           onAlreadyPaid={async()=>{
             if(session){
+              const uid=session.user.id;
               const plan=localStorage.getItem("fb_pending_plan")||"monthly";
-              await supabase.from("profiles").upsert({user_id:session.user.id,subscribed:true,plan,subscribed_at:new Date().toISOString()},{onConflict:"user_id"});
-              const{data}=await supabase.from("profiles").select("*").eq("user_id",session.user.id).single();
+              const{error:updateErr}=await supabase.from("profiles")
+                .update({subscribed:true,plan,subscribed_at:new Date().toISOString()})
+                .eq("user_id",uid);
+              if(updateErr){
+                await supabase.from("profiles").insert({
+                  user_id:uid,subscribed:true,plan,
+                  subscribed_at:new Date().toISOString(),onboarded:false
+                });
+              }
+              const{data}=await supabase.from("profiles").select("*").eq("user_id",uid).single();
               if(data)setProfile(data);
               setShowSubscription(false);
             }
