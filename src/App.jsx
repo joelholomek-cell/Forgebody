@@ -1269,7 +1269,8 @@ function WorkoutSession({dayIndex,onDone}){
 
   function saveLog(data){
     const k=pendingKey;
-    setCompletedSets(p=>({...p,[k]:true}));
+    const newCompletedSets={...completedSets,[k]:true};
+    setCompletedSets(newCompletedSets);
     setSetLogs(p=>({...p,[k]:data}));
     setShowLogger(false);
     const[eI]=k.split("-").map(Number);
@@ -1279,11 +1280,19 @@ function WorkoutSession({dayIndex,onDone}){
       const{isNew}=savePB(ex.name,data.weight,data.reps);
       if(isNew){
         setShowPBCelebration({exName:ex.name,weight:data.weight,reps:data.reps});
-        return; // Show celebration before timer
+        return;
       }
     }
-    setTimerSecs(getRest(ex.rest));
-    setShowTimer(true);
+    // Check if all sets for this exercise are now done
+    const totalSetsForEx=parseInt(ex.sets)||3;
+    const doneCount=Array.from({length:totalSetsForEx},(_,i)=>newCompletedSets[`${eI}-${i}`]).filter(Boolean).length;
+    const allExSets=doneCount===totalSetsForEx;
+    // Only show rest timer if not the last set (more sets remaining)
+    if(!allExSets){
+      setTimerSecs(getRest(ex.rest));
+      setShowTimer(true);
+    }
+    // If all sets done, just stay on screen - Next Exercise button will be active
   }
 
   async function finishWorkout(){
@@ -1427,13 +1436,12 @@ function WorkoutSession({dayIndex,onDone}){
             <button onClick={()=>exIdx>0&&setExIdx(i=>i-1)} disabled={exIdx===0} style={{...s.btnGlass,opacity:exIdx===0?0.3:1,padding:"0.85rem"}}>← Prev</button>
             <button onClick={()=>{
               if(!allDone){
-                // Shake/warn - not all sets done
                 alert(`Complete all ${totalSets} sets before moving on!`);
                 return;
               }
               if(isLast)finishWorkout();
               else{setTimerSecs(getRest(ex.rest));setShowTimer(true);}
-            }} style={{...s.btn,padding:"0.85rem",opacity:allDone?1:0.5}}>{isLast?"Finish 🔥":"Next Exercise →"}</button>
+            }} style={{...s.btn,padding:"0.85rem",opacity:allDone?1:0.4,cursor:allDone?"pointer":"not-allowed"}}>{isLast?"Finish 🔥":"Next Exercise →"}</button>
           </div>
         </div>
       </div>
