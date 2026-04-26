@@ -1059,10 +1059,7 @@ function HomeScreen({profile,user,onNavigate}){
         </div>
       </div>
 
-      {/* Weekly recap if Sunday */}
-      <WeeklyRecap onNavigate={onNavigate}/>
-
-      {/* TODAY'S WORKOUT — big hero card */}
+      {/* TODAY'S WORKOUT — hero, first thing they see */}
       <div onClick={()=>onNavigate("train")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.13),rgba(150,220,0,0.06))",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.28)",borderRadius:"24px",padding:"1.5rem",marginBottom:"0.75rem",cursor:"pointer",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(25px)",pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:"-20px",left:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.06)",filter:"blur(18px)",pointerEvents:"none"}}/>
@@ -1217,6 +1214,9 @@ function HomeScreen({profile,user,onNavigate}){
           </div>
         );
       })()}
+
+      {/* Weekly recap */}
+      <WeeklyRecap onNavigate={onNavigate}/>
 
       {/* Calendar */}
       <WorkoutCalendar completedDates={completedDates}/>
