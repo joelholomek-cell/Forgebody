@@ -1154,38 +1154,329 @@ function ProfileTab({user,onSignOut}){
   );
 }
 
+// ─── ONBOARDING ──────────────────────────────────────────────────────────────
+function Onboarding({user,onComplete}){
+  const[step,setStep]=useState(0);
+  const[data,setData]=useState({name:"",goal:"",weight:"",unit:"kg",diet:"standard"});
+  function update(k,v){setData(d=>({...d,[k]:v}));}
+  async function finish(){
+    await supabase.from("profiles").upsert({user_id:user.id,...data,onboarded:true});
+    onComplete(data);
+  }
+  const steps=[
+    <div key={0}>
+      <div style={{textAlign:"center",marginBottom:"2rem"}}>
+        <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>👋</div>
+        <div style={{fontSize:"1.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"0.5rem"}}>Welcome to<br/><span style={{color:C.lime}}>ForgeBody</span></div>
+        <div style={{color:C.mutedLight,fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem"}}>Let's set up your profile. Takes 60 seconds.</div>
+      </div>
+      <div style={s.card}>
+        <label style={s.label}>What's your name?</label>
+        <input style={s.input} placeholder="First name" value={data.name} onChange={e=>update("name",e.target.value)}/>
+        <button onClick={()=>data.name&&setStep(1)} style={{...s.btn,width:"100%",padding:"0.9rem",opacity:data.name?1:0.5}}>Continue →</button>
+      </div>
+    </div>,
+    <div key={1}>
+      <div style={{marginBottom:"1.25rem"}}><Eyebrow label="Step 2 of 4"/><div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>What's your main goal?</div></div>
+      {[{k:"fat loss",l:"Fat Loss",d:"Burn fat, get lean",icon:"🔥"},{k:"muscle",l:"Muscle & Size",d:"Build muscle, get bigger",icon:"💪"},{k:"strength",l:"Strength",d:"Get stronger, lift heavier",icon:"🏋️"},{k:"athletic",l:"Athletic Performance",d:"Speed, power, conditioning",icon:"⚡"}].map(opt=>(
+        <div key={opt.k} onClick={()=>{update("goal",opt.k);setStep(2);}} style={{...s.card,cursor:"pointer",border:`1px solid ${data.goal===opt.k?C.lime:C.cardBorder}`,display:"flex",alignItems:"center",gap:"1rem"}}>
+          <span style={{fontSize:"1.5rem"}}>{opt.icon}</span>
+          <div><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{opt.l}</div><div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{opt.d}</div></div>
+        </div>
+      ))}
+    </div>,
+    <div key={2}>
+      <div style={{marginBottom:"1.25rem"}}><Eyebrow label="Step 3 of 4"/><div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>Current bodyweight?</div></div>
+      <div style={s.card}>
+        <div style={{display:"flex",gap:"0.5rem",marginBottom:"0.75rem"}}>
+          {["kg","lbs"].map(u=><button key={u} onClick={()=>update("unit",u)} style={{flex:1,padding:"0.6rem",borderRadius:"6px",border:`1px solid ${data.unit===u?C.lime:C.cardBorder}`,background:data.unit===u?`${C.lime}15`:"transparent",color:data.unit===u?C.lime:C.mutedLight,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.85rem",cursor:"pointer",textTransform:"uppercase"}}>{u}</button>)}
+        </div>
+        <input style={s.input} type="number" placeholder={data.unit==="kg"?"e.g. 85":"e.g. 187"} value={data.weight} onChange={e=>update("weight",e.target.value)}/>
+        <button onClick={()=>data.weight&&setStep(3)} style={{...s.btn,width:"100%",padding:"0.9rem",opacity:data.weight?1:0.5}}>Continue →</button>
+      </div>
+    </div>,
+    <div key={3}>
+      <div style={{marginBottom:"1.25rem"}}><Eyebrow label="Step 4 of 4"/><div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>Dietary preference?</div></div>
+      <div style={s.card}>
+        <select style={s.select} value={data.diet} onChange={e=>update("diet",e.target.value)}>
+          {["standard","vegetarian","vegan","keto","gluten-free","dairy-free","halal"].map(d=><option key={d} value={d}>{d.charAt(0).toUpperCase()+d.slice(1)}</option>)}
+        </select>
+        <button onClick={finish} style={{...s.btn,width:"100%",padding:"0.9rem"}}>Let's Forge 🔥</button>
+      </div>
+    </div>,
+  ];
+  return(
+    <div style={{minHeight:"100vh",background:C.black,padding:"2rem 1.25rem"}}>
+      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+      <div style={{maxWidth:"440px",margin:"0 auto"}}>
+        <div style={{display:"flex",gap:"4px",marginBottom:"2rem"}}>
+          {[0,1,2,3].map(i=><div key={i} style={{flex:1,height:"3px",borderRadius:"2px",background:step>i?C.lime:step===i?`${C.lime}60`:C.cardBorder,transition:"background 0.3s"}}/>)}
+        </div>
+        {steps[step]}
+      </div>
+    </div>
+  );
+}
+
+// ─── WATER TRACKER ───────────────────────────────────────────────────────────
+function WaterTracker(){
+  const today=new Date().toDateString();
+  const[glasses,setGlasses]=useState(()=>{try{return parseInt(localStorage.getItem(`water_${today}`))||0;}catch{return 0;}});
+  const goal=8;
+  useEffect(()=>{try{localStorage.setItem(`water_${today}`,glasses);}catch{}},[glasses]);
+  const pct=Math.min(100,Math.round((glasses/goal)*100));
+  return(
+    <div style={s.card}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+        <div><Eyebrow label="Hydration"/><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem"}}>Water Intake</div></div>
+        <div style={{textAlign:"right"}}><div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{glasses}<span style={{fontSize:"1rem",color:C.muted}}>/{goal}</span></div><div style={{fontSize:"0.6rem",color:C.muted,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>Glasses</div></div>
+      </div>
+      <div style={{display:"flex",gap:"6px",marginBottom:"0.75rem",flexWrap:"wrap"}}>
+        {Array.from({length:goal},(_,i)=>(
+          <div key={i} onClick={()=>setGlasses(i+1)} style={{flex:"0 0 calc(12.5% - 6px)",aspectRatio:"1",borderRadius:"8px",background:i<glasses?"#3b82f6":C.cardBorder,border:`1px solid ${i<glasses?"#60a5fa":C.cardBorder}`,cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={i<glasses?"#93c5fd":"#333"} stroke="none"><path d="M12 2C6 8 4 12 4 15a8 8 0 0 0 16 0c0-3-2-7-8-13z"/></svg>
+          </div>
+        ))}
+      </div>
+      <div style={s.progressBar}><div style={{...s.progressFill,background:"#3b82f6",width:`${pct}%`}}/></div>
+      <div style={{display:"flex",gap:"0.5rem",marginTop:"0.75rem"}}>
+        <button onClick={()=>setGlasses(g=>Math.min(goal,g+1))} style={{...s.btn,flex:1,padding:"0.65rem"}}>+ Glass</button>
+        <button onClick={()=>setGlasses(0)} style={{...s.btnOutline,padding:"0.65rem 1rem",fontSize:"0.78rem"}}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── 1RM CALCULATOR ──────────────────────────────────────────────────────────
+function OneRMCalc(){
+  const[weight,setWeight]=useState("");
+  const[reps,setReps]=useState("");
+  const w=parseFloat(weight),r=parseInt(reps);
+  const orm=w&&r&&r>0?Math.round(w*(1+r/30)):null;
+  const percentages=[100,95,90,85,80,75,70,65];
+  return(
+    <div style={s.card}>
+      <Eyebrow label="Strength Calculator"/>
+      <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",marginBottom:"0.75rem"}}>1 Rep Max Calculator</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+        <div><label style={s.label}>Weight lifted</label><input style={s.input} type="number" placeholder="100kg" value={weight} onChange={e=>setWeight(e.target.value)}/></div>
+        <div><label style={s.label}>Reps completed</label><input style={s.input} type="number" placeholder="8" value={reps} onChange={e=>setReps(e.target.value)}/></div>
+      </div>
+      {orm&&(
+        <>
+          <div style={{textAlign:"center",padding:"1rem",background:"#0f0f0f",borderRadius:"8px",marginBottom:"0.75rem",border:`1px solid ${C.lime}30`}}>
+            <div style={{fontSize:"0.65rem",color:C.muted,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.25rem"}}>Estimated 1RM</div>
+            <div style={{fontSize:"3rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{orm}<span style={{fontSize:"1.2rem",color:C.muted}}>kg</span></div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"4px"}}>
+            {percentages.map(p=>(
+              <div key={p} style={{background:"#0f0f0f",border:`1px solid ${C.cardBorder}`,borderRadius:"6px",padding:"0.5rem",textAlign:"center"}}>
+                <div style={{fontSize:"0.95rem",fontWeight:900,color:p===100?C.lime:C.white,fontFamily:"'Barlow Condensed',sans-serif"}}>{Math.round(orm*p/100)}</div>
+                <div style={{fontSize:"0.58rem",color:C.muted,fontWeight:800,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>{p}%</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── BODY MEASUREMENTS ───────────────────────────────────────────────────────
+function BodyMeasurements({user}){
+  const[entries,setEntries]=useState([]);
+  const[form,setForm]=useState({chest:"",waist:"",hips:"",arms:"",thighs:"",neck:""});
+  const[saving,setSaving]=useState(false);
+  const[loading,setLoading]=useState(true);
+
+  useEffect(()=>{
+    supabase.from("measurements").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(10).then(({data})=>{setEntries(data||[]);setLoading(false);});
+  },[]);
+
+  async function save(){
+    const vals=Object.fromEntries(Object.entries(form).filter(([,v])=>v).map(([k,v])=>[k,parseFloat(v)]));
+    if(!Object.keys(vals).length)return;
+    setSaving(true);
+    await supabase.from("measurements").insert({user_id:user.id,...vals});
+    const{data}=await supabase.from("measurements").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(10);
+    setEntries(data||[]);setForm({chest:"",waist:"",hips:"",arms:"",thighs:"",neck:""});setSaving(false);
+  }
+
+  const fields=["chest","waist","hips","arms","thighs","neck"];
+  const latest=entries[0];
+  const prev=entries[1];
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Body Stats"/>
+      <h2 style={s.sectionTitle}>Measurements</h2>
+      <p style={s.sectionSub}>Track every inch of your transformation.</p>
+      {latest&&(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.75rem"}}>
+          {fields.map(f=>latest[f]?(
+            <div key={f} style={s.statCard}>
+              <div style={{...s.statNum,fontSize:"1.4rem"}}>{latest[f]}<span style={{fontSize:"0.75rem",color:C.muted}}>cm</span></div>
+              {prev&&prev[f]&&<div style={{fontSize:"0.65rem",color:latest[f]<prev[f]?C.lime:"#f97316",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif"}}>{latest[f]<prev[f]?"▼":"▲"} {Math.abs(latest[f]-prev[f]).toFixed(1)}</div>}
+              <div style={s.statLabel}>{f}</div>
+            </div>
+          ):null)}
+        </div>
+      )}
+      <div style={s.card}>
+        <label style={{...s.label,color:C.white,marginBottom:"0.75rem",fontSize:"0.75rem"}}>Log measurements (cm)</label>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
+          {fields.map(f=>(
+            <div key={f}><label style={s.label}>{f.charAt(0).toUpperCase()+f.slice(1)}</label><input style={s.input} type="number" placeholder="cm" value={form[f]} onChange={e=>setForm(prev=>({...prev,[f]:e.target.value}))}/></div>
+          ))}
+        </div>
+        <button onClick={save} disabled={saving} style={{...s.btn,width:"100%",padding:"0.85rem"}}>{saving?"Saving...":"Save Measurements"}</button>
+      </div>
+      {loading?<LoadingDots/>:entries.length>0&&(
+        <div style={s.card}>
+          <label style={{...s.label,marginBottom:"0.75rem"}}>History</label>
+          {entries.slice(0,5).map((e,i)=>(
+            <div key={i} style={{borderBottom:`1px solid ${C.cardBorder}22`,paddingBottom:"0.5rem",marginBottom:"0.5rem"}}>
+              <div style={{color:C.muted,fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif",marginBottom:"0.25rem"}}>{new Date(e.created_at).toLocaleDateString("en-AU",{month:"short",day:"numeric",year:"numeric"})}</div>
+              <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap"}}>
+                {fields.map(f=>e[f]?<span key={f} style={s.tagGray}>{f}: {e[f]}cm</span>:null)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── WORKOUT HISTORY ─────────────────────────────────────────────────────────
+function WorkoutHistory({user}){
+  const[history,setHistory]=useState([]);
+  const[loading,setLoading]=useState(true);
+  useEffect(()=>{
+    supabase.from("workout_history").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(20).then(({data})=>{setHistory(data||[]);setLoading(false);});
+  },[]);
+  const totalSessions=history.length;
+  const thisWeek=history.filter(h=>{const d=new Date(h.created_at);const now=new Date();return(now-d)/(1000*60*60*24)<=7;}).length;
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Training Log"/>
+      <h2 style={s.sectionTitle}>Workout History</h2>
+      <p style={s.sectionSub}>Every session you've ever completed.</p>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.6rem",marginBottom:"0.75rem"}}>
+        {[{n:totalSessions,l:"Total Sessions"},{n:thisWeek,l:"This Week"},{n:history.length>0?Math.round(history.reduce((a,h)=>a+(h.exercises||0),0)/history.length):0,l:"Avg Exercises"}].map((x,i)=>(
+          <div key={i} style={s.statCard}><div style={s.statNum}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
+        ))}
+      </div>
+      {loading?<LoadingDots/>:history.length===0?(
+        <div style={{...s.card,textAlign:"center",padding:"2rem"}}>
+          <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>🏋️</div>
+          <div style={{color:C.mutedLight,fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem"}}>No workouts logged yet. Complete a workout to see your history here.</div>
+        </div>
+      ):history.map((h,i)=>(
+        <div key={i} style={s.card}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",marginBottom:"0.25rem"}}>{h.day_label||"Workout"}</div>
+              <div style={{color:C.muted,fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{new Date(h.created_at).toLocaleDateString("en-AU",{weekday:"short",month:"short",day:"numeric"})}</div>
+            </div>
+            <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",justifyContent:"flex-end"}}>
+              <span style={s.tagGray}>{h.exercises||0} exercises</span>
+              <span style={s.tagGray}>{h.sets_completed||0} sets</span>
+            </div>
+          </div>
+          {h.split&&<div style={{marginTop:"0.5rem"}}><span style={s.tag}>{h.split}</span></div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── NUTRITION TIPS ──────────────────────────────────────────────────────────
+const ARTICLES=[
+  {title:"Protein: How Much Do You Actually Need?",cat:"Nutrition",read:"3 min",content:"The most common recommendation is 0.8g per kg of bodyweight, but for people training to build muscle or lose fat, the research consistently shows 1.6-2.2g per kg is optimal. If you weigh 80kg, that's 128-176g of protein daily. Spread it across 3-5 meals for best results. Chicken, fish, eggs, Greek yogurt and protein shakes are your best friends.",emoji:"🥩"},
+  {title:"Why You're Not Losing Fat (And How to Fix It)",cat:"Fat Loss",read:"4 min",content:"If fat loss has stalled, there are three likely culprits: you're eating more than you think (track everything for a week), you've adapted to your deficit (take a 1-2 week diet break at maintenance), or you're not sleeping enough (under 7 hours dramatically increases hunger hormones). Fix these three and fat loss will resume.",emoji:"🔥"},
+  {title:"Progressive Overload: The Only Rule That Matters",cat:"Training",read:"3 min",content:"Progressive overload means doing more over time — more weight, more reps, more sets, or shorter rest. If you lifted 60kg for 8 reps last week, aim for 62.5kg or 9 reps this week. Track your lifts. Without progression, your body has no reason to change. This is the single most important principle in all of training.",emoji:"📈"},
+  {title:"Sleep: The Most Underrated Performance Tool",cat:"Recovery",read:"3 min",content:"During deep sleep, your body releases 70% of its daily growth hormone — the primary driver of muscle repair and fat burning. Under 7 hours and cortisol spikes, testosterone drops, hunger hormones increase, and recovery suffers. Prioritise 7-9 hours. No supplement comes close to what proper sleep does for your body composition.",emoji:"😴"},
+  {title:"Creatine: The Only Supplement You Actually Need",cat:"Supplements",read:"2 min",content:"Creatine monohydrate is the most researched sports supplement in history. It works by replenishing ATP (your muscles' energy currency) faster, allowing you to do 1-2 more reps per set. Over months, this compounds into significantly more muscle. 5g per day, any time, no loading phase. Buy the cheapest unflavoured powder you can find — they're all identical.",emoji:"⚡"},
+  {title:"The Truth About Carbs and Fat Loss",cat:"Nutrition",read:"3 min",content:"Carbs don't make you fat — excess calories do. Carbs are your primary fuel source for high-intensity training. Cut them too low and your performance crashes, muscle is lost, and you feel terrible. A moderate deficit of 300-500 calories below maintenance, with adequate protein, will produce consistent fat loss regardless of carb intake.",emoji:"🍚"},
+  {title:"How to Break Through a Strength Plateau",cat:"Training",read:"4 min",content:"Plateaus happen when your body adapts. Solutions: deload for a week (drop to 60% of normal volume), change rep ranges (if you've been doing 8-10, try 4-6 or 12-15), change exercise variation (swap barbell bench for dumbbell), add a tempo (3 seconds down, 1 second up). Most importantly, ensure sleep and nutrition are dialled in before blaming the programme.",emoji:"💪"},
+  {title:"Meal Timing: Does It Actually Matter?",cat:"Nutrition",read:"2 min",content:"The short answer: much less than you think. Total daily protein and calories matter far more than when you eat them. However, there is benefit to consuming 20-40g protein within 2 hours post-workout to maximise muscle protein synthesis. Pre-workout, eat whatever gives you energy — usually a moderate-carb meal 1-2 hours before is ideal.",emoji:"⏰"},
+];
+
+function NutritionTips(){
+  const[selected,setSelected]=useState(null);
+  const[catFilter,setCatFilter]=useState("All");
+  const cats=["All",...new Set(ARTICLES.map(a=>a.cat))];
+  const filtered=catFilter==="All"?ARTICLES:ARTICLES.filter(a=>a.cat===catFilter);
+  if(selected){
+    const a=ARTICLES[selected];
+    return(
+      <div style={s.content}>
+        <button onClick={()=>setSelected(null)} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`,marginBottom:"1.25rem"}}>← Back</button>
+        <div style={{fontSize:"2.5rem",marginBottom:"0.75rem"}}>{a.emoji}</div>
+        <span style={s.tag}>{a.cat}</span>
+        <h2 style={{fontSize:"1.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.01em",margin:"0.5rem 0 0.25rem"}}>{a.title}</h2>
+        <div style={{color:C.muted,fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif",marginBottom:"1.25rem"}}>{a.read} read</div>
+        <div style={{...s.card,fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",lineHeight:1.75,color:C.mutedLight}}>{a.content}</div>
+      </div>
+    );
+  }
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Learn"/>
+      <h2 style={s.sectionTitle}>Nutrition & Training</h2>
+      <p style={s.sectionSub}>Evidence-based articles to level up your knowledge.</p>
+      <div style={{display:"flex",gap:"0.4rem",overflowX:"auto",marginBottom:"1rem",paddingBottom:"4px"}}>
+        {cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{...s.btnSm,flexShrink:0,background:catFilter===c?C.lime:"transparent",color:catFilter===c?C.black:C.mutedLight,border:catFilter===c?"none":`1px solid ${C.cardBorder}`}}>{c}</button>)}
+      </div>
+      {filtered.map((a,i)=>(
+        <div key={i} onClick={()=>setSelected(ARTICLES.indexOf(a))} style={{...s.card,cursor:"pointer",display:"flex",gap:"1rem",alignItems:"center"}}>
+          <span style={{fontSize:"2rem",flexShrink:0}}>{a.emoji}</span>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.92rem",marginBottom:"0.25rem",lineHeight:1.2}}>{a.title}</div>
+            <div style={{display:"flex",gap:"0.4rem",alignItems:"center"}}><span style={s.tag}>{a.cat}</span><span style={{color:C.muted,fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif"}}>{a.read} read</span></div>
+          </div>
+          <span style={{color:C.lime,flexShrink:0}}>→</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── ICONS ───────────────────────────────────────────────────────────────────
 const Icons={
-  meal:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
-  workout:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 9.5h1.5v5H3z"/><path d="M19.5 9.5H21v5h-1.5z"/><rect x="6" y="4" width="12" height="16" rx="2"/></svg>,
-  macros:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>,
-  coach:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill={a?`${C.lime}30`:"none"} stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  more:(a)=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+  meal:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+  macros:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>,
+  coach:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill={a?`${C.lime}25`:"none"} stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  more:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
 };
 
 // ─── MORE MENU ───────────────────────────────────────────────────────────────
-function MoreMenu({activeSubTab,setActiveSubTab}){
+function MoreMenu({setActiveSubTab}){
   const items=[
-    {id:"progress",label:"Progress Tracker",desc:"Log weight & workouts"},
-    {id:"supplements",label:"Supplement Guide",desc:"Evidence-based recs"},
-    {id:"habits",label:"Mindset & Habits",desc:"Daily check-in & streaks"},
-    {id:"profile",label:"Profile & Account",desc:"Settings & subscription"},
+    {id:"progress",label:"Progress Tracker",desc:"Log weight & workouts",icon:"📈"},
+    {id:"measurements",label:"Body Measurements",desc:"Track every inch",icon:"📏"},
+    {id:"history",label:"Workout History",desc:"Every session logged",icon:"🗓️"},
+    {id:"supplements",label:"Supplement Guide",desc:"Evidence-based recs",icon:"💊"},
+    {id:"habits",label:"Mindset & Habits",desc:"Daily check-in & streaks",icon:"🧠"},
+    {id:"articles",label:"Nutrition & Tips",desc:"Learn from the science",icon:"📚"},
+    {id:"profile",label:"Profile & Account",desc:"Settings & subscription",icon:"👤"},
   ];
-  if(activeSubTab&&activeSubTab!=="more_menu"){
-    return null;
-  }
   return(
     <div style={s.content}>
       <Eyebrow label="More Features"/>
       <h2 style={s.sectionTitle}>More</h2>
       <p style={s.sectionSub}>All your tools in one place.</p>
+      <WaterTracker/>
+      <OneRMCalc/>
       {items.map(item=>(
-        <div key={item.id} onClick={()=>setActiveSubTab(item.id)} style={{...s.card,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",marginBottom:"0.2rem"}}>{item.label}</div>
-            <div style={{color:C.mutedLight,fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
+        <div key={item.id} onClick={()=>setActiveSubTab(item.id)} style={{...s.card,cursor:"pointer",display:"flex",alignItems:"center",gap:"1rem"}}>
+          <span style={{fontSize:"1.4rem",flexShrink:0}}>{item.icon}</span>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",marginBottom:"0.2rem"}}>{item.label}</div>
+            <div style={{color:C.mutedLight,fontSize:"0.8rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
           </div>
-          <span style={{color:C.lime,fontSize:"1.3rem",marginLeft:"0.75rem"}}>→</span>
+          <span style={{color:C.lime,fontSize:"1.1rem"}}>→</span>
         </div>
       ))}
     </div>
@@ -1198,21 +1489,33 @@ export default function ForgeBodyApp(){
   const[loading,setLoading]=useState(true);
   const[tab,setTab]=useState("workout");
   const[subTab,setSubTab]=useState("more_menu");
+  const[profile,setProfile]=useState(null);
+  const[showOnboarding,setShowOnboarding]=useState(false);
 
   useEffect(()=>{
-    supabase.auth.getSession().then(({data})=>{setSession(data.session);setLoading(false);});
-    const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>setSession(sess));
+    supabase.auth.getSession().then(({data})=>{
+      setSession(data.session);
+      if(data.session)checkProfile(data.session.user);
+      setLoading(false);
+    });
+    const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>{
+      setSession(sess);
+      if(sess)checkProfile(sess.user);
+    });
     return()=>listener.subscription.unsubscribe();
   },[]);
 
-  async function signOut(){await supabase.auth.signOut();setSession(null);}
-
-  function handleTabChange(t){
-    setTab(t);
-    if(t==="more")setSubTab("more_menu");
+  async function checkProfile(user){
+    const{data}=await supabase.from("profiles").select("*").eq("user_id",user.id).single();
+    if(!data||!data.onboarded)setShowOnboarding(true);
+    else setProfile(data);
   }
 
+  async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);}
+  function handleTabChange(t){setTab(t);if(t==="more")setSubTab("more_menu");}
+
   if(loading)return<div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",paddingBottom:0}}><LoadingDots/></div>;
+  if(session&&showOnboarding)return<Onboarding user={session.user} onComplete={p=>{setProfile(p);setShowOnboarding(false);}}/>;
 
   return(
     <div style={s.app}>
@@ -1220,10 +1523,11 @@ export default function ForgeBodyApp(){
       {!session?<AuthScreen/>:(
         <>
           <nav style={s.nav}>
+            {tab==="more"&&subTab!=="more_menu"
+              ?<button onClick={()=>setSubTab("more_menu")} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`}}>← Back</button>
+              :<div style={{width:"60px"}}/>}
             <div style={s.logo}>FORGE<span style={s.logoSlash}>/</span>BODY</div>
-            {tab==="more"&&subTab!=="more_menu"&&(
-              <button onClick={()=>setSubTab("more_menu")} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`}}>← Back</button>
-            )}
+            <div style={{width:"60px",textAlign:"right"}}>{profile?.name&&<span style={{color:C.mutedLight,fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{profile.name}</span>}</div>
           </nav>
 
           {tab==="meal"&&<MealPlanner/>}
@@ -1232,27 +1536,36 @@ export default function ForgeBodyApp(){
           {tab==="coach"&&<AICoach/>}
           {tab==="more"&&(
             <>
-              {subTab==="more_menu"&&<MoreMenu activeSubTab={subTab} setActiveSubTab={setSubTab}/>}
+              {subTab==="more_menu"&&<MoreMenu setActiveSubTab={setSubTab}/>}
               {subTab==="progress"&&<Progress user={session.user}/>}
+              {subTab==="measurements"&&<BodyMeasurements user={session.user}/>}
+              {subTab==="history"&&<WorkoutHistory user={session.user}/>}
               {subTab==="supplements"&&<SupplementGuide/>}
               {subTab==="habits"&&<MindsetHabits/>}
+              {subTab==="articles"&&<NutritionTips/>}
               {subTab==="profile"&&<ProfileTab user={session.user} onSignOut={signOut}/>}
             </>
           )}
 
           <nav style={s.bottomNav}>
-            {[
-              {id:"meal",label:"Meals"},
-              {id:"workout",label:"Training"},
-              {id:"macros",label:"Macros"},
-              {id:"coach",label:"Coach"},
-              {id:"more",label:"More"},
-            ].map(t=>(
-              <button key={t.id} onClick={()=>handleTabChange(t.id)} style={{...s.navBtn,color:tab===t.id?C.lime:C.muted}}>
-                {Icons[t.id](tab===t.id)}
-                {t.label}
-              </button>
-            ))}
+            <button onClick={()=>handleTabChange("meal")} style={{...s.navBtn,color:tab==="meal"?C.lime:C.muted}}>
+              {Icons.meal(tab==="meal")}<span>Meals</span>
+            </button>
+            <button onClick={()=>handleTabChange("macros")} style={{...s.navBtn,color:tab==="macros"?C.lime:C.muted}}>
+              {Icons.macros(tab==="macros")}<span>Macros</span>
+            </button>
+            <button onClick={()=>handleTabChange("workout")} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",border:"none",background:"transparent",cursor:"pointer",padding:"0",position:"relative",top:"-10px"}}>
+              <div style={{background:tab==="workout"?C.lime:"#1a1a1a",border:`2px solid ${tab==="workout"?C.lime:C.cardBorder}`,borderRadius:"50%",width:"54px",height:"54px",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:tab==="workout"?`0 0 22px ${C.lime}55`:"none",transition:"all 0.2s"}}>
+                <span style={{fontSize:"0.52rem",fontWeight:900,letterSpacing:"0.04em",color:tab==="workout"?C.black:C.mutedLight,fontFamily:"'Barlow Condensed',sans-serif",textAlign:"center",lineHeight:1.1,textTransform:"uppercase"}}>FORGE<br/>/BODY</span>
+              </div>
+              <span style={{fontSize:"0.55rem",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:tab==="workout"?C.lime:C.muted,fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>Train</span>
+            </button>
+            <button onClick={()=>handleTabChange("coach")} style={{...s.navBtn,color:tab==="coach"?C.lime:C.muted}}>
+              {Icons.coach(tab==="coach")}<span>Coach</span>
+            </button>
+            <button onClick={()=>handleTabChange("more")} style={{...s.navBtn,color:tab==="more"?C.lime:C.muted}}>
+              {Icons.more(tab==="more")}<span>More</span>
+            </button>
           </nav>
         </>
       )}
