@@ -1848,6 +1848,7 @@ export default function ForgeBodyApp(){
           },{onConflict:"user_id"});
           localStorage.removeItem("fb_pending_plan");
           localStorage.removeItem("fb_pending_user");
+          setShowSubscription(false); // clear paywall
         }
       });
     }
@@ -1900,7 +1901,7 @@ export default function ForgeBodyApp(){
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <PaymentSuccess onContinue={()=>{setShowSuccess(false);setPage("signin");}}/>
+        <PaymentSuccess onContinue={()=>{setShowSuccess(false);if(session)setPage("app");else setPage("signin");}}/>
       </div>
     );
   }
