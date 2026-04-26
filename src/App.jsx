@@ -1397,15 +1397,30 @@ function MacroTracker(){
 
 // ─── AI COACH ────────────────────────────────────────────────────────────────
 function AICoach(){
-  const[messages,setMessages]=useState([{role:"assistant",text:"Hey! I'm your ForgeBody AI coach. Ask me anything — training, nutrition, recovery, supplements, mindset. Let's build the body you want."}]);
-  const[input,setInput]=useState("");const[loading,setLoading]=useState(false);
+  const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const userContext=settings.split?`User: Goal=${settings.wGoal}, Split=${settings.split}, Level=${settings.level}, Days/week=${settings.days}, Workouts done=${completedDates.length}.`:"New user, no programme set yet.";
+  const SYSTEM=`You are ForgeBody AI — an expert personal fitness coach. Be direct, motivating and practical. ${userContext} Specialise in: strength training, hypertrophy, fat loss, nutrition, macros, supplements, recovery, mindset. Use bullet points for 3+ items. Give specific numbers. Reference user's goal when relevant. Never recommend anything dangerous. For injuries, recommend seeing a doctor.`;
+  const[messages,setMessages]=useState([{role:"assistant",text:`Hey! I'm your ForgeBody AI coach 🔥\n\n${settings.wGoal?`I can see you're training for ${settings.wGoal} on a ${(settings.split||"").replace("_"," ")} split. `:""}Ask me anything about training, nutrition, recovery or mindset.`}]);
+  const[input,setInput]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[cat,setCat]=useState("training");
   const bottomRef=useRef(null);
-  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages]);
-  const SYSTEM=`You are an expert fitness coach for ForgeBody, a premium AI fitness app. You specialise in strength training, hypertrophy, fat loss, nutrition, macros, supplementation, recovery and mindset. Be direct, practical and motivating. Keep answers concise. Use bullet points for lists. Never recommend anything dangerous. Always remind users to consult a doctor for medical issues.`;
-  async function send(){
-    if(!input.trim()||loading)return;
-    const userMsg={role:"user",text:input.trim()};
-    const newMsgs=[...messages,userMsg];setMessages(newMsgs);setInput("");setLoading(true);
+  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages,loading]);
+
+  const CATS={
+    training:["What should I focus on today?","Best exercises for chest?","How do I build bigger arms?","How do I improve my squat?","What is progressive overload?"],
+    nutrition:["How much protein do I need?","What should I eat before training?","Best foods for muscle growth?","Should I eat carbs at night?","How do I calculate my calories?"],
+    recovery:["How sore is too sore?","Should I train every day?","How important is sleep for gains?","What is a deload week?","How do I prevent injury?"],
+    mindset:["How do I stay consistent?","I missed a week — what now?","How do I beat a plateau?","How long until I see results?","How do I stay motivated?"],
+  };
+
+  async function send(text){
+    const msg=text||input.trim();
+    if(!msg||loading)return;
+    const userMsg={role:"user",text:msg};
+    const newMsgs=[...messages,userMsg];
+    setMessages(newMsgs);setInput("");setLoading(true);
     try{
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM,messages:newMsgs.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}))})});
       const data=await res.json();
@@ -1413,35 +1428,37 @@ function AICoach(){
     }catch{setMessages(prev=>[...prev,{role:"assistant",text:"Connection error. Please try again."}]);}
     setLoading(false);
   }
-  const suggestions=["Best exercises for bigger shoulders?","How much protein do I need daily?","I only have 30 mins — what should I do?","How do I break a fat loss plateau?","Should I train fasted?"];
+
   return(
     <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 140px)"}}>
       <div style={{...s.content,paddingBottom:"0.5rem",flexShrink:0}}><Eyebrow label="AI Powered"/><h2 style={{...s.sectionTitle,marginBottom:0}}>Your Coach</h2></div>
       <div style={{flex:1,overflowY:"auto",padding:"0 1.25rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>
         {messages.map((m,i)=>(
           <div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",alignItems:"flex-end",gap:"7px"}}>
-            {m.role==="assistant"&&<div style={{width:"26px",height:"26px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:C.lime,fontWeight:900,fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif"}}>FB</span></div>}
-            <div style={{maxWidth:"82%",background:m.role==="user"?C.lime:s.card.background,color:m.role==="user"?"#000":C.white,borderRadius:m.role==="user"?"14px 14px 2px 14px":"14px 14px 14px 2px",padding:"0.7rem 0.9rem",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif",lineHeight:1.55,border:m.role==="assistant"?"1px solid rgba(255,255,255,0.1)":"none",whiteSpace:"pre-wrap",backdropFilter:m.role==="assistant"?"blur(10px)":"none"}}>{m.text}</div>
+            {m.role==="assistant"&&<div style={{width:"28px",height:"28px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:C.lime,fontWeight:900,fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif"}}>FB</span></div>}
+            <div style={{maxWidth:"82%",background:m.role==="user"?C.lime:s.card.background,color:m.role==="user"?"#000":C.white,borderRadius:m.role==="user"?"14px 14px 2px 14px":"14px 14px 14px 2px",padding:"0.75rem 0.95rem",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif",lineHeight:1.55,border:m.role==="assistant"?"1px solid rgba(255,255,255,0.1)":"none",whiteSpace:"pre-wrap",backdropFilter:m.role==="assistant"?"blur(10px)":"none",WebkitBackdropFilter:m.role==="assistant"?"blur(10px)":"none"}}>{m.text}</div>
           </div>
         ))}
         {loading&&(
           <div style={{display:"flex",alignItems:"center",gap:"7px"}}>
-            <div style={{width:"26px",height:"26px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:C.lime,fontWeight:900,fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif"}}>FB</span></div>
+            <div style={{width:"28px",height:"28px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:C.lime,fontWeight:900,fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif"}}>FB</span></div>
             <div style={{...s.card,padding:"0.7rem 1rem"}}>{[0,1,2].map(i=><span key={i} style={{...s.loadingDot,width:"6px",height:"6px",animationDelay:`${i*0.16}s`}}/>)}</div>
           </div>
         )}
-        {messages.length===1&&!loading&&(
+        {messages.length<=1&&!loading&&(
           <div style={{marginTop:"0.25rem"}}>
-            <div style={{...s.label,marginBottom:"0.5rem"}}>Try asking</div>
-            {suggestions.map((q,i)=><button key={i} onClick={()=>setInput(q)} style={{display:"block",width:"100%",textAlign:"left",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"0.65rem 0.9rem",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",cursor:"pointer",marginBottom:"0.4rem",lineHeight:1.4}}>{q}</button>)}
+            <div style={{display:"flex",gap:"0.4rem",overflowX:"auto",marginBottom:"0.75rem",paddingBottom:"2px"}}>
+              {Object.keys(CATS).map(c=><button key={c} onClick={()=>setCat(c)} style={{...s.btnSm,flexShrink:0,background:cat===c?C.lime:"rgba(255,255,255,0.07)",color:cat===c?"#000":"rgba(255,255,255,0.5)",border:"none",textTransform:"capitalize",fontSize:"0.7rem",padding:"0.35rem 0.8rem"}}>{c}</button>)}
+            </div>
+            {CATS[cat].map((q,i)=><button key={i} onClick={()=>send(q)} style={{display:"block",width:"100%",textAlign:"left",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"0.7rem 0.95rem",color:"rgba(255,255,255,0.65)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",cursor:"pointer",marginBottom:"0.4rem",lineHeight:1.4}}>{q}</button>)}
           </div>
         )}
         <div ref={bottomRef}/>
       </div>
-      <div style={{padding:"0.75rem 1.25rem 0.5rem",borderTop:"1px solid rgba(255,255,255,0.08)",background:"rgba(0,0,0,0.5)",backdropFilter:"blur(20px)",flexShrink:0}}>
+      <div style={{padding:"0.75rem 1.25rem 0.5rem",borderTop:"1px solid rgba(255,255,255,0.08)",background:"rgba(0,0,0,0.5)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",flexShrink:0}}>
         <div style={{display:"flex",gap:"0.5rem",alignItems:"flex-end"}}>
           <textarea style={{...s.input,marginBottom:0,flex:1,resize:"none",minHeight:"44px",maxHeight:"120px",lineHeight:1.4,padding:"0.6rem 0.9rem",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}} placeholder="Ask your coach anything..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} rows={1}/>
-          <button onClick={send} disabled={loading||!input.trim()} style={{...s.btn,padding:"0.6rem 1rem",flexShrink:0,opacity:loading||!input.trim()?0.5:1}}>
+          <button onClick={()=>send()} disabled={loading||!input.trim()} style={{...s.btn,padding:"0.6rem 1rem",flexShrink:0,opacity:loading||!input.trim()?0.5:1}}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
