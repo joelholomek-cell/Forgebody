@@ -1707,13 +1707,57 @@ function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
             <div style={{color:"rgba(255,255,255,0.35)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>Member since {memberSince}</div>
           </div>
         </div>
-        <div style={{background:"rgba(204,255,0,0.07)",border:"1px solid rgba(204,255,0,0.18)",borderRadius:"10px",padding:"0.7rem",marginBottom:"0.75rem"}}>
-          <div style={{fontSize:"0.62rem",color:C.lime,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>
-            ForgeBody {profile?.plan==="lifetime"?"Lifetime":profile?.plan==="annual"?"Annual ($120/yr)":profile?.plan==="sixmonth"?"6 Month ($84)":"Pro · $19/month"} · Active
-          </div>
-        </div>
         <button onClick={onSignOut} style={{...s.btnGlass,width:"100%",color:"rgba(255,100,100,0.8)",borderColor:"rgba(255,100,100,0.15)"}}>Sign Out</button>
       </div>
+
+      {/* Subscription management */}
+      <div style={s.card}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>Subscription</div>
+          <span style={s.tag}>Active</span>
+        </div>
+        <div style={{background:"rgba(204,255,0,0.07)",border:"1px solid rgba(204,255,0,0.18)",borderRadius:"10px",padding:"0.85rem",marginBottom:"0.75rem"}}>
+          <div style={{fontSize:"1rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"0.2rem"}}>
+            {profile?.plan==="lifetime"?"Lifetime Access":profile?.plan==="annual"?"Annual Plan":profile?.plan==="sixmonth"?"6 Month Bundle":"Monthly Plan"}
+          </div>
+          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif"}}>
+            {profile?.plan==="lifetime"?"$199 · One time payment · Never expires":profile?.plan==="annual"?"$120/year · Billed annually":profile?.plan==="sixmonth"?"$84 · Billed every 6 months":"$19/month · Billed monthly"}
+          </div>
+          {profile?.subscribed_at&&<div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",marginTop:"0.25rem"}}>Started {new Date(profile.subscribed_at).toLocaleDateString("en-AU",{month:"long",day:"numeric",year:"numeric"})}</div>}
+        </div>
+
+        {/* Upgrade options - only show if not lifetime */}
+        {profile?.plan!=="lifetime"&&(
+          <div style={{marginBottom:"0.75rem"}}>
+            <div style={{...s.label,marginBottom:"0.5rem"}}>Upgrade & Save</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+              {profile?.plan==="monthly"&&(
+                <>
+                  <button onClick={()=>window.open(`${STRIPE_LINKS.sixmonth}?prefilled_email=${encodeURIComponent(user.email)}`,"_blank")} style={{...s.btnGlass,width:"100%",fontSize:"0.82rem",padding:"0.7rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span>6 Month Bundle</span><span style={{color:C.lime,fontWeight:900}}>$84 · Save $30</span>
+                  </button>
+                  <button onClick={()=>window.open(`${STRIPE_LINKS.annual}?prefilled_email=${encodeURIComponent(user.email)}`,"_blank")} style={{...s.btnGlass,width:"100%",fontSize:"0.82rem",padding:"0.7rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span>Annual Plan</span><span style={{color:C.lime,fontWeight:900}}>$120 · Save $108</span>
+                  </button>
+                </>
+              )}
+              {(profile?.plan==="monthly"||profile?.plan==="sixmonth"||profile?.plan==="annual")&&(
+                <button onClick={()=>window.open(`${STRIPE_LINKS.lifetime}?prefilled_email=${encodeURIComponent(user.email)}`,"_blank")} style={{...s.btn,width:"100%",fontSize:"0.82rem",padding:"0.7rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span>🔥 Lifetime Access</span><span style={{fontWeight:900}}>$199 · Never pay again</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Cancel */}
+        {profile?.plan!=="lifetime"&&(
+          <a href={`https://wa.me/61493434408?text=Hi%20Joel%2C%20I%27d%20like%20to%20cancel%20my%20ForgeBody%20subscription%20please.%20My%20email%20is%20${encodeURIComponent(user.email)}`} target="_blank" rel="noopener noreferrer" style={{display:"block",textAlign:"center",color:"rgba(255,100,100,0.5)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif",textDecoration:"underline",cursor:"pointer"}}>
+            Cancel subscription
+          </a>
+        )}
+      </div>
+
       {/* Training settings */}
       <div style={s.card}>
         <button onClick={()=>setShowTraining(!showTraining)} style={{display:"flex",alignItems:"center",width:"100%",background:"transparent",border:"none",cursor:"pointer",padding:0}}>
@@ -1730,11 +1774,6 @@ function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
             <button onClick={()=>{localStorage.removeItem("fb_workout_settings");onUpdateSettings();}} style={{...s.btnGlass,width:"100%",fontSize:"0.8rem",padding:"0.6rem"}}>Change Programme →</button>
           </div>
         )}
-      </div>
-      {/* Founding member */}
-      <div style={{...s.card,background:"rgba(204,255,0,0.04)",borderColor:"rgba(204,255,0,0.12)"}}>
-        <p style={{color:C.lime,fontWeight:800,fontSize:"0.62rem",letterSpacing:"0.15em",textTransform:"uppercase",margin:"0 0 0.35rem",fontFamily:"'Barlow Condensed',sans-serif"}}>Founding Member?</p>
-        <p style={{color:"rgba(255,255,255,0.4)",margin:0,fontSize:"0.85rem",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>Bought the $27 PDF? Email your receipt to support@forgebody.com for free lifetime access.</p>
       </div>
       <div style={{...s.label,marginBottom:"0.75rem",marginTop:"0.25rem"}}>Quick Access</div>
       {items.map(item=>(<div key={item.id} onClick={()=>onNavigate("sidebar",item.id)} style={{...s.card,cursor:"pointer",display:"flex",alignItems:"center",gap:"1rem",padding:"1rem 1.25rem",marginBottom:"0.5rem"}}><span style={{fontSize:"1.3rem",flexShrink:0}}>{item.icon}</span><div style={{flex:1}}><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.white,marginBottom:"0.1rem"}}>{item.label}</div><div style={{color:"rgba(255,255,255,0.35)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div></div><span style={{color:C.lime,fontSize:"0.95rem"}}>→</span></div>))}
@@ -1775,7 +1814,7 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
           <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",marginTop:"0.5rem",padding:"0.75rem 1.25rem 0"}}>
             <div style={{...s.tag,marginBottom:"0.5rem"}}>Subscription</div>
             <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>
-              ForgeBody {profile?.plan==="lifetime"?"Lifetime":profile?.plan==="annual"?"Annual":profile?.plan==="sixmonth"?"6 Month":"Pro"} · Active
+              ForgeBody {profile?.plan==="lifetime"?"Lifetime — $199 one time":profile?.plan==="annual"?"Annual — $120/year":profile?.plan==="sixmonth"?"6 Month — $84":profile?.plan==="monthly"?"Monthly — $19/month":"Pro"} · Active
             </div>
             <a href="https://wa.me/61493434408?text=Hi%20Joel%2C%20I%20need%20some%20help%20with%20ForgeBody%20please!" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em",textDecoration:"none"}}><span style={{fontSize:"1rem"}}>💬</span>Support via WhatsApp</a>
             <button onClick={onSignOut} style={{...s.btnGlass,width:"100%",marginTop:"0.5rem",fontSize:"0.82rem",color:"rgba(255,100,100,0.75)",borderColor:"rgba(255,100,100,0.15)"}}>Sign Out</button>
