@@ -394,48 +394,54 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
         <div style={{margin:"1rem 1.25rem 0",background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(150,255,0,0.08))",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"14px",padding:"0.85rem 1.1rem",display:"flex",alignItems:"center",gap:"0.75rem",backdropFilter:"blur(10px)"}}>
           <span style={{fontSize:"1.3rem",flexShrink:0}}>🎁</span>
           <div>
-            <div style={{fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.lime,letterSpacing:"0.05em"}}>7-Day Free Trial</div>
-            <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.55)",fontFamily:"Barlow,sans-serif"}}>Try everything free. Cancel anytime before day 7.</div>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.lime,letterSpacing:"0.05em"}}>7-Day Free Trial Included</div>
+            <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif"}}>Try everything free. Cancel anytime before day 7.</div>
           </div>
         </div>
 
         {/* Hero */}
-        <div style={{padding:"1.75rem 1.25rem 1.25rem"}}>
+        <div style={{padding:"2rem 1.25rem 1.5rem"}}>
           <div style={{...s.tag,marginBottom:"0.75rem",display:"inline-block"}}>AI Fitness Platform</div>
-          <h1 style={{fontSize:"clamp(3rem,11vw,5rem)",fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.92,color:C.white,marginBottom:"1rem"}}>
+          <h1 style={{fontSize:"clamp(3.2rem,12vw,5.5rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.9,color:C.white,marginBottom:"1.25rem"}}>
             Forge The<br/>Body You<br/><span style={{color:C.lime}}>Want.</span>
           </h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontFamily:"Barlow,sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"0.75rem"}}>
-            AI-powered workouts, personalised meal plans, and a 24/7 coach. No trainer. No confusion. Just results.
+          <p style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"1rem",lineHeight:1.65,marginBottom:"1.75rem",maxWidth:"340px"}}>
+            The only fitness app that combines AI workouts, meal plans, and a 24/7 personal coach — all in one place.
           </p>
+          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.15rem",fontSize:"1.05rem",borderRadius:"14px",marginBottom:"0.65rem",letterSpacing:"0.06em"}}>
+            Start Free Trial →
+          </button>
+          <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.9rem",fontSize:"0.88rem"}}>
+            Already a member? Sign In
+          </button>
+        </div>
 
-          {/* Value props - liquid glass pills */}
-          <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",marginBottom:"1.5rem"}}>
+        {/* What's inside grid — 4 clean glass cards */}
+        <div style={{padding:"0 1.25rem 1.5rem"}}>
+          <div style={{...s.label,marginBottom:"0.85rem",color:"rgba(255,255,255,0.45)"}}>Everything inside ForgeBody</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.6rem"}}>
             {[
-              {icon:"📅",text:"7-day free trial — cancel anytime"},
-              {icon:"📚",text:"12-week science-backed programme included"},
-              {icon:"🤖",text:"AI coach, meal plans & workout builder"},
-            ].map((v,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"0.65rem 0.9rem",backdropFilter:"blur(10px)"}}>
-                <span style={{fontSize:"1rem",flexShrink:0}}>{v.icon}</span>
-                <span style={{color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem"}}>{v.text}</span>
+              {icon:"🏋️",title:"Smart Workouts",desc:"PPL, Upper/Lower, Muscle Group & HIIT. Your level, your goals."},
+              {icon:"🍽️",title:"Meal Plans",desc:"58+ meals with ingredients, macros & cooking instructions."},
+              {icon:"🤖",title:"AI Coach 24/7",desc:"Ask anything. Get expert answers on training, nutrition & mindset."},
+              {icon:"📚",title:"12-Week Programme",desc:"Science-backed transformation course included with every plan."},
+              {icon:"📈",title:"Progress Tracking",desc:"Weight charts, measurements, PBs, habits & streaks."},
+              {icon:"💊",title:"Supplement Guide",desc:"Evidence-based only. Ranked A+ to B. No BS."},
+            ].map((item,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"1rem",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)"}}>
+                <div style={{fontSize:"1.6rem",marginBottom:"0.5rem"}}>{item.icon}</div>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.25rem",lineHeight:1.1}}>{item.title}</div>
+                <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",lineHeight:1.45}}>{item.desc}</div>
               </div>
             ))}
           </div>
-
-          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem"}}>
-            Start Free Trial →
-          </button>
-          <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.85rem",fontSize:"0.85rem"}}>
-            Already a member? Sign In
-          </button>
         </div>
 
         {/* Swipeable feature cards */}
         <div style={{marginBottom:"1.25rem"}}>
           <div style={{padding:"0 1.25rem",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-            <div style={{...s.label,marginBottom:0,color:"rgba(255,255,255,0.4)"}}>Swipe to explore features</div>
-            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.25)",fontFamily:"Barlow,sans-serif"}}>{slide+1}/{total}</div>
+            <div style={{...s.label,marginBottom:0,color:"rgba(255,255,255,0.4)"}}>See it in action</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{slide+1}/{total}</div>
           </div>
           <div style={{overflow:"hidden",touchAction:"pan-y"}}
             onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
@@ -958,6 +964,9 @@ function HomeScreen({profile,user,onNavigate}){
         <div style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.white,lineHeight:1}}>{profile?.name||"Athlete"} <span style={{color:C.lime}}>🔥</span></div>
       </div>
 
+      {/* Weekly recap */}
+      <WeeklyRecap onNavigate={onNavigate}/>
+
       {/* Stats row */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.75rem"}}>
         {[{n:totalWorkouts,l:"Workouts"},{n:thisWeek,l:"This Week"},{n:`${currentStreak}🔥`,l:"Streak"}].map((x,i)=>(
@@ -1395,6 +1404,8 @@ function MealPlanner(){
   const[numMeals,setNumMeals]=useState(4);
   const[plan,setPlan]=useState(null);
   const[expandedMeal,setExpandedMeal]=useState(null);
+  const[showCustom,setShowCustom]=useState(false);
+  const[customMeal,setCustomMeal]=useState({name:"",cal:"",p:"",c:"",f:""});
 
   function buildPlan(){
     const slots=numMeals===2?["breakfast","dinner"]:numMeals===3?["breakfast","lunch","dinner"]:numMeals===4?["breakfast","lunch","dinner","snack"]:numMeals===5?["breakfast","lunch","dinner","snack","snack"]:["breakfast","lunch","dinner","snack","snack","snack"];
@@ -2217,6 +2228,8 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         <div style={{padding:"0.5rem 0"}}>
           {[
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
+            {label:"Badges & Achievements",icon:"🎖️",id:"badges"},
+            {label:"Refer a Friend",icon:"🎁",id:"referral"},
             {label:"Workout History",icon:"🗓️",id:"history"},
             {label:"Body Measurements",icon:"📏",id:"measurements"},
             {label:"Progress Tracker",icon:"📈",id:"progress"},
@@ -2488,6 +2501,8 @@ export default function ForgeBodyApp(){
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
+          {sidePanel?.screen==="badges"&&<BadgesScreen/>}
+          {sidePanel?.screen==="referral"&&<ReferralScreen user={session.user}/>}
           {sidePanel?.screen==="progress"&&<Progress user={session.user}/>}
           {sidePanel?.screen==="measurements"&&<BodyMeasurements user={session.user}/>}
           {sidePanel?.screen==="history"&&<WorkoutHistory user={session.user}/>}
