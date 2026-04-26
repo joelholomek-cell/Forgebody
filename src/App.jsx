@@ -284,16 +284,28 @@ function MacroBar({p,c,f}){
 }
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────
-function AuthScreen({onSubscribe}){
-  const[email,setEmail]=useState("");const[sent,setSent]=useState(false);
-  const[loading,setLoading]=useState(false);const[error,setError]=useState("");
-  const[mode,setMode]=useState("landing"); // landing | signin
+// ─── STRIPE CONFIG ───────────────────────────────────────────────────────────
+const STRIPE_PK = "pk_live_51TQLoGHrJvzDNLarEklQ7XCJtNtfjEY7NeUtXGKRi2wGBQ277jRaPlH1oQl0QuVo9qRpxiDMcRCbNmryCRZ9zwmd00s3QAiryC";
+const STRIPE_LINKS = {
+  monthly:  "https://buy.stripe.com/8x2cN5eIl3jA2tF6lA0Jq00",
+  sixmonth: "https://buy.stripe.com/dRmeVd6bPcUa3xJ9xM0Jq01",
+  annual:   "https://buy.stripe.com/fZubJ12ZDdYe5FR25k0Jq02",
+  lifetime: "https://buy.stripe.com/dRm14ncAd1bs3xJeS60Jq03",
+};
+
+// ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
+function AuthScreen({onSubscribe,preselectedPlan}){
+  const[email,setEmail]=useState("");
+  const[sent,setSent]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[error,setError]=useState("");
 
   async function handleMagic(){
     if(!email)return;setLoading(true);setError("");
     const redirectTo=window.location.origin+window.location.pathname;
     const{error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo}});
-    setLoading(false);if(error)setError(error.message);else setSent(true);
+    setLoading(false);
+    if(error)setError(error.message);else setSent(true);
   }
   async function handleGoogle(){
     const redirectTo=window.location.origin+window.location.pathname;
@@ -301,140 +313,113 @@ function AuthScreen({onSubscribe}){
     if(error)setError(error.message);
   }
 
-  if(mode==="signin"){
-    return(
-      <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"1.5rem",position:"relative"}}>
-        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 10%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
-        <div style={{width:"100%",maxWidth:"400px",position:"relative",zIndex:1}}>
-          <button onClick={()=>setMode("landing")} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>← Back</button>
-          <div style={{textAlign:"center",marginBottom:"2rem"}}>
-            <div style={{...s.logo,fontSize:"2rem",marginBottom:"0.75rem",display:"block",cursor:"default"}}>FORGE<span style={s.logoSlash}>/</span>BODY</div>
-            <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif"}}>Sign in to your account</p>
-          </div>
-          <div style={s.card}>
-            {sent?<div style={s.successBanner}>✅ Magic link sent to <strong>{email}</strong>. Check your inbox and click the link — it'll open the app.</div>:(
-              <>
-                <button onClick={handleGoogle} style={{...s.btnGlass,width:"100%",marginBottom:"0.75rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}}>
-                  <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                  Continue with Google
-                </button>
-                <div style={s.divider}><div style={s.dividerLine}/>or email<div style={s.dividerLine}/></div>
-                <label style={s.label}>Email address</label>
-                <input style={s.input} type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleMagic()}/>
-                {error&&<p style={{color:"#ff6b6b",fontSize:"0.82rem",marginTop:"-0.4rem",marginBottom:"0.6rem",fontFamily:"'Barlow',sans-serif"}}>{error}</p>}
-                <button onClick={handleMagic} disabled={loading||!email} style={{...s.btn,width:"100%",padding:"0.9rem",opacity:!email?0.5:1}}>{loading?"Sending link...":"Send Magic Link"}</button>
-                <p style={{textAlign:"center",color:"rgba(255,255,255,0.3)",fontSize:"0.72rem",marginTop:"1rem",fontFamily:"'Barlow',sans-serif"}}>We'll email you a secure sign-in link. No password needed.</p>
-              </>
-            )}
-          </div>
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"1.5rem",position:"relative"}}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 10%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
+      <div style={{width:"100%",maxWidth:"400px",position:"relative",zIndex:1}}>
+        <div style={{textAlign:"center",marginBottom:"2rem"}}>
+          <div style={{...s.logo,fontSize:"2rem",marginBottom:"0.75rem",display:"block",cursor:"default",fontFamily:"'Barlow Condensed',sans-serif"}}>FORGE<span style={s.logoSlash}>/</span>BODY</div>
+          <Eyebrow label={preselectedPlan?"One last step — create your account":"Sign in to your account"}/>
+          {preselectedPlan&&<div style={{...s.tag,marginTop:"0.5rem",display:"inline-block"}}>Plan selected: {preselectedPlan}</div>}
+          <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.88rem",fontFamily:"Barlow,sans-serif",marginTop:"0.75rem"}}>
+            {preselectedPlan?"Create your account to complete checkout":"Welcome back"}
+          </p>
+        </div>
+        <div style={s.card}>
+          {sent?(
+            <div style={s.successBanner}>
+              ✅ Magic link sent to <strong>{email}</strong>.<br/>
+              <span style={{fontSize:"0.82rem",opacity:0.8}}>Check your inbox and click the link — it will open the app.</span>
+            </div>
+          ):(
+            <>
+              <button onClick={handleGoogle} style={{...s.btnGlass,width:"100%",marginBottom:"0.75rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue with Google
+              </button>
+              <div style={s.divider}><div style={s.dividerLine}/>or email<div style={s.dividerLine}/></div>
+              <label style={s.label}>Email address</label>
+              <input style={s.input} type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleMagic()}/>
+              {error&&<p style={{color:"#ff6b6b",fontSize:"0.82rem",marginTop:"-0.4rem",marginBottom:"0.6rem",fontFamily:"Barlow,sans-serif"}}>{error}</p>}
+              <button onClick={handleMagic} disabled={loading||!email} style={{...s.btn,width:"100%",padding:"0.9rem",opacity:!email?0.5:1}}>
+                {loading?"Sending link...":"Send Magic Link"}
+              </button>
+              <p style={{textAlign:"center",color:"rgba(255,255,255,0.3)",fontSize:"0.72rem",marginTop:"1rem",fontFamily:"Barlow,sans-serif"}}>
+                We'll email you a secure sign-in link. No password needed.
+              </p>
+            </>
+          )}
         </div>
       </div>
-    );
-  }
-
-  // Landing / sales page
-  return <LandingPage onSignIn={()=>setMode("signin")} onSubscribe={onSubscribe}/>;
+    </div>
+  );
 }
 
 // ─── LANDING PAGE ────────────────────────────────────────────────────────────
-function LandingPage({onSignIn,onSubscribe}){
+function LandingPage({onSignIn,onSelectPlan}){
   const[slide,setSlide]=useState(0);
   const[isDragging,setIsDragging]=useState(false);
   const[dragStartX,setDragStartX]=useState(0);
   const[dragOffset,setDragOffset]=useState(0);
-  const trackRef=useRef(null);
 
   const slides=[
-    {
-      icon:"🏋️",
-      title:"Train Smarter",
-      sub:"Personalised programmes built around your split, level and goal.",
-      detail:"Push/Pull/Legs · Upper/Lower · Muscle Group · HIIT",
-      color:"rgba(204,255,0,0.1)",
-      accent:C.lime,
-      stats:[{n:"80+",l:"Exercises"},{n:"4",l:"Splits"},{n:"∞",l:"Workouts"}],
-    },
-    {
-      icon:"🍽️",
-      title:"Eat Right",
-      sub:"AI meal plans with real ingredients and step-by-step cooking instructions.",
-      detail:"58+ meals · Full macros · Shopping lists included",
-      color:"rgba(59,130,246,0.1)",
-      accent:"#60a5fa",
-      stats:[{n:"58+",l:"Meals"},{n:"7",l:"Diet types"},{n:"100%",l:"Macro tracked"}],
-    },
-    {
-      icon:"🤖",
-      title:"AI Coach",
-      sub:"Your personal fitness coach. Available 24/7. Knows everything.",
-      detail:"Training · Nutrition · Recovery · Mindset",
-      color:"rgba(168,85,247,0.1)",
-      accent:"#c084fc",
-      stats:[{n:"24/7",l:"Available"},{n:"∞",l:"Questions"},{n:"0s",l:"Wait time"}],
-    },
-    {
-      icon:"📈",
-      title:"Track Progress",
-      sub:"Weight, measurements, workouts, macros, habits — all in one place.",
-      detail:"Real-time Supabase sync · Calendar · Streaks",
-      color:"rgba(251,146,60,0.1)",
-      accent:"#fb923c",
-      stats:[{n:"6",l:"Measurements"},{n:"10",l:"Daily habits"},{n:"Real",l:"Time sync"}],
-    },
-    {
-      icon:"💊",
-      title:"Supplement Guide",
-      sub:"Only evidence-based supplements. Ranked A+ to B. No BS.",
-      detail:"Creatine · Vitamin D · Omega-3 · Protein & more",
-      color:"rgba(34,197,94,0.1)",
-      accent:"#4ade80",
-      stats:[{n:"12+",l:"Supplements"},{n:"A+",l:"Top evidence"},{n:"0",l:"BS included"}],
-    },
+    {icon:"🏋️",title:"Train Smarter",sub:"Personalised workout programmes built around your split, level and goal. Every set tracked.",detail:"PPL · Upper/Lower · Muscle Group · HIIT",color:"rgba(204,255,0,0.09)",accent:C.lime,stats:[{n:"80+",l:"Exercises"},{n:"4",l:"Splits"},{n:"∞",l:"Workouts"}]},
+    {icon:"🍽️",title:"Eat Right",sub:"AI meal plans with real ingredients and step-by-step cooking instructions for your diet.",detail:"58+ meals · Full macros · Shopping lists",color:"rgba(59,130,246,0.09)",accent:"#60a5fa",stats:[{n:"58+",l:"Meals"},{n:"7",l:"Diets"},{n:"100%",l:"Macro tracked"}]},
+    {icon:"🤖",title:"AI Coach 24/7",sub:"Your personal expert coach in your pocket. Ask anything. Get science-backed answers instantly.",detail:"Training · Nutrition · Recovery · Mindset",color:"rgba(168,85,247,0.09)",accent:"#c084fc",stats:[{n:"24/7",l:"Available"},{n:"∞",l:"Questions"},{n:"0s",l:"Wait"}]},
+    {icon:"📈",title:"Track Everything",sub:"Body weight, measurements, macros, workouts and habits — all synced in real time.",detail:"Live Supabase sync · Calendar · Streaks",color:"rgba(251,146,60,0.09)",accent:"#fb923c",stats:[{n:"6",l:"Measurements"},{n:"10",l:"Habits"},{n:"Live",l:"Sync"}]},
+    {icon:"📚",title:"12-Week Programme",sub:"A complete science-backed transformation course included with every plan. Sessions written. Meals planned.",detail:"Progressive overload · Periodisation · Nutrition",color:"rgba(34,197,94,0.09)",accent:"#4ade80",stats:[{n:"12",l:"Weeks"},{n:"84",l:"Sessions"},{n:"100%",l:"Written"}]},
   ];
 
   const total=slides.length;
-
   function goTo(i){setSlide(Math.max(0,Math.min(total-1,i)));setDragOffset(0);}
-
   function onTouchStart(e){setIsDragging(true);setDragStartX(e.touches[0].clientX);}
   function onTouchMove(e){if(!isDragging)return;setDragOffset(e.touches[0].clientX-dragStartX);}
-  function onTouchEnd(){
-    if(dragOffset<-60&&slide<total-1)goTo(slide+1);
-    else if(dragOffset>60&&slide>0)goTo(slide-1);
-    else setDragOffset(0);
-    setIsDragging(false);
-  }
+  function onTouchEnd(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
   function onMouseDown(e){setIsDragging(true);setDragStartX(e.clientX);}
   function onMouseMove(e){if(!isDragging)return;setDragOffset(e.clientX-dragStartX);}
-  function onMouseUp(){
-    if(dragOffset<-60&&slide<total-1)goTo(slide+1);
-    else if(dragOffset>60&&slide>0)goTo(slide-1);
-    else setDragOffset(0);
-    setIsDragging(false);
-  }
+  function onMouseUp(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
 
   return(
     <div style={{minHeight:"100vh",background:"#0a0a0a",overflowX:"hidden",position:"relative"}}>
       <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 10% 5%,rgba(204,255,0,0.13) 0%,transparent 55%),radial-gradient(ellipse 60% 45% at 90% 85%,rgba(120,220,0,0.07) 0%,transparent 50%)",pointerEvents:"none",zIndex:0}}/>
-      <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 6rem"}}>
+      <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 5rem"}}>
 
         {/* Nav */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
-          <div style={{fontSize:"1.3rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+          <div style={{fontSize:"1.3rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"Barlow Condensed,sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
           <button onClick={onSignIn} style={{...s.btnSm,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(255,255,255,0.7)"}}>Sign In</button>
         </div>
 
+        {/* Free trial banner */}
+        <div style={{margin:"1rem 1.25rem 0",background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(150,255,0,0.08))",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"14px",padding:"0.85rem 1.1rem",display:"flex",alignItems:"center",gap:"0.75rem",backdropFilter:"blur(10px)"}}>
+          <span style={{fontSize:"1.3rem",flexShrink:0}}>🎁</span>
+          <div>
+            <div style={{fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.lime,letterSpacing:"0.05em"}}>7-Day Free Trial</div>
+            <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.55)",fontFamily:"Barlow,sans-serif"}}>Try everything free. Cancel anytime before day 7.</div>
+          </div>
+        </div>
+
         {/* Hero */}
-        <div style={{padding:"2rem 1.25rem 1.5rem"}}>
+        <div style={{padding:"1.75rem 1.25rem 1.25rem"}}>
           <div style={{...s.tag,marginBottom:"0.75rem",display:"inline-block"}}>AI Fitness Platform</div>
-          <h1 style={{fontSize:"clamp(3rem,11vw,5rem)",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.92,color:C.white,marginBottom:"1.1rem"}}>
+          <h1 style={{fontSize:"clamp(3rem,11vw,5rem)",fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",lineHeight:0.92,color:C.white,marginBottom:"1rem"}}>
             Forge The<br/>Body You<br/><span style={{color:C.lime}}>Want.</span>
           </h1>
-          <p style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"1.5rem"}}>
-            AI workouts, personalised meal plans, and a coach in your pocket. No trainer. No confusion. Just results.
+          <p style={{color:"rgba(255,255,255,0.45)",fontFamily:"Barlow,sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"0.75rem"}}>
+            AI-powered workouts, personalised meal plans, and a 24/7 coach. No trainer. No confusion. Just results.
           </p>
-          <button onClick={onSubscribe} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem"}}>
-            Start Your Transformation →
+
+          {/* Value props */}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",marginBottom:"1.5rem"}}>
+            {[
+              "✅ 12-week science-backed transformation programme included",
+              "✅ AI coach, meal plans & workout builder",
+              "✅ 7-day free trial — cancel anytime",
+            ].map((v,i)=><div key={i} style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",fontFamily:"Barlow,sans-serif"}}>{v}</div>)}
+          </div>
+
+          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem"}}>
+            Start Free Trial →
           </button>
           <button onClick={onSignIn} style={{...s.btnGlass,width:"100%",padding:"0.85rem",fontSize:"0.85rem"}}>
             Already a member? Sign In
@@ -442,36 +427,29 @@ function LandingPage({onSignIn,onSubscribe}){
         </div>
 
         {/* Swipeable feature cards */}
-        <div style={{padding:"0 0 1.5rem"}}>
+        <div style={{marginBottom:"1.25rem"}}>
           <div style={{padding:"0 1.25rem",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-            <div style={{...s.label,marginBottom:0,color:"rgba(255,255,255,0.45)"}}>What's inside — swipe to explore</div>
-            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{slide+1}/{total}</div>
+            <div style={{...s.label,marginBottom:0,color:"rgba(255,255,255,0.4)"}}>Swipe to explore features</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.25)",fontFamily:"Barlow,sans-serif"}}>{slide+1}/{total}</div>
           </div>
-
-          {/* Card track */}
-          <div style={{overflow:"hidden",position:"relative",touchAction:"pan-y"}}
+          <div style={{overflow:"hidden",touchAction:"pan-y"}}
             onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
             onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
           >
-            <div ref={trackRef} style={{display:"flex",transition:isDragging?"none":"transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",transform:`translateX(calc(-${slide*100}% + ${dragOffset}px))`,willChange:"transform"}}>
+            <div style={{display:"flex",transition:isDragging?"none":"transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",transform:`translateX(calc(-${slide*100}% + ${dragOffset}px))`,willChange:"transform",userSelect:"none"}}>
               {slides.map((sl,i)=>(
-                <div key={i} style={{minWidth:"100%",padding:"0 1.25rem",userSelect:"none"}}>
-                  <div style={{background:`linear-gradient(135deg,${sl.color},rgba(255,255,255,0.04))`,border:`1px solid ${sl.accent}30`,borderRadius:"24px",padding:"1.75rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",position:"relative",overflow:"hidden",cursor:"grab"}}>
-                    {/* Glow orb */}
-                    <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:`${sl.accent}15`,filter:"blur(30px)",pointerEvents:"none"}}/>
-                    <div style={{position:"absolute",bottom:"-20px",left:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:`${sl.accent}08`,filter:"blur(20px)",pointerEvents:"none"}}/>
-
+                <div key={i} style={{minWidth:"100%",padding:"0 1.25rem"}}>
+                  <div style={{background:`linear-gradient(135deg,${sl.color},rgba(255,255,255,0.03))`,border:`1px solid ${sl.accent}28`,borderRadius:"24px",padding:"1.75rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",position:"relative",overflow:"hidden",cursor:"grab"}}>
+                    <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:`${sl.accent}12`,filter:"blur(30px)",pointerEvents:"none"}}/>
                     <div style={{fontSize:"2.8rem",marginBottom:"0.9rem"}}>{sl.icon}</div>
-                    <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.7rem",color:C.white,letterSpacing:"-0.02em",lineHeight:1,marginBottom:"0.6rem"}}>{sl.title}</div>
-                    <div style={{color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif",fontSize:"0.92rem",lineHeight:1.55,marginBottom:"0.6rem"}}>{sl.sub}</div>
-                    <div style={{fontSize:"0.72rem",fontWeight:800,letterSpacing:"0.08em",color:`${sl.accent}`,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginBottom:"1.25rem"}}>{sl.detail}</div>
-
-                    {/* Mini stats */}
+                    <div style={{fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",fontSize:"1.7rem",color:C.white,letterSpacing:"-0.02em",lineHeight:1,marginBottom:"0.55rem"}}>{sl.title}</div>
+                    <div style={{color:"rgba(255,255,255,0.55)",fontFamily:"Barlow,sans-serif",fontSize:"0.9rem",lineHeight:1.55,marginBottom:"0.55rem"}}>{sl.sub}</div>
+                    <div style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.08em",color:sl.accent,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",marginBottom:"1.25rem"}}>{sl.detail}</div>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
                       {sl.stats.map((stat,j)=>(
-                        <div key={j} style={{background:"rgba(0,0,0,0.3)",borderRadius:"12px",padding:"0.65rem",textAlign:"center",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.06)"}}>
-                          <div style={{fontSize:"1.3rem",fontWeight:900,color:sl.accent,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{stat.n}</div>
-                          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>{stat.l}</div>
+                        <div key={j} style={{background:"rgba(0,0,0,0.3)",borderRadius:"12px",padding:"0.65rem",textAlign:"center",border:"1px solid rgba(255,255,255,0.06)"}}>
+                          <div style={{fontSize:"1.3rem",fontWeight:900,color:sl.accent,fontFamily:"Barlow Condensed,sans-serif",lineHeight:1}}>{stat.n}</div>
+                          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"Barlow Condensed,sans-serif",marginTop:"2px"}}>{stat.l}</div>
                         </div>
                       ))}
                     </div>
@@ -480,34 +458,26 @@ function LandingPage({onSignIn,onSubscribe}){
               ))}
             </div>
           </div>
-
-          {/* Dot indicators */}
-          <div style={{display:"flex",gap:"6px",justifyContent:"center",marginTop:"1rem",padding:"0 1.25rem"}}>
-            {slides.map((_,i)=>(
-              <div key={i} onClick={()=>goTo(i)} style={{height:"4px",borderRadius:"2px",background:i===slide?C.lime:"rgba(255,255,255,0.18)",width:i===slide?24:6,transition:"all 0.3s ease",cursor:"pointer"}}/>
-            ))}
+          <div style={{display:"flex",gap:"6px",justifyContent:"center",marginTop:"0.85rem"}}>
+            {slides.map((_,i)=><div key={i} onClick={()=>goTo(i)} style={{height:"4px",borderRadius:"2px",background:i===slide?C.lime:"rgba(255,255,255,0.18)",width:i===slide?24:6,transition:"all 0.3s ease",cursor:"pointer"}}/>)}
           </div>
         </div>
 
         {/* Social proof */}
-        <div style={{padding:"0 1.25rem 1.5rem"}}>
+        <div style={{padding:"0 1.25rem 1.25rem"}}>
           <div style={{...s.card,textAlign:"center",padding:"1.5rem"}}>
-            <div style={{display:"flex",justifyContent:"center",gap:"0.25rem",marginBottom:"0.5rem"}}>
-              {[...Array(5)].map((_,i)=><span key={i} style={{color:"#fbbf24",fontSize:"1rem"}}>★</span>)}
-            </div>
-            <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",color:"rgba(255,255,255,0.6)",lineHeight:1.55,fontStyle:"italic",marginBottom:"0.5rem"}}>
-              "Finally an app that actually gives me workouts AND tells me what to eat. The AI coach is insane."
-            </div>
-            <div style={{fontSize:"0.72rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
+            <div style={{display:"flex",justifyContent:"center",gap:"0.2rem",marginBottom:"0.5rem"}}>{[...Array(5)].map((_,i)=><span key={i} style={{color:"#fbbf24",fontSize:"1rem"}}>★</span>)}</div>
+            <div style={{fontFamily:"Barlow,sans-serif",fontSize:"0.9rem",color:"rgba(255,255,255,0.55)",lineHeight:1.55,fontStyle:"italic",marginBottom:"0.5rem"}}>"Finally an app that gives me workouts AND tells me what to eat. The AI coach knows my programme."</div>
+            <div style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
           </div>
         </div>
 
-        {/* Final CTA */}
+        {/* Bottom CTA */}
         <div style={{padding:"0 1.25rem"}}>
-          <button onClick={onSubscribe} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.5rem"}}>
-            See Plans & Start Training →
+          <button onClick={onSelectPlan} style={{...s.btn,width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.5rem"}}>
+            See Plans & Start Free Trial →
           </button>
-          <p style={{textAlign:"center",color:"rgba(255,255,255,0.22)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>Cancel anytime · Instant access · No contracts</p>
+          <p style={{textAlign:"center",color:"rgba(255,255,255,0.22)",fontSize:"0.72rem",fontFamily:"Barlow,sans-serif"}}>7-day free trial · Cancel anytime · No contracts</p>
         </div>
       </div>
     </div>
@@ -515,10 +485,8 @@ function LandingPage({onSignIn,onSubscribe}){
 }
 
 // ─── SUBSCRIPTION WALL ───────────────────────────────────────────────────────
-function SubscriptionWall({user,onSubscribed,onSignOut}){
-  const[selected,setSelected]=useState("monthly");
-  const[loading,setLoading]=useState(false);
-  const[slide,setSlide]=useState(0);
+function SubscriptionWall({onSignIn,onBack}){
+  const[slide,setSlide]=useState(1); // default to popular plan
   const[isDragging,setIsDragging]=useState(false);
   const[dragStartX,setDragStartX]=useState(0);
   const[dragOffset,setDragOffset]=useState(0);
@@ -528,40 +496,57 @@ function SubscriptionWall({user,onSubscribed,onSignOut}){
       id:"monthly",
       label:"Monthly",
       price:"$19",
-      period:"per month",
-      billing:"Billed monthly",
-      priceNote:null,
+      period:"/ month",
+      billing:"Billed monthly · Cancel anytime",
+      trial:"7-day free trial",
       badge:null,
       highlight:false,
-      features:["Full app access","Cancel anytime","All future updates"],
+      link:STRIPE_LINKS.monthly,
+      features:["Full app access","7-day free trial","Cancel anytime"],
     },
     {
       id:"sixmonth",
       label:"6 Months",
       price:"$84",
       period:"upfront",
-      billing:"$14/month · Billed once",
+      billing:"$14/month · Billed once every 6 months",
+      trial:"7-day free trial",
       priceNote:"Save $30 vs monthly",
       badge:"Popular",
       highlight:true,
-      features:["Full app access","Save $30 total","All future updates"],
+      link:STRIPE_LINKS.sixmonth,
+      features:["Full app access","7-day free trial","Save $30 total"],
     },
     {
-      id:"yearly",
+      id:"annual",
       label:"Annual",
       price:"$120",
-      period:"upfront",
-      billing:"$10/month · Billed once",
+      period:"/ year",
+      billing:"$10/month · Billed once annually",
+      trial:"7-day free trial",
       priceNote:"Save $108 vs monthly",
       badge:"Best Value",
       highlight:true,
-      features:["Full app access","Save $108 total","All future updates"],
+      link:STRIPE_LINKS.annual,
+      features:["Full app access","7-day free trial","Save $108 total"],
+    },
+    {
+      id:"lifetime",
+      label:"Lifetime",
+      price:"$199",
+      period:"one time",
+      billing:"Pay once. Access forever.",
+      trial:null,
+      priceNote:"Never pay again",
+      badge:"🔥 Lifetime",
+      highlight:false,
+      link:STRIPE_LINKS.lifetime,
+      features:["Full app access","No subscription ever","All future updates free"],
     },
   ];
 
   const total=plans.length;
-
-  function goTo(i){setSlide(Math.max(0,Math.min(total-1,i)));setDragOffset(0);setSelected(plans[Math.max(0,Math.min(total-1,i))].id);}
+  function goTo(i){setSlide(Math.max(0,Math.min(total-1,i)));setDragOffset(0);}
   function onTouchStart(e){setIsDragging(true);setDragStartX(e.touches[0].clientX);}
   function onTouchMove(e){if(!isDragging)return;setDragOffset(e.touches[0].clientX-dragStartX);}
   function onTouchEnd(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
@@ -569,98 +554,120 @@ function SubscriptionWall({user,onSubscribed,onSignOut}){
   function onMouseMove(e){if(!isDragging)return;setDragOffset(e.clientX-dragStartX);}
   function onMouseUp(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
 
-  async function handleSubscribe(){
-    setLoading(true);
-    await supabase.from("profiles").upsert({user_id:user.id,subscribed:true,plan:selected,subscribed_at:new Date().toISOString()},{onConflict:"user_id"});
-    setLoading(false);
-    onSubscribed();
+  function selectPlan(plan){
+    // Store selected plan then redirect to Stripe
+    localStorage.setItem("fb_pending_plan",plan.id);
+    window.location.href=plan.link;
   }
+
+  const plan=plans[slide];
 
   return(
     <div style={{minHeight:"100vh",background:"#0a0a0a",overflowX:"hidden",position:"relative"}}>
       <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 10% 5%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none",zIndex:0}}/>
-      <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 4rem"}}>
+      <div style={{position:"relative",zIndex:1,maxWidth:"480px",margin:"0 auto",padding:"0 0 3rem"}}>
 
         {/* Header */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
-          <div style={{fontSize:"1.2rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
-          <button onClick={onSignOut} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.4)"}}>Sign Out</button>
+          <button onClick={onBack} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.4)"}}>← Back</button>
+          <div style={{fontSize:"1.2rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"Barlow Condensed,sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+          <button onClick={onSignIn} style={{...s.btnSm,background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.5)"}}>Sign In</button>
         </div>
 
         {/* Hero */}
-        <div style={{padding:"1.75rem 1.25rem 1.25rem",textAlign:"center"}}>
-          <div style={{fontSize:"2.5rem",marginBottom:"0.5rem"}}>🔥</div>
-          <h2 style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.4rem",lineHeight:1,letterSpacing:"-0.02em"}}>Unlock ForgeBody</h2>
-          <p style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>Swipe to compare plans. Cancel anytime.</p>
+        <div style={{padding:"1.5rem 1.25rem 1rem",textAlign:"center"}}>
+          <div style={{fontSize:"2.2rem",marginBottom:"0.4rem"}}>🔥</div>
+          <h2 style={{fontSize:"2rem",fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1,letterSpacing:"-0.02em"}}>Choose Your Plan</h2>
+          <p style={{color:"rgba(255,255,255,0.4)",fontFamily:"Barlow,sans-serif",fontSize:"0.85rem",marginBottom:"0.75rem"}}>Swipe to compare · All subscriptions include a 7-day free trial</p>
+          {/* Value reminder */}
+          <div style={{background:"rgba(204,255,0,0.07)",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"12px",padding:"0.75rem 1rem",textAlign:"left",marginBottom:"0.25rem"}}>
+            <div style={{fontSize:"0.72rem",fontWeight:800,color:C.lime,fontFamily:"Barlow Condensed,sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.35rem"}}>What's included in every plan</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"0.35rem"}}>
+              {["AI Coach 24/7","Meal Plans + Recipes","Workout Builder","Macro Tracker","12-Week Programme","Progress Tracking","Supplement Guide","Habit Tracker"].map((f,i)=>(
+                <span key={i} style={{fontSize:"0.72rem",background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.6)",borderRadius:"20px",padding:"0.2rem 0.6rem",fontFamily:"Barlow,sans-serif"}}>{f}</span>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Swipeable plan cards */}
-        <div style={{overflow:"hidden",touchAction:"pan-y",marginBottom:"1rem"}}
+        <div style={{overflow:"hidden",touchAction:"pan-y",marginBottom:"0.75rem"}}
           onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
           onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
         >
-          <div style={{display:"flex",transition:isDragging?"none":"transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",transform:`translateX(calc(-${slide*100}% + ${dragOffset}px))`,willChange:"transform"}}>
-            {plans.map((plan,i)=>(
-              <div key={plan.id} style={{minWidth:"100%",padding:"0 1.25rem",userSelect:"none"}}>
+          <div style={{display:"flex",transition:isDragging?"none":"transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",transform:`translateX(calc(-${slide*100}% + ${dragOffset}px))`,willChange:"transform",userSelect:"none"}}>
+            {plans.map((p,i)=>(
+              <div key={p.id} style={{minWidth:"100%",padding:"0 1.25rem"}}>
                 <div style={{
-                  background:plan.highlight?"linear-gradient(135deg,rgba(204,255,0,0.1),rgba(150,220,0,0.04))":"rgba(255,255,255,0.06)",
-                  border:`2px solid ${plan.highlight?"rgba(204,255,0,0.35)":"rgba(255,255,255,0.1)"}`,
-                  borderRadius:"24px",padding:"2rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+                  background:p.highlight?"linear-gradient(135deg,rgba(204,255,0,0.09),rgba(150,220,0,0.04))":"rgba(255,255,255,0.06)",
+                  border:`2px solid ${p.highlight?"rgba(204,255,0,0.4)":p.id==="lifetime"?"rgba(251,191,36,0.3)":"rgba(255,255,255,0.1)"}`,
+                  borderRadius:"24px",padding:"1.75rem",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
                   position:"relative",overflow:"hidden",cursor:"grab",
-                  boxShadow:plan.highlight?"0 0 40px rgba(204,255,0,0.08)":"none",
+                  boxShadow:p.highlight?"0 0 40px rgba(204,255,0,0.07)":p.id==="lifetime"?"0 0 30px rgba(251,191,36,0.07)":"none",
                 }}>
-                  {plan.highlight&&<div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(25px)",pointerEvents:"none"}}/>}
+                  {/* Glow */}
+                  <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:p.highlight?"rgba(204,255,0,0.07)":p.id==="lifetime"?"rgba(251,191,36,0.07)":"rgba(255,255,255,0.03)",filter:"blur(30px)",pointerEvents:"none"}}/>
 
-                  {plan.badge&&(
-                    <div style={{position:"absolute",top:"16px",right:"16px",background:C.lime,color:"#000",fontSize:"0.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",padding:"4px 10px",borderRadius:"20px"}}>{plan.badge}</div>
+                  {/* Badge */}
+                  {p.badge&&(
+                    <div style={{position:"absolute",top:"16px",right:"16px",background:p.id==="lifetime"?"#fbbf24":C.lime,color:"#000",fontSize:"0.6rem",fontWeight:900,fontFamily:"Barlow Condensed,sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",padding:"4px 10px",borderRadius:"20px"}}>{p.badge}</div>
                   )}
 
-                  <div style={{marginBottom:"1.25rem"}}>
-                    <div style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:plan.highlight?C.lime:"rgba(255,255,255,0.45)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>{plan.label}</div>
-                    <div style={{display:"flex",alignItems:"flex-end",gap:"0.4rem",marginBottom:"0.2rem"}}>
-                      <div style={{fontSize:"3.8rem",fontWeight:900,color:plan.highlight?C.lime:C.white,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,letterSpacing:"-0.03em"}}>{plan.price}</div>
-                      <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",paddingBottom:"0.4rem"}}>{plan.period}</div>
+                  {/* Price */}
+                  <div style={{marginBottom:"1rem"}}>
+                    <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:p.highlight?C.lime:p.id==="lifetime"?"#fbbf24":"rgba(255,255,255,0.45)",fontFamily:"Barlow Condensed,sans-serif",marginBottom:"0.35rem"}}>{p.label}</div>
+                    <div style={{display:"flex",alignItems:"flex-end",gap:"0.35rem",marginBottom:"0.2rem"}}>
+                      <div style={{fontSize:"3.8rem",fontWeight:900,color:p.highlight?C.lime:p.id==="lifetime"?"#fbbf24":C.white,fontFamily:"Barlow Condensed,sans-serif",lineHeight:1,letterSpacing:"-0.03em"}}>{p.price}</div>
+                      <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"Barlow,sans-serif",fontSize:"0.85rem",paddingBottom:"0.5rem"}}>{p.period}</div>
                     </div>
-                    <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>{plan.billing}</div>
-                    {plan.priceNote&&<div style={{fontSize:"0.75rem",fontWeight:800,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.06em",marginTop:"0.25rem"}}>🎉 {plan.priceNote}</div>}
+                    <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"Barlow,sans-serif"}}>{p.billing}</div>
+                    {p.trial&&<div style={{fontSize:"0.75rem",fontWeight:800,color:C.lime,fontFamily:"Barlow Condensed,sans-serif",letterSpacing:"0.06em",marginTop:"0.3rem"}}>🎁 {p.trial} included</div>}
+                    {p.priceNote&&<div style={{fontSize:"0.75rem",fontWeight:800,color:"#4ade80",fontFamily:"Barlow Condensed,sans-serif",letterSpacing:"0.06em",marginTop:"0.15rem"}}>💰 {p.priceNote}</div>}
                   </div>
 
-                  <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"1rem",marginBottom:"1.5rem"}}>
-                    {["AI Meal Planner + recipes","Personalised workout builder","AI coach 24/7","Macro tracker","Progress tracking","Habit & mindset tools","Supplement guide","Nutrition articles",...plan.features].map((f,j)=>(
-                      <div key={j} style={{display:"flex",gap:"0.6rem",alignItems:"center",padding:"0.3rem 0"}}>
-                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill={plan.highlight?"rgba(204,255,0,0.15)":"rgba(255,255,255,0.08)"} stroke={plan.highlight?"rgba(204,255,0,0.3)":"rgba(255,255,255,0.12)"} strokeWidth="1"/><polyline points="4,8 7,11 12,5" fill="none" stroke={plan.highlight?C.lime:"rgba(255,255,255,0.5)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        <span style={{color:j<8?"rgba(255,255,255,0.55)":"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",fontSize:"0.84rem",fontWeight:j>=8?600:400}}>{f}</span>
+                  {/* Features */}
+                  <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:"0.9rem",marginBottom:"1.25rem"}}>
+                    {["AI Meal Planner + recipes","Personalised workout builder","AI coach 24/7","Macro & calorie tracker","Progress & body tracking","Habit & mindset tools","Supplement guide","12-week science programme",...p.features].map((f,j)=>(
+                      <div key={j} style={{display:"flex",gap:"0.55rem",alignItems:"center",padding:"0.28rem 0"}}>
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill={p.highlight?"rgba(204,255,0,0.12)":p.id==="lifetime"?"rgba(251,191,36,0.1)":"rgba(255,255,255,0.07)"} stroke={p.highlight?"rgba(204,255,0,0.25)":p.id==="lifetime"?"rgba(251,191,36,0.25)":"rgba(255,255,255,0.1)"} strokeWidth="1"/><polyline points="4,8 7,11 12,5" fill="none" stroke={p.highlight?C.lime:p.id==="lifetime"?"#fbbf24":"rgba(255,255,255,0.45)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <span style={{color:j<8?"rgba(255,255,255,0.52)":"rgba(255,255,255,0.75)",fontFamily:"Barlow,sans-serif",fontSize:"0.82rem",fontWeight:j>=8?600:400}}>{f}</span>
                       </div>
                     ))}
                   </div>
 
-                  <button onClick={handleSubscribe} disabled={loading} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"0.95rem",background:plan.highlight?C.lime:"rgba(255,255,255,0.12)",color:plan.highlight?"#000":C.white,border:plan.highlight?"none":"1px solid rgba(255,255,255,0.15)",boxShadow:plan.highlight?"0 0 24px rgba(204,255,0,0.3)":"none"}}>
-                    {loading?"Setting up...":plan.id==="monthly"?"Start Monthly →":"Get Started →"}
+                  {/* CTA */}
+                  <button onClick={()=>selectPlan(p)} style={{
+                    ...s.btn,width:"100%",padding:"1rem",fontSize:"0.95rem",
+                    background:p.highlight?C.lime:p.id==="lifetime"?"#fbbf24":"rgba(255,255,255,0.1)",
+                    color:p.highlight||p.id==="lifetime"?"#000":C.white,
+                    border:p.highlight||p.id==="lifetime"?"none":"1px solid rgba(255,255,255,0.15)",
+                    boxShadow:p.highlight?"0 0 24px rgba(204,255,0,0.25)":p.id==="lifetime"?"0 0 24px rgba(251,191,36,0.2)":"none",
+                  }}>
+                    {p.id==="lifetime"?"Get Lifetime Access →":p.trial?`Start Free Trial →`:"Get Started →"}
                   </button>
+                  {p.trial&&<div style={{textAlign:"center",fontSize:"0.7rem",color:"rgba(255,255,255,0.28)",fontFamily:"Barlow,sans-serif",marginTop:"0.5rem"}}>Free for 7 days, then {p.price} {p.period}</div>}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Dot indicators */}
-        <div style={{display:"flex",gap:"6px",justifyContent:"center",marginBottom:"1.5rem"}}>
-          {plans.map((_,i)=>(
-            <div key={i} onClick={()=>goTo(i)} style={{height:"4px",borderRadius:"2px",background:i===slide?C.lime:"rgba(255,255,255,0.18)",width:i===slide?24:6,transition:"all 0.3s ease",cursor:"pointer"}}/>
-          ))}
+        {/* Dots */}
+        <div style={{display:"flex",gap:"6px",justifyContent:"center",marginBottom:"0.75rem"}}>
+          {plans.map((_,i)=><div key={i} onClick={()=>goTo(i)} style={{height:"4px",borderRadius:"2px",background:i===slide?C.lime:"rgba(255,255,255,0.18)",width:i===slide?24:6,transition:"all 0.3s ease",cursor:"pointer"}}/>)}
         </div>
 
-        {/* Plan labels */}
-        <div style={{display:"flex",justifyContent:"center",gap:"0.5rem",marginBottom:"1.5rem",padding:"0 1.25rem"}}>
+        {/* Plan selector pills */}
+        <div style={{display:"flex",gap:"0.4rem",padding:"0 1.25rem",marginBottom:"1.25rem"}}>
           {plans.map((p,i)=>(
-            <button key={p.id} onClick={()=>goTo(i)} style={{flex:1,padding:"0.55rem",borderRadius:"10px",border:`1px solid ${i===slide?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.1)"}`,background:i===slide?"rgba(204,255,0,0.08)":"transparent",color:i===slide?C.lime:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all 0.2s"}}>
+            <button key={p.id} onClick={()=>goTo(i)} style={{flex:1,padding:"0.5rem 0.25rem",borderRadius:"10px",border:`1px solid ${i===slide?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.1)"}`,background:i===slide?"rgba(204,255,0,0.08)":"transparent",color:i===slide?C.lime:"rgba(255,255,255,0.35)",fontFamily:"Barlow Condensed,sans-serif",fontWeight:800,fontSize:"0.65rem",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.2s"}}>
               {p.label}
             </button>
           ))}
         </div>
 
-        <p style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif",padding:"0 1.25rem",lineHeight:1.5}}>
-          Secure payment · Instant access · Cancel anytime
+        <p style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"0.7rem",fontFamily:"Barlow,sans-serif",padding:"0 1.25rem"}}>
+          Secure payment via Stripe · Instant access · Cancel anytime
         </p>
       </div>
     </div>
@@ -1792,7 +1799,7 @@ export default function ForgeBodyApp(){
   const[profile,setProfile]=useState(null);
   const[showOnboarding,setShowOnboarding]=useState(false);
   const[showSubscription,setShowSubscription]=useState(false);
-  const[showLanding,setShowLanding]=useState(false);
+  const[page,setPage]=useState("landing"); // landing | plans | signin | app
   const[sidebarOpen,setSidebarOpen]=useState(false);
   const[workoutDayIndex,setWorkoutDayIndex]=useState(undefined);
   const[inWorkout,setInWorkout]=useState(false);
@@ -1800,13 +1807,13 @@ export default function ForgeBodyApp(){
   useEffect(()=>{
     supabase.auth.getSession().then(({data})=>{
       setSession(data.session);
-      if(data.session)checkProfile(data.session.user);
-      else setShowLanding(true);
+      if(data.session){checkProfile(data.session.user);}
+      else setPage("landing");
       setLoading(false);
     });
     const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>{
-      if(sess){setSession(sess);setShowLanding(false);checkProfile(sess.user);}
-      else{setSession(null);setShowLanding(true);}
+      if(sess){setSession(sess);checkProfile(sess.user);}
+      else{setSession(null);setPage("landing");}
     });
     return()=>listener.subscription.unsubscribe();
   },[]);
@@ -1814,36 +1821,56 @@ export default function ForgeBodyApp(){
   async function checkProfile(user){
     try{
       const{data}=await supabase.from("profiles").select("*").eq("user_id",user.id).single();
-      if(!data||!data.onboarded){setShowOnboarding(true);return;}
+      if(!data||!data.onboarded){setShowOnboarding(true);setPage("app");return;}
       setProfile(data);
-      // Check subscription (subscribed field in profile)
       if(!data.subscribed){setShowSubscription(true);}
+      setPage("app");
     }catch(e){
-      // Profile doesn't exist yet — show onboarding
-      setShowOnboarding(true);
+      setShowOnboarding(true);setPage("app");
     }
   }
 
-  async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);setShowLanding(true);setShowSubscription(false);setShowOnboarding(false);}
-
+  async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);setPage("landing");setShowSubscription(false);setShowOnboarding(false);}
   function navigate(t,sub=null){setSidebarOpen(false);if(sub){setSidePanel({screen:sub});setTab("sidebar");}else{setTab(t);setSidePanel(null);}}
   function startWorkout(dayIdx){setWorkoutDayIndex(dayIdx);setInWorkout(true);}
 
   if(loading)return<div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",paddingBottom:0}}><style>{GLASS}</style><LoadingDots/></div>;
 
-  // Not logged in → landing/auth
-  if(!session||showLanding){
+  // Landing page
+  if(page==="landing"){
     return(
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <AuthScreen onSubscribe={()=>{}}/>
+        <LandingPage onSignIn={()=>setPage("signin")} onSelectPlan={()=>setPage("plans")}/>
       </div>
     );
   }
 
-  // Logged in but needs onboarding
-  if(showOnboarding){
+  // Plans page
+  if(page==="plans"){
+    return(
+      <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+        <style>{GLASS}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <SubscriptionWall onSignIn={()=>setPage("signin")} onBack={()=>setPage("landing")}/>
+      </div>
+    );
+  }
+
+  // Sign in page
+  if(page==="signin"||(!session&&page!=="landing"&&page!=="plans")){
+    return(
+      <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+        <style>{GLASS}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <AuthScreen preselectedPlan={localStorage.getItem("fb_pending_plan")}/>
+      </div>
+    );
+  }
+
+  // Onboarding
+  if(session&&showOnboarding){
     return(
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
@@ -1853,13 +1880,13 @@ export default function ForgeBodyApp(){
     );
   }
 
-  // Logged in, onboarded, but not subscribed
-  if(showSubscription){
+  // Subscription gate (paid check)
+  if(session&&showSubscription){
     return(
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <SubscriptionWall user={session.user} onSubscribed={()=>setShowSubscription(false)} onSignOut={signOut}/>
+        <SubscriptionWall onSignIn={signOut} onBack={signOut}/>
       </div>
     );
   }
