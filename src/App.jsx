@@ -711,23 +711,56 @@ function WorkoutBuilder(){
             </div>
           </div>
 
-          {/* Set tracker */}
-          <div style={s.card}>
-            <div style={{...s.label,marginBottom:"0.75rem",color:C.white}}>Track Your Sets</div>
-            {Array.from({length:totalSets},(_,i)=>{
-              const done=completedSets[`${exIdx}-${i}`];
-              const log=setLogs[`${exIdx}-${i}`];
-              return(
-                <button key={i} onClick={()=>!done&&completeSet(exIdx,i)} style={{display:"flex",alignItems:"center",gap:"1rem",padding:"0.85rem 1rem",borderRadius:"12px",border:`1.5px solid ${done?C.lime:"rgba(255,255,255,0.1)"}`,background:done?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.04)",cursor:done?"default":"pointer",transition:"all 0.2s",width:"100%",marginBottom:"0.4rem"}}>
-                  <div style={{width:"24px",height:"24px",borderRadius:"50%",border:`2px solid ${done?C.lime:"rgba(255,255,255,0.2)"}`,background:done?C.lime:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}>
-                    {done&&<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          {/* Set tracker - one at a time */}
+          {(()=>{
+            const completedCount=Array.from({length:totalSets},(_,i)=>completedSets[`${exIdx}-${i}`]).filter(Boolean).length;
+            const currentSet=completedCount;
+            const allDone=completedCount===totalSets;
+            const log=setLogs[`${exIdx}-${currentSet}`];
+            return(
+              <div style={s.card}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+                  <div style={{...s.label,marginBottom:0,color:C.white}}>Set {Math.min(currentSet+1,totalSets)} of {totalSets}</div>
+                  <div style={{display:"flex",gap:"4px"}}>
+                    {Array.from({length:totalSets},(_,i)=>(
+                      <div key={i} style={{width:"24px",height:"4px",borderRadius:"2px",background:i<completedCount?C.lime:i===completedCount?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>
+                    ))}
                   </div>
-                  <span style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.9rem",textTransform:"uppercase",letterSpacing:"0.05em",color:done?C.lime:C.white}}>Set {i+1}</span>
-                  {log?.weight?<span style={{marginLeft:"auto",color:"rgba(255,255,255,0.4)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{log.weight}kg × {log.reps}</span>:<span style={{marginLeft:"auto",color:"rgba(255,255,255,0.25)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{ex.reps} reps</span>}
-                </button>
-              );
-            })}
-          </div>
+                </div>
+                {!allDone?(
+                  <button onClick={()=>completeSet(exIdx,currentSet)} style={{display:"flex",alignItems:"center",gap:"1rem",padding:"1.25rem",borderRadius:"14px",border:`2px solid rgba(204,255,0,0.4)`,background:"rgba(204,255,0,0.06)",cursor:"pointer",width:"100%",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+                    <div style={{width:"40px",height:"40px",borderRadius:"50%",border:`2px solid rgba(204,255,0,0.5)`,background:"rgba(204,255,0,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <span style={{fontWeight:900,fontSize:"1.1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{currentSet+1}</span>
+                    </div>
+                    <div style={{flex:1,textAlign:"left"}}>
+                      <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1rem",textTransform:"uppercase",letterSpacing:"0.05em",color:C.white}}>Complete Set {currentSet+1}</div>
+                      <div style={{color:"rgba(255,255,255,0.45)",fontSize:"0.8rem",fontFamily:"'Barlow',sans-serif",marginTop:"2px"}}>{ex.reps} reps · tap when done</div>
+                    </div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.lime} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  </button>
+                ):(
+                  <div style={{textAlign:"center",padding:"1rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.1rem"}}>All {totalSets} sets complete! 🔥</div>
+                )}
+                {completedCount>0&&(
+                  <div style={{marginTop:"0.75rem",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:"0.75rem"}}>
+                    <div style={{...s.label,marginBottom:"0.5rem"}}>Completed sets</div>
+                    {Array.from({length:completedCount},(_,i)=>{
+                      const lg=setLogs[`${exIdx}-${i}`];
+                      return(
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.4rem 0",borderBottom:i<completedCount-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                          <div style={{width:"20px",height:"20px",borderRadius:"50%",background:C.lime,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                            <svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </div>
+                          <span style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.82rem",textTransform:"uppercase",color:C.lime}}>Set {i+1}</span>
+                          {lg?.weight?<span style={{marginLeft:"auto",color:"rgba(255,255,255,0.5)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{lg.weight}kg × {lg.reps}</span>:<span style={{marginLeft:"auto",color:"rgba(255,255,255,0.3)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif"}}>Done</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem",marginTop:"0.5rem"}}>
             <button onClick={()=>exIdx>0&&setExIdx(i=>i-1)} disabled={exIdx===0} style={{...s.btnOutline,opacity:exIdx===0?0.3:1,padding:"0.85rem"}}>← Prev</button>
@@ -1566,38 +1599,210 @@ function NutritionTips(){
 
 // ─── ICONS ───────────────────────────────────────────────────────────────────
 const Icons={
-  meal:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
-  macros:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>,
-  coach:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill={a?`${C.lime}25`:"none"} stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  more:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+  home:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill={a?"rgba(204,255,0,0.2)":"none"} stroke={a?C.lime:"rgba(255,255,255,0.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  meal:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:"rgba(255,255,255,0.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+  macros:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:"rgba(255,255,255,0.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>,
+  coach:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill={a?"rgba(204,255,0,0.15)":"none"} stroke={a?C.lime:"rgba(255,255,255,0.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  profile:(a)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?C.lime:"rgba(255,255,255,0.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
 };
 
-// ─── MORE MENU ───────────────────────────────────────────────────────────────
-function MoreMenu({setActiveSubTab}){
+// ─── HOME SCREEN ─────────────────────────────────────────────────────────────
+function HomeScreen({profile,user,onNavigate}){
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
+  const totalWorkouts=completedDates.length;
+  const thisWeek=completedDates.filter(d=>(new Date()-new Date(d))/(1000*60*60*24)<=7).length;
+  const memberSince=user?.created_at?new Date(user.created_at).toLocaleDateString("en-AU",{month:"short",year:"numeric"}):"—";
+  const hour=new Date().getHours();
+  const greetText=hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
+  return(
+    <div style={s.content}>
+      <div style={{marginBottom:"1.5rem"}}>
+        <div style={{fontSize:"0.75rem",fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.25rem"}}>{greetText}</div>
+        <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.white,lineHeight:1}}>
+          {profile?.name||"Athlete"} <span style={{color:C.lime}}>🔥</span>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.6rem",marginBottom:"0.75rem"}}>
+        {[{n:totalWorkouts,l:"Workouts"},{n:thisWeek,l:"This Week"},{n:memberSince,l:"Member Since"}].map((x,i)=>(
+          <div key={i} style={s.statCard}>
+            <div style={{...s.statNum,fontSize:i===2?"0.9rem":"2rem"}}>{x.n}</div>
+            <div style={s.statLabel}>{x.l}</div>
+          </div>
+        ))}
+      </div>
+      <div onClick={()=>onNavigate("workout")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.12),rgba(100,180,0,0.06))",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"1.5rem",marginBottom:"0.75rem",cursor:"pointer",backdropFilter:"blur(20px)",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-20px",right:"-20px",width:"100px",height:"100px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(20px)",pointerEvents:"none"}}/>
+        <Eyebrow label={settings.split?"Your Programme":"Start Here"}/>
+        <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.5rem",lineHeight:1}}>
+          {settings.split?"Continue Training":"Set Up Your Programme"}
+        </div>
+        <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",marginBottom:"1rem"}}>
+          {settings.split?`${(settings.split||"").replace("_"," ").toUpperCase()} · ${settings.days} days/week · ${settings.level}`:"Choose your split, level and goal"}
+        </div>
+        <div style={{...s.btn,display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0.7rem 1.25rem",fontSize:"0.85rem"}}>
+          {settings.split?"Start Workout →":"Build My Programme →"}
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+        {[
+          {label:"Meal Planner",desc:"Build today's meals",icon:"🍽️",tab:"meal"},
+          {label:"AI Coach",desc:"Ask anything",icon:"💬",tab:"coach"},
+          {label:"Macro Tracker",desc:"Log your food",icon:"📊",tab:"macros"},
+          {label:"Supplements",desc:"What to take",icon:"💊",sub:"supplements"},
+        ].map((item,i)=>(
+          <div key={i} onClick={()=>item.tab?onNavigate(item.tab):onNavigate("more",item.sub)} style={{...s.card,cursor:"pointer",padding:"1rem"}}>
+            <span style={{fontSize:"1.5rem",display:"block",marginBottom:"0.4rem"}}>{item.icon}</span>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.15rem"}}>{item.label}</div>
+            <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
+          </div>
+        ))}
+      </div>
+      <WorkoutCalendar completedDates={completedDates}/>
+    </div>
+  );
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
+  const[trainingOpen,setTrainingOpen]=useState(false);
+  if(!open)return null;
+  const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
+  function resetTraining(){localStorage.removeItem("fb_workout_settings");onClose();onNavigate("workout");}
+  return(
+    <>
+      <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(8px)",zIndex:200}}/>
+      <div style={{position:"fixed",top:0,left:0,bottom:0,width:"280px",background:"rgba(10,10,10,0.96)",backdropFilter:"blur(40px)",borderRight:"1px solid rgba(255,255,255,0.1)",zIndex:201,overflowY:"auto"}}>
+        <div style={{padding:"1.25rem",borderBottom:"1px solid rgba(255,255,255,0.08)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{fontSize:"1.1rem",fontWeight:900,letterSpacing:"0.05em",color:C.white,textTransform:"uppercase"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+          <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",width:"32px",height:"32px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"1.1rem",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+        <div style={{padding:"1.25rem",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+            <div style={{width:"42px",height:"42px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:"1.1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",flexShrink:0}}>
+              {(profile?.name||user?.email||"A")[0].toUpperCase()}
+            </div>
+            <div>
+              <div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>{profile?.name||"Athlete"}</div>
+              <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{user?.email}</div>
+            </div>
+          </div>
+        </div>
+        <div style={{padding:"0.75rem 0"}}>
+          {[
+            {label:"Workout History",icon:"🗓️",action:()=>{onNavigate("more","history");onClose();}},
+            {label:"Body Measurements",icon:"📏",action:()=>{onNavigate("more","measurements");onClose();}},
+            {label:"Progress Tracker",icon:"📈",action:()=>{onNavigate("more","progress");onClose();}},
+            {label:"Supplement Guide",icon:"💊",action:()=>{onNavigate("more","supplements");onClose();}},
+            {label:"Nutrition Articles",icon:"📚",action:()=>{onNavigate("more","articles");onClose();}},
+            {label:"Mindset & Habits",icon:"🧠",action:()=>{onNavigate("more","habits");onClose();}},
+          ].map((item,i)=>(
+            <button key={i} onClick={item.action} style={{display:"flex",alignItems:"center",gap:"0.75rem",width:"100%",padding:"0.85rem 1.25rem",background:"transparent",border:"none",cursor:"pointer",textAlign:"left"}}>
+              <span style={{fontSize:"1.2rem",flexShrink:0}}>{item.icon}</span>
+              <span style={{fontWeight:700,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:"rgba(255,255,255,0.8)",letterSpacing:"0.04em"}}>{item.label}</span>
+            </button>
+          ))}
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",marginTop:"0.5rem",paddingTop:"0.5rem"}}>
+            <button onClick={()=>setTrainingOpen(!trainingOpen)} style={{display:"flex",alignItems:"center",gap:"0.75rem",width:"100%",padding:"0.85rem 1.25rem",background:"transparent",border:"none",cursor:"pointer",textAlign:"left"}}>
+              <span style={{fontSize:"1.2rem"}}>⚙️</span>
+              <span style={{fontWeight:700,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:"rgba(255,255,255,0.8)",letterSpacing:"0.04em",flex:1}}>Training Settings</span>
+              <span style={{color:"rgba(255,255,255,0.4)",fontSize:"0.9rem"}}>{trainingOpen?"▲":"▼"}</span>
+            </button>
+            {trainingOpen&&(
+              <div style={{padding:"0 1.25rem 0.75rem"}}>
+                {settings.split?(
+                  <>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem",marginBottom:"0.75rem"}}>
+                      {[{l:"Split",v:(settings.split||"").replace("_"," ")},{l:"Days",v:settings.days},{l:"Level",v:settings.level},{l:"Goal",v:settings.wGoal}].map((x,i)=>x.v?(
+                        <div key={i} style={{background:"rgba(255,255,255,0.05)",borderRadius:"8px",padding:"0.5rem 0.75rem"}}>
+                          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+                          <div style={{fontSize:"0.82rem",fontWeight:800,color:C.white,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"capitalize"}}>{x.v}</div>
+                        </div>
+                      ):null)}
+                    </div>
+                    <button onClick={resetTraining} style={{...s.btnOutline,width:"100%",fontSize:"0.8rem",padding:"0.6rem"}}>Change Programme →</button>
+                  </>
+                ):(
+                  <button onClick={()=>{onNavigate("workout");onClose();}} style={{...s.btn,width:"100%",fontSize:"0.8rem",padding:"0.6rem"}}>Set Up Programme →</button>
+                )}
+              </div>
+            )}
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",marginTop:"0.5rem",paddingTop:"0.5rem"}}>
+            <button onClick={()=>{onNavigate("more","profile-sub");onClose();}} style={{display:"flex",alignItems:"center",gap:"0.75rem",width:"100%",padding:"0.85rem 1.25rem",background:"transparent",border:"none",cursor:"pointer",textAlign:"left"}}>
+              <span style={{fontSize:"1.2rem"}}>💳</span>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:"rgba(255,255,255,0.8)",letterSpacing:"0.04em"}}>Subscription</div>
+                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",marginTop:"1px"}}>$19/month · Active</div>
+              </div>
+              <span style={s.tag}>Pro</span>
+            </button>
+            <button style={{display:"flex",alignItems:"center",gap:"0.75rem",width:"100%",padding:"0.85rem 1.25rem",background:"transparent",border:"none",cursor:"pointer",textAlign:"left"}}>
+              <span style={{fontSize:"1.2rem"}}>💬</span>
+              <span style={{fontWeight:700,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:"rgba(255,255,255,0.8)",letterSpacing:"0.04em"}}>Support</span>
+            </button>
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",marginTop:"0.5rem",padding:"0.75rem 1.25rem"}}>
+            <button onClick={onSignOut} style={{...s.btnOutline,width:"100%",fontSize:"0.85rem",color:"rgba(255,100,100,0.8)",borderColor:"rgba(255,100,100,0.2)"}}>Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── PROFILE TAB ─────────────────────────────────────────────────────────────
+function ProfileTab({user,onSignOut,onNavigate}){
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const thisWeek=completedDates.filter(d=>(new Date()-new Date(d))/(1000*60*60*24)<=7).length;
+  const thisMonth=completedDates.filter(d=>(new Date()-new Date(d))/(1000*60*60*24)<=30).length;
+  const memberSince=user?.created_at?new Date(user.created_at).toLocaleDateString("en-AU",{month:"long",year:"numeric"}):"—";
+  const avgPerWeek=completedDates.length>0?Math.round(completedDates.length/Math.max(1,Math.ceil((new Date()-new Date(completedDates[0]))/(1000*60*60*24*7)))):0;
   const items=[
-    {id:"progress",label:"Progress Tracker",desc:"Log weight & workouts",icon:"📈"},
+    {id:"progress",label:"Progress Tracker",desc:"Weight & workout log",icon:"📈"},
     {id:"measurements",label:"Body Measurements",desc:"Track every inch",icon:"📏"},
     {id:"history",label:"Workout History",desc:"Every session logged",icon:"🗓️"},
     {id:"supplements",label:"Supplement Guide",desc:"Evidence-based recs",icon:"💊"},
-    {id:"habits",label:"Mindset & Habits",desc:"Daily check-in & streaks",icon:"🧠"},
-    {id:"articles",label:"Nutrition & Tips",desc:"Learn from the science",icon:"📚"},
-    {id:"profile",label:"Profile & Account",desc:"Settings & subscription",icon:"👤"},
+    {id:"habits",label:"Mindset & Habits",desc:"Daily streaks",icon:"🧠"},
+    {id:"articles",label:"Nutrition & Tips",desc:"Learn the science",icon:"📚"},
   ];
   return(
     <div style={s.content}>
-      <Eyebrow label="More Features"/>
-      <h2 style={s.sectionTitle}>More</h2>
-      <p style={s.sectionSub}>All your tools in one place.</p>
-      <WaterTracker/>
-      <OneRMCalc/>
-      {items.map(item=>(
-        <div key={item.id} onClick={()=>setActiveSubTab(item.id)} style={{...s.card,cursor:"pointer",display:"flex",alignItems:"center",gap:"1rem"}}>
-          <span style={{fontSize:"1.4rem",flexShrink:0}}>{item.icon}</span>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",marginBottom:"0.2rem"}}>{item.label}</div>
-            <div style={{color:C.mutedLight,fontSize:"0.8rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
+      <Eyebrow label="Your Profile"/>
+      <h2 style={s.sectionTitle}>Profile</h2>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem",marginBottom:"0.75rem"}}>
+        {[{n:completedDates.length,l:"Total Workouts"},{n:thisWeek,l:"This Week"},{n:thisMonth,l:"This Month"},{n:avgPerWeek||"—",l:"Avg / Week"}].map((x,i)=>(
+          <div key={i} style={s.statCard}><div style={s.statNum}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
+        ))}
+      </div>
+      <div style={s.card}>
+        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1rem"}}>
+          <div style={{width:"46px",height:"46px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:"1.2rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",flexShrink:0}}>
+            {user.email[0].toUpperCase()}
           </div>
-          <span style={{color:C.lime,fontSize:"1.1rem"}}>→</span>
+          <div>
+            <div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.03em",fontSize:"0.9rem",color:C.white}}>{user.email}</div>
+            <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>Member since {memberSince}</div>
+          </div>
+        </div>
+        <div style={{...s.card,background:"rgba(204,255,0,0.07)",borderColor:"rgba(204,255,0,0.2)",padding:"0.85rem",marginBottom:"0.75rem"}}>
+          <div style={{fontSize:"0.65rem",color:C.lime,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>ForgeBody Pro · $19/month · Active</div>
+        </div>
+        <button onClick={onSignOut} style={{...s.btnOutline,width:"100%",color:"rgba(255,100,100,0.8)",borderColor:"rgba(255,100,100,0.2)"}}>Sign Out</button>
+      </div>
+      <div style={{...s.card,background:"rgba(204,255,0,0.04)",borderColor:"rgba(204,255,0,0.15)"}}>
+        <p style={{color:C.lime,fontWeight:800,fontSize:"0.65rem",letterSpacing:"0.15em",textTransform:"uppercase",margin:"0 0 0.35rem",fontFamily:"'Barlow Condensed',sans-serif"}}>Founding Member?</p>
+        <p style={{color:"rgba(255,255,255,0.45)",margin:0,fontSize:"0.85rem",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>Bought the $27 PDF guide? Email your receipt to support@forgebody.com for free lifetime access.</p>
+      </div>
+      <div style={{...s.label,marginBottom:"0.75rem",marginTop:"0.25rem"}}>Quick Access</div>
+      {items.map(item=>(
+        <div key={item.id} onClick={()=>onNavigate("more",item.id)} style={{...s.card,cursor:"pointer",display:"flex",alignItems:"center",gap:"1rem",padding:"1rem 1.25rem",marginBottom:"0.5rem"}}>
+          <span style={{fontSize:"1.3rem",flexShrink:0}}>{item.icon}</span>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.white,marginBottom:"0.15rem"}}>{item.label}</div>
+            <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
+          </div>
+          <span style={{color:C.lime,fontSize:"1rem"}}>→</span>
         </div>
       ))}
     </div>
@@ -1608,10 +1813,11 @@ function MoreMenu({setActiveSubTab}){
 export default function ForgeBodyApp(){
   const[session,setSession]=useState(null);
   const[loading,setLoading]=useState(true);
-  const[tab,setTab]=useState("workout");
-  const[subTab,setSubTab]=useState("more_menu");
+  const[tab,setTab]=useState("home");
+  const[subTab,setSubTab]=useState(null);
   const[profile,setProfile]=useState(null);
   const[showOnboarding,setShowOnboarding]=useState(false);
+  const[sidebarOpen,setSidebarOpen]=useState(false);
 
   useEffect(()=>{
     supabase.auth.getSession().then(({data})=>{
@@ -1633,10 +1839,14 @@ export default function ForgeBodyApp(){
   }
 
   async function signOut(){await supabase.auth.signOut();setSession(null);setProfile(null);}
-  function handleTabChange(t){setTab(t);if(t==="more")setSubTab("more_menu");}
+
+  function navigate(t,sub=null){setTab(t);setSubTab(sub);setSidebarOpen(false);}
+  function handleTabChange(t){setTab(t);setSubTab(null);}
 
   if(loading)return<div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",paddingBottom:0}}><LoadingDots/></div>;
   if(session&&showOnboarding)return<Onboarding user={session.user} onComplete={p=>{setProfile(p);setShowOnboarding(false);}}/>;
+
+  const showBack=subTab&&tab==="more";
 
   return(
     <div style={s.app}>
@@ -1644,49 +1854,59 @@ export default function ForgeBodyApp(){
       <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
       {!session?<AuthScreen/>:(
         <>
+          <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
           <nav style={s.nav}>
-            {tab==="more"&&subTab!=="more_menu"
-              ?<button onClick={()=>setSubTab("more_menu")} style={{...s.btnSm,background:"transparent",color:C.mutedLight,border:`1px solid ${C.cardBorder}`}}>← Back</button>
-              :<div style={{width:"60px"}}/>}
-            <div style={s.logo}>FORGE<span style={s.logoSlash}>/</span>BODY</div>
-            <div style={{width:"60px",textAlign:"right"}}>{profile?.name&&<span style={{color:C.mutedLight,fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{profile.name}</span>}</div>
+            {showBack
+              ?<button onClick={()=>setSubTab(null)} style={s.btnSm}>← Back</button>
+              :<button onClick={()=>setSidebarOpen(true)} style={{background:"transparent",border:"none",cursor:"pointer",padding:"4px",display:"flex",flexDirection:"column",gap:"5px"}}>
+                <div style={{width:"20px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
+                <div style={{width:"14px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
+                <div style={{width:"20px",height:"2px",background:"rgba(255,255,255,0.6)",borderRadius:"1px"}}/>
+              </button>
+            }
+            <button onClick={()=>handleTabChange("home")} style={{background:"transparent",border:"none",cursor:"pointer",...s.logo}}>
+              FORGE<span style={s.logoSlash}>/</span>BODY
+            </button>
+            <div style={{width:"44px",textAlign:"right"}}>
+              {profile?.name&&<span style={{color:"rgba(255,255,255,0.35)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>{profile.name.split(" ")[0]}</span>}
+            </div>
           </nav>
 
+          {tab==="home"&&<HomeScreen profile={profile} user={session.user} onNavigate={navigate}/>}
           {tab==="meal"&&<MealPlanner/>}
           {tab==="workout"&&<WorkoutBuilder/>}
           {tab==="macros"&&<MacroTracker/>}
           {tab==="coach"&&<AICoach/>}
+          {tab==="profile"&&<ProfileTab user={session.user} onSignOut={signOut} onNavigate={navigate}/>}
           {tab==="more"&&(
             <>
-              {subTab==="more_menu"&&<MoreMenu setActiveSubTab={setSubTab}/>}
               {subTab==="progress"&&<Progress user={session.user}/>}
               {subTab==="measurements"&&<BodyMeasurements user={session.user}/>}
               {subTab==="history"&&<WorkoutHistory user={session.user}/>}
               {subTab==="supplements"&&<SupplementGuide/>}
               {subTab==="habits"&&<MindsetHabits/>}
               {subTab==="articles"&&<NutritionTips/>}
-              {subTab==="profile"&&<ProfileTab user={session.user} onSignOut={signOut}/>}
             </>
           )}
 
           <nav style={s.bottomNav}>
-            <button onClick={()=>handleTabChange("meal")} style={{...s.navBtn,color:tab==="meal"?C.lime:C.muted}}>
+            <button onClick={()=>handleTabChange("home")} style={{...s.navBtn,color:tab==="home"?C.lime:"rgba(255,255,255,0.35)"}}>
+              {Icons.home(tab==="home")}<span>Home</span>
+            </button>
+            <button onClick={()=>handleTabChange("meal")} style={{...s.navBtn,color:tab==="meal"?C.lime:"rgba(255,255,255,0.35)"}}>
               {Icons.meal(tab==="meal")}<span>Meals</span>
             </button>
-            <button onClick={()=>handleTabChange("macros")} style={{...s.navBtn,color:tab==="macros"?C.lime:C.muted}}>
-              {Icons.macros(tab==="macros")}<span>Macros</span>
-            </button>
             <button onClick={()=>handleTabChange("workout")} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",border:"none",background:"transparent",cursor:"pointer",padding:"0",position:"relative",top:"-10px"}}>
-              <div style={{background:tab==="workout"?C.lime:"#1a1a1a",border:`2px solid ${tab==="workout"?C.lime:C.cardBorder}`,borderRadius:"50%",width:"54px",height:"54px",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:tab==="workout"?`0 0 22px ${C.lime}55`:"none",transition:"all 0.2s"}}>
-                <span style={{fontSize:"0.52rem",fontWeight:900,letterSpacing:"0.04em",color:tab==="workout"?C.black:C.mutedLight,fontFamily:"'Barlow Condensed',sans-serif",textAlign:"center",lineHeight:1.1,textTransform:"uppercase"}}>FORGE<br/>/BODY</span>
+              <div style={{background:tab==="workout"?C.lime:"rgba(255,255,255,0.08)",border:`2px solid ${tab==="workout"?C.lime:"rgba(255,255,255,0.15)"}`,borderRadius:"50%",width:"54px",height:"54px",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:tab==="workout"?"0 0 24px rgba(204,255,0,0.5)":"none",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+                <span style={{fontSize:"0.52rem",fontWeight:900,letterSpacing:"0.04em",color:tab==="workout"?C.black:"rgba(255,255,255,0.6)",fontFamily:"'Barlow Condensed',sans-serif",textAlign:"center",lineHeight:1.1,textTransform:"uppercase"}}>FORGE<br/>/BODY</span>
               </div>
-              <span style={{fontSize:"0.55rem",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:tab==="workout"?C.lime:C.muted,fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>Train</span>
+              <span style={{fontSize:"0.55rem",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:tab==="workout"?C.lime:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>Train</span>
             </button>
-            <button onClick={()=>handleTabChange("coach")} style={{...s.navBtn,color:tab==="coach"?C.lime:C.muted}}>
+            <button onClick={()=>handleTabChange("coach")} style={{...s.navBtn,color:tab==="coach"?C.lime:"rgba(255,255,255,0.35)"}}>
               {Icons.coach(tab==="coach")}<span>Coach</span>
             </button>
-            <button onClick={()=>handleTabChange("more")} style={{...s.navBtn,color:tab==="more"?C.lime:C.muted}}>
-              {Icons.more(tab==="more")}<span>More</span>
+            <button onClick={()=>handleTabChange("profile")} style={{...s.navBtn,color:tab==="profile"?C.lime:"rgba(255,255,255,0.35)"}}>
+              {Icons.profile(tab==="profile")}<span>Profile</span>
             </button>
           </nav>
         </>
