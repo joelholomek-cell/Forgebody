@@ -637,21 +637,30 @@ function SubscriptionWall({user,onBack,onSubscribed}){
 }
 
 // ─── PAYMENT SUCCESS ─────────────────────────────────────────────────────────
-function PaymentSuccess({onContinue}){
+function PaymentSuccess({onContinue,onAlreadyPaid}){
   const[count,setCount]=useState(5);
+  const[processing,setProcessing]=useState(true);
+
   useEffect(()=>{
+    // Give Supabase update 3 seconds to complete before countdown
+    const wait=setTimeout(()=>setProcessing(false),3000);
+    return()=>clearTimeout(wait);
+  },[]);
+
+  useEffect(()=>{
+    if(processing)return;
     if(count<=0){onContinue();return;}
     const t=setTimeout(()=>setCount(c=>c-1),1000);
     return()=>clearTimeout(t);
-  },[count]);
+  },[count,processing]);
+
   return(
     <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",position:"relative",textAlign:"center"}}>
       <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 40%,rgba(204,255,0,0.15) 0%,transparent 60%)",pointerEvents:"none"}}/>
       <div style={{position:"relative",zIndex:1,maxWidth:"400px",width:"100%"}}>
-        {/* Animated checkmark */}
         <div style={{width:"90px",height:"90px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",border:"2px solid rgba(204,255,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 1.5rem",boxShadow:"0 0 40px rgba(204,255,0,0.2)"}}>
           <svg width="40" height="40" viewBox="0 0 50 50" fill="none">
-            <polyline points="10,25 20,35 40,15" stroke={C.lime} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{strokeDasharray:60,strokeDashoffset:0,animation:"none"}}/>
+            <polyline points="10,25 20,35 40,15" stroke={C.lime} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
         <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.5rem",lineHeight:1}}>
@@ -660,8 +669,7 @@ function PaymentSuccess({onContinue}){
         <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",lineHeight:1.6,marginBottom:"2rem"}}>
           Welcome to ForgeBody. Your transformation starts now.
         </div>
-        {/* What they unlocked */}
-        <div style={{...s.card,textAlign:"left",marginBottom:"1.5rem"}}>
+        <div style={s.card}>
           <div style={{...s.label,color:C.lime,marginBottom:"0.75rem"}}>You now have access to</div>
           {[
             {icon:"🏋️",text:"Personalised workout programme"},
@@ -676,12 +684,21 @@ function PaymentSuccess({onContinue}){
             </div>
           ))}
         </div>
-        <button onClick={onContinue} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.5rem"}}>
-          Enter ForgeBody →
+
+        <button onClick={onContinue} style={{...s.btn,width:"100%",padding:"1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.75rem"}}>
+          {processing?"Setting up your account...":"Enter ForgeBody →"}
         </button>
-        <div style={{color:"rgba(255,255,255,0.25)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>
-          Auto-continuing in {count}s...
-        </div>
+
+        {!processing&&(
+          <div style={{color:"rgba(255,255,255,0.25)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif",marginBottom:"1.5rem"}}>
+            Auto-continuing in {count}s...
+          </div>
+        )}
+
+        {/* Failsafe — only visible on success screen */}
+        <button onClick={onAlreadyPaid} style={{background:"transparent",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"0.65rem 1rem",color:"rgba(255,255,255,0.35)",fontSize:"0.78rem",fontFamily:"'Barlow',sans-serif",cursor:"pointer",width:"100%"}}>
+          Having trouble accessing the app? Tap here
+        </button>
       </div>
     </div>
   );
@@ -1836,7 +1853,6 @@ export default function ForgeBodyApp(){
     if(params.get("payment")==="success"||params.get("session_id")){
       setShowSuccess(true);
       window.history.replaceState({},"",window.location.pathname);
-      // Mark subscribed in Supabase if we have a session
       supabase.auth.getSession().then(async({data})=>{
         if(data.session){
           const plan=localStorage.getItem("fb_pending_plan")||"monthly";
@@ -1848,7 +1864,10 @@ export default function ForgeBodyApp(){
           },{onConflict:"user_id"});
           localStorage.removeItem("fb_pending_plan");
           localStorage.removeItem("fb_pending_user");
-          setShowSubscription(false); // clear paywall
+          setShowSubscription(false);
+          // Re-fetch profile so app knows they're subscribed
+          const{data:profileData}=await supabase.from("profiles").select("*").eq("user_id",data.session.user.id).single();
+          if(profileData)setProfile(profileData);
         }
       });
     }
@@ -1901,7 +1920,20 @@ export default function ForgeBodyApp(){
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <PaymentSuccess onContinue={()=>{setShowSuccess(false);if(session)setPage("app");else setPage("signin");}}/>
+        <PaymentSuccess
+          onContinue={()=>{setShowSuccess(false);if(session)setPage("app");else setPage("signin");}}
+          onAlreadyPaid={async()=>{
+            if(session){
+              const plan=localStorage.getItem("fb_pending_plan")||"monthly";
+              await supabase.from("profiles").upsert({user_id:session.user.id,subscribed:true,plan,subscribed_at:new Date().toISOString()},{onConflict:"user_id"});
+              const{data}=await supabase.from("profiles").select("*").eq("user_id",session.user.id).single();
+              if(data)setProfile(data);
+              setShowSubscription(false);
+            }
+            setShowSuccess(false);
+            setPage("app");
+          }}
+        />
       </div>
     );
   }
