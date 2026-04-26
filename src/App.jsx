@@ -1229,6 +1229,7 @@ function WorkoutSession({dayIndex,onDone}){
           <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"1rem"}}>{[...new Set(exercises.map(e=>e.muscle))].map(m=><span key={m} style={s.tag}>{m}</span>)}</div>
           <button onClick={()=>setMode("exercise")} style={{...s.btn,width:"100%",padding:"0.9rem",borderRadius:"12px"}}>Start Workout →</button>
         </div>
+        <WarmUpGenerator muscles={[...new Set(exercises.map(e=>e.muscle))]}/>
         <div style={s.label}>Exercise Overview</div>
         {exercises.map((ex,i)=>(
           <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
@@ -1239,6 +1240,14 @@ function WorkoutSession({dayIndex,onDone}){
               <div style={{fontWeight:900,fontSize:"0.9rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{ex.name}</div>
               <div style={{display:"flex",gap:"0.3rem",marginTop:"0.2rem"}}><span style={s.tag}>{ex.muscle}</span><span style={s.tagGray}>{ex.sets}×{ex.reps}</span></div>
             </div>
+            <button onClick={()=>{
+              // Swap with next exercise from same muscle group
+              const pool=(EXERCISES[ex.muscle]||[]).filter(e=>e.name!==ex.name);
+              if(pool.length===0)return;
+              const next=pool[Math.floor(Math.random()*pool.length)];
+              exercises[i]={...next,muscle:ex.muscle,sets:ex.sets};
+              setMode("overview"); // re-render
+            }} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"0.35rem 0.6rem",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"0.7rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",flexShrink:0}}>Swap</button>
           </div>
         ))}
       </div>
@@ -1487,6 +1496,35 @@ function MealPlanner(){
           <button onClick={buildPlan} style={{...s.btnGlass,width:"100%",marginTop:"0.25rem"}}>Regenerate Plan</button>
         </>
       )}
+
+      {/* Custom meal creator */}
+      <div style={{...s.card,marginTop:"0.75rem"}}>
+        <button onClick={()=>setShowCustom(!showCustom)} style={{display:"flex",alignItems:"center",width:"100%",background:"transparent",border:"none",cursor:"pointer",padding:0}}>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.white,flex:1,textAlign:"left"}}>+ Add Custom Meal</div>
+          <span style={{color:"rgba(255,255,255,0.4)"}}>{showCustom?"▲":"▼"}</span>
+        </button>
+        {showCustom&&(
+          <div style={{marginTop:"0.75rem"}}>
+            <input style={s.input} placeholder="Meal name" value={customMeal.name} onChange={e=>setCustomMeal(p=>({...p,name:e.target.value}))}/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.5rem"}}>
+              {["cal","p","c","f"].map(k=>(
+                <div key={k}><label style={s.label}>{k==="cal"?"Kcal":k==="p"?"Protein":k==="c"?"Carbs":"Fat"}</label>
+                <input style={{...s.input,marginBottom:0}} type="number" placeholder="0" value={customMeal[k]} onChange={e=>setCustomMeal(p=>({...p,[k]:e.target.value}))}/></div>
+              ))}
+            </div>
+            <button onClick={()=>{
+              if(!customMeal.name)return;
+              const newMeal={id:Date.now(),name:customMeal.name,cal:parseInt(customMeal.cal)||0,p:parseInt(customMeal.p)||0,c:parseInt(customMeal.c)||0,f:parseInt(customMeal.f)||0,meal:"lunch",diet:["standard","vegetarian","vegan","keto","halal","gluten-free"],custom:true};
+              const saved=JSON.parse(localStorage.getItem("fb_custom_meals")||"[]");
+              saved.push(newMeal);
+              localStorage.setItem("fb_custom_meals",JSON.stringify(saved));
+              MEALS.push(newMeal);
+              setCustomMeal({name:"",cal:"",p:"",c:"",f:""});
+              setShowCustom(false);
+            }} style={{...s.btn,width:"100%",marginTop:"0.75rem"}}>Save Meal</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1631,6 +1669,47 @@ function AICoach(){
 }
 
 // ─── PROGRESS ────────────────────────────────────────────────────────────────
+function WeightChart({entries}){
+  if(entries.length<2)return null;
+  const vals=entries.map(e=>e.weight).filter(Boolean);
+  if(vals.length<2)return null;
+  const min=Math.min(...vals)-2,max=Math.max(...vals)+2;
+  const W=320,H=120,PAD=10;
+  const pts=vals.map((v,i)=>{
+    const x=PAD+(i/(vals.length-1))*(W-PAD*2);
+    const y=H-PAD-((v-min)/(max-min))*(H-PAD*2);
+    return[x,y];
+  });
+  const path="M"+pts.map(([x,y])=>`${x},${y}`).join(" L");
+  const fill="M"+pts.map(([x,y])=>`${x},${y}`).join(" L")+` L${pts[pts.length-1][0]},${H} L${pts[0][0]},${H} Z`;
+  const first=vals[0],last=vals[vals.length-1],diff=(first-last).toFixed(1);
+  return(
+    <div style={{...s.card,marginBottom:"0.75rem"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+        <div><Eyebrow label="Weight Trend"/><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>Body Weight</div></div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:"1.5rem",fontWeight:900,color:parseFloat(diff)>0?C.lime:"#f97316",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{parseFloat(diff)>0?"-":"+​"}{Math.abs(diff)}kg</div>
+          <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>Total Change</div>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:"auto",display:"block"}}>
+        <defs>
+          <linearGradient id="wgrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#CCFF00" stopOpacity="0.25"/>
+            <stop offset="100%" stopColor="#CCFF00" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d={fill} fill="url(#wgrad)"/>
+        <path d={path} fill="none" stroke="#CCFF00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        {pts.map(([x,y],i)=>(
+          <circle key={i} cx={x} cy={y} r="3" fill="#CCFF00" opacity={i===0||i===pts.length-1?1:0.5}/>
+        ))}
+        <text x={pts[0][0]} y={H-1} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8">{vals[0]}kg</text>
+        <text x={pts[pts.length-1][0]} y={H-1} textAnchor="middle" fill="#CCFF00" fontSize="8">{vals[vals.length-1]}kg</text>
+      </svg>
+    </div>
+  );
+}
 function Progress({user}){
   const[entries,setEntries]=useState([]);const[loading,setLoading]=useState(true);
   const[weight,setWeight]=useState("");const[calories,setCalories]=useState("");const[workouts,setWorkouts]=useState("");const[saving,setSaving]=useState(false);
@@ -1650,6 +1729,7 @@ function Progress({user}){
       <Eyebrow label="Real-Time"/><h2 style={s.sectionTitle}>Progress</h2><p style={s.sectionSub}>Every check-in saved instantly.</p>
       {loading?<LoadingDots/>:(
         <>
+          <WeightChart entries={entries}/>
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem",marginBottom:"0.75rem"}}>
             {[{n:latest?`${latest.weight}kg`:"—",l:"Current Weight"},{n:totalLoss>0?`-${totalLoss}kg`:"—",l:"Total Lost"},{n:totalWorkouts,l:"Workouts Logged"},{n:entries.length,l:"Check-ins"}].map((x,i)=>(
               <div key={i} style={s.statCard}><div style={s.statNum}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
@@ -1825,6 +1905,189 @@ function NutritionTips(){
       <Eyebrow label="Learn"/><h2 style={s.sectionTitle}>Nutrition & Training</h2><p style={s.sectionSub}>Evidence-based articles to level up your knowledge.</p>
       <div style={{display:"flex",gap:"0.4rem",overflowX:"auto",marginBottom:"1rem",paddingBottom:"4px"}}>{cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{...s.btnSm,flexShrink:0,background:catFilter===c?C.lime:"rgba(255,255,255,0.07)",color:catFilter===c?"#000":C.muted,border:"none"}}>{c}</button>)}</div>
       {filtered.map((a,i)=>(<div key={i} onClick={()=>setSelected(ARTICLES.indexOf(a))} style={{...s.card,cursor:"pointer",display:"flex",gap:"1rem",alignItems:"center"}}><span style={{fontSize:"1.8rem",flexShrink:0}}>{a.emoji}</span><div style={{flex:1}}><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",marginBottom:"0.2rem",lineHeight:1.2,color:C.white}}>{a.title}</div><div style={{display:"flex",gap:"0.35rem",alignItems:"center"}}><span style={s.tag}>{a.cat}</span><span style={{color:"rgba(255,255,255,0.3)",fontSize:"0.7rem",fontFamily:"'Barlow',sans-serif"}}>{a.read} read</span></div></div><span style={{color:C.lime,flexShrink:0}}>→</span></div>))}
+    </div>
+  );
+}
+
+// ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
+function WeeklyRecap({onNavigate}){
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const now=new Date();
+  const dayOfWeek=now.getDay(); // 0=Sun
+  const isSunday=dayOfWeek===0;
+  const startOfWeek=new Date(now);startOfWeek.setDate(now.getDate()-dayOfWeek);startOfWeek.setHours(0,0,0,0);
+  const endOfLastWeek=new Date(startOfWeek);endOfLastWeek.setDate(startOfWeek.getDate()-1);
+  const startOfLastWeek=new Date(endOfLastWeek);startOfLastWeek.setDate(endOfLastWeek.getDate()-6);startOfLastWeek.setHours(0,0,0,0);
+
+  const thisWeekWorkouts=completedDates.filter(d=>{const dt=new Date(d);return dt>=startOfWeek&&dt<=now;}).length;
+  const lastWeekWorkouts=completedDates.filter(d=>{const dt=new Date(d);return dt>=startOfLastWeek&&dt<=endOfLastWeek;}).length;
+
+  // Streak
+  let streak=0;
+  for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))streak++;else if(i>0)break;}
+
+  const pbs=Object.values(getPBs());
+  const recentPBs=pbs.filter(p=>(now-new Date(p.date))/(1000*60*60*24)<=7).length;
+
+  if(!isSunday&&thisWeekWorkouts===0)return null;
+
+  return(
+    <div style={{...s.card,background:"linear-gradient(135deg,rgba(204,255,0,0.09),rgba(150,220,0,0.04))",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(20px)",pointerEvents:"none"}}/>
+      <Eyebrow label={isSunday?"Weekly Recap 📋":"This Week So Far"}/>
+      <div style={{fontSize:"1.3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.75rem",lineHeight:1}}>
+        {isSunday?`Week of ${startOfLastWeek.toLocaleDateString("en-AU",{month:"short",day:"numeric"})}`:`${now.toLocaleDateString("en-AU",{month:"short",day:"numeric"})} Week`}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.75rem"}}>
+        {[{n:isSunday?lastWeekWorkouts:thisWeekWorkouts,l:"Workouts",icon:"🏋️"},{n:`${streak}🔥`,l:"Streak",icon:""},{n:recentPBs>0?recentPBs:"—",l:"New PBs",icon:"🏆"}].map((x,i)=>(
+          <div key={i} style={{background:"rgba(0,0,0,0.25)",borderRadius:"12px",padding:"0.75rem",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
+            <div style={{fontSize:"1.5rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+            <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"3px"}}>{x.l}</div>
+          </div>
+        ))}
+      </div>
+      {lastWeekWorkouts>0&&isSunday&&<div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>
+        {lastWeekWorkouts>=4?"Incredible week. You showed up and delivered.":lastWeekWorkouts>=2?"Solid effort last week. Keep building.":"Every week is a fresh start. Make this one count."}
+      </div>}
+      <button onClick={()=>onNavigate("sidebar","history")} style={{...s.btnSm,width:"100%",padding:"0.6rem",textAlign:"center"}}>View Full History →</button>
+    </div>
+  );
+}
+
+// ─── BADGES ──────────────────────────────────────────────────────────────────
+function BadgesScreen(){
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const pbs=Object.values(getPBs());
+  const total=completedDates.length;
+  let streak=0;
+  for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))streak++;else if(i>0)break;}
+
+  const BADGES=[
+    {id:"first",icon:"🌱",name:"First Rep",desc:"Complete your first workout",unlocked:total>=1},
+    {id:"week",icon:"🔥",name:"On Fire",desc:"7-day workout streak",unlocked:streak>=7},
+    {id:"ten",icon:"💪",name:"10 Strong",desc:"Complete 10 workouts",unlocked:total>=10},
+    {id:"month",icon:"📅",name:"30 Day Warrior",desc:"Complete 30 workouts",unlocked:total>=30},
+    {id:"fifty",icon:"⚡",name:"Elite 50",desc:"Complete 50 workouts",unlocked:total>=50},
+    {id:"century",icon:"🏆",name:"Century Club",desc:"Complete 100 workouts",unlocked:total>=100},
+    {id:"pb1",icon:"🎯",name:"Personal Best",desc:"Set your first PB",unlocked:pbs.length>=1},
+    {id:"pb5",icon:"🏋️",name:"Strength Builder",desc:"Set 5 personal bests",unlocked:pbs.length>=5},
+    {id:"pb10",icon:"👑",name:"Record Breaker",desc:"Set 10 personal bests",unlocked:pbs.length>=10},
+    {id:"streak14",icon:"🌊",name:"Unstoppable",desc:"14-day streak",unlocked:streak>=14},
+    {id:"streak30",icon:"🔱",name:"Iron Will",desc:"30-day streak",unlocked:streak>=30},
+    {id:"streak100",icon:"💎",name:"Legend",desc:"100-day streak",unlocked:streak>=100},
+  ];
+
+  const unlocked=BADGES.filter(b=>b.unlocked).length;
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Achievements"/>
+      <h2 style={s.sectionTitle}>Badges</h2>
+      <p style={s.sectionSub}>Earn badges by hitting milestones.</p>
+      <div style={{...s.card,background:"rgba(204,255,0,0.06)",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem",textAlign:"center",padding:"1.25rem"}}>
+        <div style={{fontSize:"2.5rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{unlocked}<span style={{fontSize:"1.2rem",color:"rgba(255,255,255,0.4)"}}>/{BADGES.length}</span></div>
+        <div style={s.statLabel}>Badges Earned</div>
+        <div style={{...s.progressBar,marginTop:"0.75rem"}}><div style={{...s.progressFill,width:`${Math.round((unlocked/BADGES.length)*100)}%`}}/></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem"}}>
+        {BADGES.map((badge,i)=>(
+          <div key={i} style={{...s.card,padding:"1rem",textAlign:"center",opacity:badge.unlocked?1:0.4,border:`1px solid ${badge.unlocked?"rgba(204,255,0,0.3)":"rgba(255,255,255,0.08)"}`,background:badge.unlocked?"rgba(204,255,0,0.06)":s.card.background,transition:"all 0.2s",marginBottom:0}}>
+            <div style={{fontSize:"2rem",marginBottom:"0.35rem"}}>{badge.icon}</div>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:badge.unlocked?C.white:"rgba(255,255,255,0.4)",marginBottom:"0.2rem",lineHeight:1.2}}>{badge.name}</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.3}}>{badge.desc}</div>
+            {badge.unlocked&&<div style={{...s.tag,fontSize:"0.58rem",marginTop:"0.5rem"}}>Earned ✓</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── WARM-UP GENERATOR ───────────────────────────────────────────────────────
+const WARMUPS={
+  chest:["Arm circles 30 sec","Chest stretch 20 sec each","Push-up negative x5","Band pull-apart x15"],
+  back:["Cat-cow x10","Shoulder dislocates x10","Dead hang 20 sec","Band face pull x15"],
+  shoulders:["Neck rolls 30 sec","Shoulder circles 30 sec","Wall slides x10","Band pull-apart x15"],
+  quads:["Leg swing front-back x10 each","Bodyweight squat x10","Lunge walk x8","Hip circle x10 each"],
+  hamstrings:["Standing toe touch x10","Leg swing side-side x10 each","Good morning x10 BW","Hip hinge practice x10"],
+  glutes:["Glute bridge x15","Clamshell x12 each","Hip circle x10 each","Walking lunge x8"],
+  biceps:["Wrist circles 20 sec","Elbow circles 20 sec","Band curl x12","Forearm stretch 20 sec each"],
+  triceps:["Tricep stretch 20 sec each","Arm circles 30 sec","Wall push-up x10","Band pushdown x12"],
+  core:["Dead bug x8 each","Bird dog x8 each","Plank 20 sec","Hollow hold 15 sec"],
+  hiit:["Jumping jacks x20","High knees 30 sec","Arm swing x20","Bodyweight squat x10"],
+};
+
+function WarmUpGenerator({muscles}){
+  const[show,setShow]=useState(false);
+  const[done,setDone]=useState({});
+  const exercises=[];
+  const seen=new Set();
+  muscles.forEach(m=>{
+    (WARMUPS[m]||[]).forEach(ex=>{if(!seen.has(ex)&&exercises.length<8){exercises.push({m,ex});seen.add(ex);}});
+  });
+  const total=exercises.length;
+  const doneCount=Object.values(done).filter(Boolean).length;
+  return(
+    <div style={{...s.card,marginBottom:"0.75rem"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><Eyebrow label="5 Min Warm-Up"/><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>Warm-Up Generator</div></div>
+        <button onClick={()=>setShow(!show)} style={{...s.btnSm,background:show?"rgba(204,255,0,0.12)":"rgba(255,255,255,0.07)",color:show?C.lime:C.white}}>{show?"Hide":"Show"}</button>
+      </div>
+      {show&&(
+        <div style={{marginTop:"0.75rem"}}>
+          {doneCount>0&&<div style={{...s.progressBar,marginBottom:"0.5rem"}}><div style={{...s.progressFill,width:`${Math.round((doneCount/total)*100)}%`}}/></div>}
+          {exercises.map((item,i)=>(
+            <div key={i} onClick={()=>setDone(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:i<exercises.length-1?"1px solid rgba(255,255,255,0.05)":"none",cursor:"pointer"}}>
+              <div style={{width:"20px",height:"20px",borderRadius:"5px",border:`1.5px solid ${done[i]?C.lime:"rgba(255,255,255,0.15)"}`,background:done[i]?C.lime:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
+                {done[i]&&<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{flex:1,fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif",color:done[i]?"rgba(255,255,255,0.35)":C.white,textDecoration:done[i]?"line-through":"none"}}>{item.ex}</span>
+              <span style={s.tagGray}>{item.m}</span>
+            </div>
+          ))}
+          {doneCount===total&&<div style={{textAlign:"center",padding:"0.75rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",marginTop:"0.25rem"}}>Ready to Train! 🔥</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── REFERRAL SYSTEM ─────────────────────────────────────────────────────────
+function ReferralScreen({user}){
+  const[copied,setCopied]=useState(false);
+  const refCode=(user?.id||"").slice(0,8).toUpperCase();
+  const refLink=`${window.location.origin}?ref=${refCode}`;
+  function copy(){navigator.clipboard.writeText(refLink).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});}
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Refer & Earn"/>
+      <h2 style={s.sectionTitle}>Referrals</h2>
+      <p style={s.sectionSub}>Share ForgeBody. You both win.</p>
+      <div style={{...s.card,background:"linear-gradient(135deg,rgba(204,255,0,0.1),rgba(150,220,0,0.05))",borderColor:"rgba(204,255,0,0.25)",textAlign:"center",padding:"2rem",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(20px)",pointerEvents:"none"}}/>
+        <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>🎁</div>
+        <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.4rem",color:C.white,marginBottom:"0.5rem",lineHeight:1}}>Give 1 Month Free</div>
+        <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",lineHeight:1.6}}>Share your link. When a friend signs up, they get their first month free — and so do you.</div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+        {[{n:"1 Month",l:"Friend gets free"},{n:"1 Month",l:"You get free"}].map((x,i)=>(
+          <div key={i} style={s.statCard}><div style={{...s.statNum,fontSize:"1.3rem"}}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
+        ))}
+      </div>
+      <div style={s.card}>
+        <label style={s.label}>Your referral link</label>
+        <div style={{display:"flex",gap:"0.5rem",alignItems:"center",background:"rgba(0,0,0,0.3)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"0.75rem 1rem",marginBottom:"0.75rem"}}>
+          <div style={{flex:1,fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{refLink}</div>
+        </div>
+        <button onClick={copy} style={{...s.btn,width:"100%",padding:"0.9rem"}}>{copied?"✅ Copied!":"Copy Referral Link"}</button>
+      </div>
+      <div style={s.card}>
+        <label style={s.label}>Share via</label>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem"}}>
+          <a href={`https://wa.me/?text=Hey!%20Try%20ForgeBody%20-%20AI%20fitness%20app.%20Get%20your%20first%20month%20free%20with%20my%20link%3A%20${encodeURIComponent(refLink)}`} target="_blank" rel="noopener noreferrer" style={{...s.btnGlass,textDecoration:"none",textAlign:"center",display:"block",padding:"0.75rem",fontSize:"0.82rem"}}>💬 WhatsApp</a>
+          <a href={`sms:?body=Try%20ForgeBody%20AI%20fitness%20app%21%20First%20month%20free%3A%20${encodeURIComponent(refLink)}`} style={{...s.btnGlass,textDecoration:"none",textAlign:"center",display:"block",padding:"0.75rem",fontSize:"0.82rem"}}>📱 SMS</a>
+        </div>
+      </div>
     </div>
   );
 }
