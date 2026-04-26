@@ -1431,7 +1431,7 @@ function AICoach(){
     const newMsgs=[...messages,userMsg];
     setMessages(newMsgs);setInput("");setLoading(true);
     try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM,messages:newMsgs.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}))})});
+      const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system:SYSTEM,messages:newMsgs.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}))})});
       const data=await res.json();
       setMessages(prev=>[...prev,{role:"assistant",text:data.content?.[0]?.text||"Sorry, try again."}]);
     }catch{setMessages(prev=>[...prev,{role:"assistant",text:"Connection error. Please try again."}]);}
@@ -1708,7 +1708,9 @@ function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
           </div>
         </div>
         <div style={{background:"rgba(204,255,0,0.07)",border:"1px solid rgba(204,255,0,0.18)",borderRadius:"10px",padding:"0.7rem",marginBottom:"0.75rem"}}>
-          <div style={{fontSize:"0.62rem",color:C.lime,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>ForgeBody Pro · $19/month · Active</div>
+          <div style={{fontSize:"0.62rem",color:C.lime,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif"}}>
+            ForgeBody {profile?.plan==="lifetime"?"Lifetime":profile?.plan==="annual"?"Annual ($120/yr)":profile?.plan==="sixmonth"?"6 Month ($84)":"Pro · $19/month"} · Active
+          </div>
         </div>
         <button onClick={onSignOut} style={{...s.btnGlass,width:"100%",color:"rgba(255,100,100,0.8)",borderColor:"rgba(255,100,100,0.15)"}}>Sign Out</button>
       </div>
@@ -1772,8 +1774,10 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
           ))}
           <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",marginTop:"0.5rem",padding:"0.75rem 1.25rem 0"}}>
             <div style={{...s.tag,marginBottom:"0.5rem"}}>Subscription</div>
-            <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>ForgeBody Pro · $19/month · Active</div>
-            <button style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",background:"transparent",border:"none",cursor:"pointer",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em"}}><span style={{fontSize:"1rem"}}>💬</span>Support</button>
+            <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>
+              ForgeBody {profile?.plan==="lifetime"?"Lifetime":profile?.plan==="annual"?"Annual":profile?.plan==="sixmonth"?"6 Month":"Pro"} · Active
+            </div>
+            <a href="https://wa.me/61493434408?text=Hi%20Joel%2C%20I%20need%20some%20help%20with%20ForgeBody%20please!" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em",textDecoration:"none"}}><span style={{fontSize:"1rem"}}>💬</span>Support via WhatsApp</a>
             <button onClick={onSignOut} style={{...s.btnGlass,width:"100%",marginTop:"0.5rem",fontSize:"0.82rem",color:"rgba(255,100,100,0.75)",borderColor:"rgba(255,100,100,0.15)"}}>Sign Out</button>
           </div>
         </div>
@@ -1819,54 +1823,65 @@ export default function ForgeBodyApp(){
     }
   }
 
-  // Payment success — mark user as subscribed automatically
+  // Mark payment=success in localStorage so auth listener can handle it
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     if(params.get("payment")==="success"||params.get("session_id")){
+      localStorage.setItem("fb_payment_success","true");
       setShowSuccess(true);
       window.history.replaceState({},"",window.location.pathname);
-      supabase.auth.getSession().then(async({data})=>{
-        if(data.session){
-          const uid=data.session.user.id;
-          const plan=localStorage.getItem("fb_pending_plan")||"monthly";
-          // Try update first, then insert if no row exists
-          const{error:updateErr}=await supabase.from("profiles")
-            .update({subscribed:true,plan,subscribed_at:new Date().toISOString()})
-            .eq("user_id",uid);
-          if(updateErr){
-            // Row doesn't exist yet — insert it
-            await supabase.from("profiles").insert({
-              user_id:uid,subscribed:true,plan,
-              subscribed_at:new Date().toISOString(),onboarded:false
-            });
-          }
-          localStorage.removeItem("fb_pending_plan");
-          localStorage.removeItem("fb_pending_user");
-          setShowSubscription(false);
-          const{data:profileData}=await supabase.from("profiles").select("*").eq("user_id",uid).single();
-          if(profileData)setProfile(profileData);
-        }
-      });
     }
   },[]);
 
   useEffect(()=>{
     supabase.auth.getSession().then(({data})=>{
       setSession(data.session);
-      if(data.session)checkProfile(data.session.user);
-      else{
-        // Check dev bypass
+      if(data.session){
+        // If returning from payment, save subscription first
+        if(localStorage.getItem("fb_payment_success")==="true"){
+          saveSubscription(data.session.user.id).then(()=>checkProfile(data.session.user));
+        } else {
+          checkProfile(data.session.user);
+        }
+      } else {
         if(localStorage.getItem("fb_dev_bypass")==="true")setPage("signin");
         else setPage("landing");
       }
       setLoading(false);
     });
     const{data:listener}=supabase.auth.onAuthStateChange((_e,sess)=>{
-      if(sess){setSession(sess);checkProfile(sess.user);}
-      else{setSession(null);setPage("landing");}
+      if(sess){
+        setSession(sess);
+        if(localStorage.getItem("fb_payment_success")==="true"){
+          saveSubscription(sess.user.id).then(()=>checkProfile(sess.user));
+        } else {
+          checkProfile(sess.user);
+        }
+      } else {
+        setSession(null);setPage("landing");
+      }
     });
     return()=>listener.subscription.unsubscribe();
   },[]);
+
+  async function saveSubscription(uid){
+    const plan=localStorage.getItem("fb_pending_plan")||"monthly";
+    // Update existing row
+    const{error}=await supabase.from("profiles")
+      .update({subscribed:true,plan,subscribed_at:new Date().toISOString()})
+      .eq("user_id",uid);
+    if(error){
+      // No row yet — insert
+      await supabase.from("profiles").insert({
+        user_id:uid,subscribed:true,plan,
+        subscribed_at:new Date().toISOString(),onboarded:false
+      });
+    }
+    localStorage.removeItem("fb_payment_success");
+    localStorage.removeItem("fb_pending_plan");
+    localStorage.removeItem("fb_pending_user");
+    setShowSubscription(false);
+  }
 
   async function checkProfile(user){
     try{
@@ -1901,18 +1916,8 @@ export default function ForgeBodyApp(){
           onContinue={()=>{setShowSuccess(false);if(session)setPage("app");else setPage("signin");}}
           onAlreadyPaid={async()=>{
             if(session){
-              const uid=session.user.id;
-              const plan=localStorage.getItem("fb_pending_plan")||"monthly";
-              const{error:updateErr}=await supabase.from("profiles")
-                .update({subscribed:true,plan,subscribed_at:new Date().toISOString()})
-                .eq("user_id",uid);
-              if(updateErr){
-                await supabase.from("profiles").insert({
-                  user_id:uid,subscribed:true,plan,
-                  subscribed_at:new Date().toISOString(),onboarded:false
-                });
-              }
-              const{data}=await supabase.from("profiles").select("*").eq("user_id",uid).single();
+              await saveSubscription(session.user.id);
+              const{data}=await supabase.from("profiles").select("*").eq("user_id",session.user.id).single();
               if(data)setProfile(data);
               setShowSubscription(false);
             }
