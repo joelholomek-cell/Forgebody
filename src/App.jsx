@@ -490,64 +490,18 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
 }
 
 // ─── SUBSCRIPTION WALL ───────────────────────────────────────────────────────
-function SubscriptionWall({onSignIn,onBack}){
-  const[slide,setSlide]=useState(1); // default to popular plan
+function SubscriptionWall({user,onBack,onSubscribed}){
+  const[slide,setSlide]=useState(1);
   const[isDragging,setIsDragging]=useState(false);
   const[dragStartX,setDragStartX]=useState(0);
   const[dragOffset,setDragOffset]=useState(0);
+  const[loading,setLoading]=useState(false);
 
   const plans=[
-    {
-      id:"monthly",
-      label:"Monthly",
-      price:"$19",
-      period:"/ month",
-      billing:"Billed monthly · Cancel anytime",
-      trial:"7-day free trial",
-      badge:null,
-      highlight:false,
-      link:STRIPE_LINKS.monthly,
-      features:["Full app access","7-day free trial","Cancel anytime"],
-    },
-    {
-      id:"sixmonth",
-      label:"6 Months",
-      price:"$84",
-      period:"upfront",
-      billing:"$14/month · Billed once every 6 months",
-      trial:"7-day free trial",
-      priceNote:"Save $30 vs monthly",
-      badge:"Popular",
-      highlight:true,
-      link:STRIPE_LINKS.sixmonth,
-      features:["Full app access","7-day free trial","Save $30 total"],
-    },
-    {
-      id:"annual",
-      label:"Annual",
-      price:"$120",
-      period:"/ year",
-      billing:"$10/month · Billed once annually",
-      trial:"7-day free trial",
-      priceNote:"Save $108 vs monthly",
-      badge:"Best Value",
-      highlight:true,
-      link:STRIPE_LINKS.annual,
-      features:["Full app access","7-day free trial","Save $108 total"],
-    },
-    {
-      id:"lifetime",
-      label:"Lifetime",
-      price:"$199",
-      period:"one time",
-      billing:"Pay once. Access forever.",
-      trial:null,
-      priceNote:"Never pay again",
-      badge:"🔥 Lifetime",
-      highlight:false,
-      link:STRIPE_LINKS.lifetime,
-      features:["Full app access","No subscription ever","All future updates free"],
-    },
+    {id:"monthly",label:"Monthly",price:"$19",period:"/ month",billing:"Billed monthly · Cancel anytime",trial:"7-day free trial",badge:null,highlight:false,link:STRIPE_LINKS.monthly,features:["Full app access","7-day free trial","Cancel anytime"]},
+    {id:"sixmonth",label:"6 Months",price:"$84",period:"upfront",billing:"$14/month · Billed once every 6 months",trial:"7-day free trial",priceNote:"Save $30 vs monthly",badge:"Popular",highlight:true,link:STRIPE_LINKS.sixmonth,features:["Full app access","7-day free trial","Save $30 total"]},
+    {id:"annual",label:"Annual",price:"$120",period:"/ year",billing:"$10/month · Billed once annually",trial:"7-day free trial",priceNote:"Save $108 vs monthly",badge:"Best Value",highlight:true,link:STRIPE_LINKS.annual,features:["Full app access","7-day free trial","Save $108 total"]},
+    {id:"lifetime",label:"Lifetime",price:"$199",period:"one time",billing:"Pay once. Access forever.",trial:null,priceNote:"Never pay again",badge:"🔥 Lifetime",highlight:false,link:STRIPE_LINKS.lifetime,features:["Full app access","No subscription ever","All future updates free"]},
   ];
 
   const total=plans.length;
@@ -560,12 +514,15 @@ function SubscriptionWall({onSignIn,onBack}){
   function onMouseUp(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
 
   function selectPlan(plan){
-    // Store selected plan then redirect to Stripe
+    // Save plan choice + user id so we can mark subscribed on return
     localStorage.setItem("fb_pending_plan",plan.id);
-    window.location.href=plan.link;
+    localStorage.setItem("fb_pending_user",user?.id||"");
+    // Build Stripe URL with email pre-filled so Stripe knows who they are
+    const email=user?.email||"";
+    const returnUrl=window.location.origin+window.location.pathname+"?payment=success";
+    const stripeUrl=`${plan.link}?prefilled_email=${encodeURIComponent(email)}&client_reference_id=${encodeURIComponent(user?.id||"")}`;
+    window.location.href=stripeUrl;
   }
-
-  const plan=plans[slide];
 
   return(
     <div style={{minHeight:"100vh",background:"#0a0a0a",overflowX:"hidden",position:"relative"}}>
@@ -576,7 +533,7 @@ function SubscriptionWall({onSignIn,onBack}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.25rem 1.25rem 0"}}>
           <button onClick={onBack} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.4)"}}>← Back</button>
           <div style={{fontSize:"1.2rem",fontWeight:900,letterSpacing:"0.06em",color:C.white,textTransform:"uppercase",fontFamily:"Barlow Condensed,sans-serif"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
-          <button onClick={onSignIn} style={{...s.btnSm,background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.5)"}}>Sign In</button>
+          <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",textAlign:"right",maxWidth:"80px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user?.email?.split("@")[0]||""}</div>
         </div>
 
         {/* Hero */}
@@ -1873,12 +1830,26 @@ export default function ForgeBodyApp(){
     }
   }
 
-  // Detect Stripe success redirect (?session_id= or ?payment=success)
+  // Payment success — mark user as subscribed automatically
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     if(params.get("payment")==="success"||params.get("session_id")){
       setShowSuccess(true);
       window.history.replaceState({},"",window.location.pathname);
+      // Mark subscribed in Supabase if we have a session
+      supabase.auth.getSession().then(async({data})=>{
+        if(data.session){
+          const plan=localStorage.getItem("fb_pending_plan")||"monthly";
+          await supabase.from("profiles").upsert({
+            user_id:data.session.user.id,
+            subscribed:true,
+            plan,
+            subscribed_at:new Date().toISOString(),
+          },{onConflict:"user_id"});
+          localStorage.removeItem("fb_pending_plan");
+          localStorage.removeItem("fb_pending_user");
+        }
+      });
     }
   },[]);
 
@@ -1945,13 +1916,23 @@ export default function ForgeBodyApp(){
     );
   }
 
-  // Plans page
+  // Plans page — requires sign in first
   if(page==="plans"){
+    // If not signed in, go to sign in first, remember they want plans after
+    if(!session){
+      return(
+        <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
+          <style>{GLASS}</style>
+          <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+          <AuthScreen preselectedPlan="plans" onSignedIn={()=>setPage("plans")}/>
+        </div>
+      );
+    }
     return(
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <SubscriptionWall onSignIn={()=>setPage("signin")} onBack={()=>setPage("landing")}/>
+        <SubscriptionWall user={session.user} onBack={()=>setPage("landing")} onSubscribed={()=>{setShowSubscription(false);setPage("app");}}/>
       </div>
     );
   }
@@ -1978,13 +1959,13 @@ export default function ForgeBodyApp(){
     );
   }
 
-  // Subscription gate (paid check)
+  // Subscription gate
   if(session&&showSubscription){
     return(
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <SubscriptionWall onSignIn={signOut} onBack={signOut}/>
+        <SubscriptionWall user={session.user} onBack={signOut} onSubscribed={()=>setShowSubscription(false)}/>
       </div>
     );
   }
