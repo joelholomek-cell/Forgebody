@@ -766,6 +766,15 @@ function Onboarding({user,onComplete}){
   async function finish(){
     localStorage.setItem("fb_workout_settings",JSON.stringify({split:data.split,days:data.days,level:data.level,wGoal:data.goal}));
     await supabase.from("profiles").upsert({user_id:user.id,name:data.name,goal:data.goal,weight:parseFloat(data.weight)||null,unit:data.unit,diet:data.diet,onboarded:true});
+    // Auto-calculate macro targets from onboarding data
+    const w=parseFloat(data.weight)||80;
+    const isLoss=data.goal==="fat_loss";
+    const isBulk=data.goal==="muscle"||data.goal==="bulk";
+    const cal=isLoss?Math.round(w*28):isBulk?Math.round(w*35):Math.round(w*31);
+    const p=Math.round(w*2.2);
+    const f=Math.round(cal*0.25/9);
+    const c=Math.round((cal-p*4-f*9)/4);
+    localStorage.setItem("fb_macro_targets",JSON.stringify({cal,p,c,f}));
     onComplete(data);
   }
   const steps=[
@@ -1287,6 +1296,25 @@ function TrainScreen({onStartWorkout,onSetupComplete}){
         <button onClick={()=>{localStorage.removeItem("fb_workout_settings");setSettings({});setSetupStep(0);setSplit("");setDays("");setLevel("");setWGoal("");}} style={{...s.btnSm,background:"transparent",color:"rgba(255,255,255,0.35)"}}>Change →</button>
       </div>
       <h2 style={s.sectionTitle}>Train</h2>
+      {/* Check if today is a scheduled rest day */}
+      {(()=>{
+        const trainingDays=JSON.parse(localStorage.getItem("fb_training_days")||"null");
+        const todayIsRestDay=trainingDays&&!trainingDays.includes(new Date().getDay());
+        if(todayIsRestDay)return(
+          <div style={{...s.card,background:"rgba(59,130,246,0.07)",borderColor:"rgba(59,130,246,0.2)",marginBottom:"0.75rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.5rem"}}>
+              <span style={{fontSize:"1.5rem"}}>😴</span>
+              <div>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",color:C.white}}>Scheduled Rest Day</div>
+                <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Recovery is part of the programme</div>
+              </div>
+            </div>
+            <button onClick={()=>window.location.hash="#restday"} style={{...s.btnGlass,width:"100%",fontSize:"0.85rem",padding:"0.65rem"}}>View Recovery Routine →</button>
+          </div>
+        );
+        return null;
+      })()}
+
       <div style={{...s.cardLime,position:"relative",overflow:"hidden",marginBottom:"0.75rem"}}>
         <div style={{position:"absolute",top:"-15px",right:"-15px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(15px)",pointerEvents:"none"}}/>
         <Eyebrow label="Today"/>
@@ -1590,18 +1618,45 @@ function WorkoutSession({dayIndex,onDone}){
   }
 
   if(mode==="done"){
+    // Estimate calories burned: avg 5 kcal per set for compound, 3 for isolation
+    const setsCompleted=Object.keys(completedSets).length;
+    const weight=parseFloat(JSON.parse(localStorage.getItem("fb_profile")||"{}").weight||80);
+    const calsBurned=Math.round(setsCompleted*5*(weight/80));
+    const duration=Math.round(exercises.length*4.5);
     return(
-      <div style={{...s.content,textAlign:"center",paddingTop:"3rem"}}>
-        <div style={{fontSize:"4rem",marginBottom:"1rem"}}>🔥</div>
-        <div style={{fontSize:"2.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.5rem"}}>Workout Done!</div>
-        <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",marginBottom:"2rem"}}>Every rep counts. You just built a better body.</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.6rem",marginBottom:"1.5rem"}}>
-          {[{n:exercises.length,l:"Exercises"},{n:Object.keys(completedSets).length,l:"Sets Done"},{n:"100%",l:"Complete"}].map((x,i)=>(
-            <div key={i} style={s.statCard}><div style={s.statNum}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
+      <div style={{...s.content,textAlign:"center",paddingTop:"2rem"}}>
+        {/* Hero */}
+        <div style={{fontSize:"4rem",marginBottom:"0.75rem"}}>🔥</div>
+        <div style={{fontSize:"2.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.35rem",lineHeight:1}}>Workout Done!</div>
+        <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",marginBottom:"1.5rem"}}>Every rep counts. You just built a better body.</div>
+
+        {/* Stats grid */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem",marginBottom:"0.65rem"}}>
+          {[
+            {n:exercises.length,l:"Exercises",icon:"🏋️"},
+            {n:setsCompleted,l:"Sets Done",icon:"✅"},
+            {n:`~${calsBurned}`,l:"Kcal Burned",icon:"🔥"},
+            {n:`~${duration}m`,l:"Duration",icon:"⏱️"},
+          ].map((x,i)=>(
+            <div key={i} style={{...s.statCard,display:"flex",alignItems:"center",gap:"0.6rem",textAlign:"left",padding:"0.9rem"}}>
+              <span style={{fontSize:"1.3rem"}}>{x.icon}</span>
+              <div>
+                <div style={{...s.statNum,fontSize:"1.5rem"}}>{x.n}</div>
+                <div style={s.statLabel}>{x.l}</div>
+              </div>
+            </div>
           ))}
         </div>
+
+        {/* Calorie burn card */}
+        <div style={{background:"linear-gradient(135deg,rgba(251,146,60,0.12),rgba(239,68,68,0.06))",border:"1px solid rgba(251,146,60,0.25)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.65rem",backdropFilter:"blur(15px)"}}>
+          <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"#fb923c",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>🔥 Calories Burned</div>
+          <div style={{fontSize:"2.5rem",fontWeight:900,color:"#fb923c",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,marginBottom:"0.2rem"}}>{calsBurned} <span style={{fontSize:"1rem",color:"rgba(255,255,255,0.4)"}}>kcal</span></div>
+          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Based on {setsCompleted} sets · {weight}kg bodyweight</div>
+        </div>
+
         <WorkoutCalendar completedDates={JSON.parse(localStorage.getItem("fb_workout_dates")||"[]")}/>
-        <button onClick={onDone} style={{...s.btn,width:"100%",padding:"1rem",marginTop:"0.5rem"}}>Back to Training</button>
+        <button onClick={onDone} style={{...s.btn,width:"100%",padding:"1rem",marginTop:"0.65rem",borderRadius:"14px"}}>Back to Training 💪</button>
       </div>
     );
   }
@@ -2395,6 +2450,254 @@ function ReferralScreen({user}){
   );
 }
 
+// ─── REST DAY CONTENT ────────────────────────────────────────────────────────
+function RestDayContent(){
+  const MOBILITY=[
+    {name:"Hip Flexor Stretch",duration:"60 sec each",muscle:"Hips",desc:"Kneel on one knee, push hips forward gently. Hold, breathe deep."},
+    {name:"Thoracic Rotation",duration:"10 reps each",muscle:"Spine",desc:"Sit cross-legged, rotate torso side to side. Opens the mid-back."},
+    {name:"Doorway Chest Stretch",duration:"30 sec each",muscle:"Chest",desc:"Place arm on doorframe at 90°, lean through gently."},
+    {name:"Hamstring Stretch",duration:"45 sec each",muscle:"Hamstrings",desc:"Sit with one leg extended, reach toward foot. Keep back flat."},
+    {name:"Child's Pose",duration:"60 sec",muscle:"Back/Hips",desc:"Kneel and stretch arms forward, rest forehead down. Full relaxation."},
+    {name:"Pigeon Pose",duration:"60 sec each",muscle:"Glutes",desc:"From downward dog, bring one knee forward. Intense hip opener."},
+    {name:"Cat-Cow Stretch",duration:"10 reps",muscle:"Spine",desc:"On all fours, arch and round back alternately. Wakes up the spine."},
+    {name:"Shoulder Cross Stretch",duration:"30 sec each",muscle:"Shoulders",desc:"Pull one arm across chest, hold with other arm."},
+  ];
+  const RECOVERY_TIPS=[
+    {icon:"😴",title:"Sleep 8+ Hours",desc:"Growth hormone peaks during deep sleep. This is when muscle is actually built."},
+    {icon:"💧",title:"Hydrate Hard",desc:"Aim for 3-4L today. Muscles recover faster when well hydrated."},
+    {icon:"🍗",title:"Hit Protein",desc:"Still hit your protein target on rest days. Recovery requires amino acids."},
+    {icon:"🧊",title:"Cold Shower",desc:"2 minutes cold water reduces inflammation and boosts mood significantly."},
+    {icon:"🚶",title:"Light Walk",desc:"15-20 min easy walk increases blood flow and speeds up recovery."},
+  ];
+  const[doneItems,setDoneItems]=useState({});
+  const total=MOBILITY.length;
+  const done=Object.values(doneItems).filter(Boolean).length;
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Rest & Recover"/>
+      <h2 style={s.sectionTitle}>Rest Day</h2>
+      <p style={s.sectionSub}>Recovery is where the gains actually happen.</p>
+
+      {/* Recovery tips */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",marginBottom:"0.75rem"}}>
+        {RECOVERY_TIPS.map((tip,i)=>(
+          <div key={i} style={{...s.card,padding:"1rem",marginBottom:0}}>
+            <span style={{fontSize:"1.4rem",display:"block",marginBottom:"0.4rem"}}>{tip.icon}</span>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white,marginBottom:"0.2rem"}}>{tip.title}</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.4}}>{tip.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mobility routine */}
+      <div style={s.card}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+          <div><Eyebrow label="Mobility Routine"/><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>10 Min Stretch</div></div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:"1.4rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{done}/{total}</div>
+            <div style={s.statLabel}>Done</div>
+          </div>
+        </div>
+        <div style={s.progressBar}><div style={{...s.progressFill,width:`${Math.round((done/total)*100)}%`}}/></div>
+        <div style={{marginTop:"0.75rem"}}>
+          {MOBILITY.map((item,i)=>(
+            <div key={i} onClick={()=>setDoneItems(p=>({...p,[i]:!p[i]}))} style={{display:"flex",gap:"0.75rem",alignItems:"center",padding:"0.65rem 0",borderBottom:i<MOBILITY.length-1?"1px solid rgba(255,255,255,0.05)":"none",cursor:"pointer"}}>
+              <div style={{width:"22px",height:"22px",borderRadius:"6px",border:`1.5px solid ${doneItems[i]?C.lime:"rgba(255,255,255,0.15)"}`,background:doneItems[i]?C.lime:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
+                {doneItems[i]&&<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.88rem",color:doneItems[i]?"rgba(255,255,255,0.35)":C.white,textDecoration:doneItems[i]?"line-through":"none"}}>{item.name}</div>
+                <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",marginTop:"1px"}}>{item.duration} · {item.muscle}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {done===total&&<div style={{textAlign:"center",padding:"0.75rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginTop:"0.25rem"}}>Full routine complete! 🔥</div>}
+      </div>
+    </div>
+  );
+}
+
+// ─── STRENGTH CHARTS ─────────────────────────────────────────────────────────
+function StrengthCharts(){
+  const pbs=getPBs();
+  const entries=Object.values(pbs);
+  const history=JSON.parse(localStorage.getItem("fb_strength_history")||"{}");
+
+  if(entries.length===0){
+    return(
+      <div style={s.content}>
+        <Eyebrow label="Strength Progress"/>
+        <h2 style={s.sectionTitle}>Strength Charts</h2>
+        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+          <div style={{fontSize:"2.5rem",marginBottom:"0.75rem"}}>📈</div>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No data yet</div>
+          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>Complete workouts and log weights to see your strength progress over time.</div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Strength Progress"/>
+      <h2 style={s.sectionTitle}>Strength Charts</h2>
+      <p style={s.sectionSub}>Your all-time personal bests per exercise.</p>
+      {entries.map((pb,i)=>{
+        const W=300,H=80,PAD=8;
+        const hist=history[pb.name.toLowerCase().replace(/\s+/g,"_")]||[{weight:pb.weight,date:pb.date}];
+        const vals=hist.map(h=>h.weight);
+        if(vals.length<2)return(
+          <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
+            <div style={{width:"38px",height:"38px",borderRadius:"10px",background:"rgba(204,255,0,0.1)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{fontSize:"1.1rem"}}>🏆</span></div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>{pb.name}</div>
+              <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>Best: {pb.weight}kg × {pb.reps} · Est 1RM: {pb.est}kg</div>
+            </div>
+            <span style={s.tag}>{pb.est}kg 1RM</span>
+          </div>
+        );
+        const min=Math.min(...vals)-5,max=Math.max(...vals)+5;
+        const pts=vals.map((v,j)=>{const x=PAD+(j/(vals.length-1))*(W-PAD*2);const y=H-PAD-((v-min)/(max-min||1))*(H-PAD*2);return[x,y];});
+        const path="M"+pts.map(([x,y])=>`${x},${y}`).join(" L");
+        return(
+          <div key={i} style={s.card}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.5rem"}}>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:C.white}}>{pb.name}</div>
+              <span style={s.tag}>{pb.est}kg 1RM</span>
+            </div>
+            <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:"auto",display:"block",marginBottom:"0.4rem"}}>
+              <defs><linearGradient id={`g${i}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.lime} stopOpacity="0.2"/><stop offset="100%" stopColor={C.lime} stopOpacity="0"/></linearGradient></defs>
+              <path d={path+" L"+pts[pts.length-1][0]+","+H+" L"+pts[0][0]+","+H+" Z"} fill={`url(#g${i})`}/>
+              <path d={path} fill="none" stroke={C.lime} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              {pts.map(([x,y],j)=><circle key={j} cx={x} cy={y} r="3" fill={C.lime}/>)}
+            </svg>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>Best: {pb.weight}kg × {pb.reps} reps · Set {new Date(pb.date).toLocaleDateString("en-AU",{month:"short",day:"numeric"})}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── PROGRESS PHOTOS ─────────────────────────────────────────────────────────
+function ProgressPhotos(){
+  const[photos,setPhotos]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");}catch{return[];}});
+  const[uploading,setUploading]=useState(false);
+  const fileRef=useRef(null);
+
+  function handleFile(e){
+    const file=e.target.files?.[0];
+    if(!file)return;
+    setUploading(true);
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      const newPhotos=[...photos,{id:Date.now(),data:ev.target.result,date:new Date().toISOString(),label:new Date().toLocaleDateString("en-AU",{month:"long",year:"numeric"})}];
+      setPhotos(newPhotos);
+      try{localStorage.setItem("fb_progress_photos",JSON.stringify(newPhotos));}catch(e){alert("Photo too large for storage. Try a smaller image.");}
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function deletePhoto(id){
+    const updated=photos.filter(p=>p.id!==id);
+    setPhotos(updated);
+    localStorage.setItem("fb_progress_photos",JSON.stringify(updated));
+  }
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Visual Progress"/>
+      <h2 style={s.sectionTitle}>Progress Photos</h2>
+      <p style={s.sectionSub}>The most powerful way to see your transformation.</p>
+
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
+
+      <button onClick={()=>fileRef.current?.click()} disabled={uploading} style={{...s.btn,width:"100%",padding:"1rem",borderRadius:"14px",marginBottom:"0.75rem"}}>
+        {uploading?"Saving...":"📸 Add Progress Photo"}
+      </button>
+
+      {photos.length===0?(
+        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+          <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>📸</div>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No photos yet</div>
+          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.5}}>Take one monthly. Seeing your transformation is the most powerful motivator there is.</div>
+        </div>
+      ):(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
+          {photos.map((photo,i)=>(
+            <div key={photo.id} style={{...s.card,padding:"0.6rem",marginBottom:0,position:"relative"}}>
+              <img src={photo.data} alt="Progress" style={{width:"100%",borderRadius:"12px",display:"block",marginBottom:"0.4rem",aspectRatio:"3/4",objectFit:"cover"}}/>
+              <div style={{fontSize:"0.72rem",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.2rem"}}>{photo.label}</div>
+              <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{new Date(photo.date).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}</div>
+              <button onClick={()=>deletePhoto(photo.id)} style={{position:"absolute",top:"0.8rem",right:"0.8rem",background:"rgba(0,0,0,0.6)",border:"none",borderRadius:"50%",width:"24px",height:"24px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {photos.length>0&&(
+        <div style={{...s.card,marginTop:"0.75rem",background:"rgba(204,255,0,0.05)",borderColor:"rgba(204,255,0,0.15)"}}>
+          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>💡 <strong style={{color:C.white}}>Tip:</strong> Take photos monthly, same time of day, same lighting. Front, side, and back views give the best comparison.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── WORKOUT SCHEDULE ────────────────────────────────────────────────────────
+function WorkoutSchedule({onSave}){
+  const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const[selected,setSelected]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem("fb_training_days")||"[1,3,5]");}catch{return[1,3,5];}
+  });
+  function toggle(i){setSelected(p=>p.includes(i)?p.filter(d=>d!==i):[...p,i].sort());}
+  function save(){localStorage.setItem("fb_training_days",JSON.stringify(selected));if(onSave)onSave(selected);}
+  const nextTraining=DAYS.find((_,i)=>{
+    const today=new Date().getDay();
+    for(let j=1;j<=7;j++){if(selected.includes((today+j)%7))return true;}
+    return false;
+  });
+  const daysUntilNext=(()=>{
+    const today=new Date().getDay();
+    for(let j=1;j<=7;j++){if(selected.includes((today+j)%7))return j;}
+    return null;
+  })();
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Training Schedule"/>
+      <h2 style={s.sectionTitle}>Training Days</h2>
+      <p style={s.sectionSub}>Choose which days you train each week.</p>
+
+      {daysUntilNext&&(
+        <div style={{...s.cardLime,marginBottom:"0.75rem",textAlign:"center"}}>
+          <div style={{fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.25rem"}}>Next Session</div>
+          <div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{DAYS[(new Date().getDay()+daysUntilNext)%7]}</div>
+          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>in {daysUntilNext} {daysUntilNext===1?"day":"days"}</div>
+        </div>
+      )}
+
+      <div style={s.card}>
+        <label style={{...s.label,color:C.white,marginBottom:"0.75rem",display:"block"}}>Tap to select your training days</label>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:"4px",marginBottom:"1rem"}}>
+          {DAYS.map((day,i)=>(
+            <div key={i} onClick={()=>toggle(i)} style={{aspectRatio:"1",borderRadius:"10px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"2px",background:selected.includes(i)?"rgba(204,255,0,0.85)":"rgba(255,255,255,0.05)",border:`1px solid ${selected.includes(i)?C.lime:"rgba(255,255,255,0.08)"}`,cursor:"pointer",transition:"all 0.2s",boxShadow:selected.includes(i)?"0 0 12px rgba(204,255,0,0.3)":"none"}}>
+              <span style={{fontSize:"0.6rem",fontWeight:800,color:selected.includes(i)?"#000":"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{day.slice(0,1)}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",marginBottom:"1rem"}}>
+          {selected.map(i=><span key={i} style={s.tag}>{DAYS[i].slice(0,3)}</span>)}
+        </div>
+        <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>{selected.length} training days · {7-selected.length} rest days per week</div>
+        <button onClick={save} style={{...s.btn,width:"100%",padding:"0.9rem"}}>Save Schedule</button>
+      </div>
+    </div>
+  );
+}
+
 // ─── PROFILE TAB ─────────────────────────────────────────────────────────────
 function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
@@ -2530,6 +2833,10 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         <div style={{padding:"0.5rem 0"}}>
           {[
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
+            {label:"Strength Charts",icon:"📈",id:"strength"},
+            {label:"Progress Photos",icon:"📸",id:"photos"},
+            {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
+            {label:"Training Schedule",icon:"📅",id:"schedule"},
             {label:"Badges & Achievements",icon:"🎖️",id:"badges"},
             {label:"Refer a Friend",icon:"🎁",id:"referral"},
             {label:"Workout History",icon:"🗓️",id:"history"},
@@ -2828,6 +3135,10 @@ export default function ForgeBodyApp(){
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
+          {sidePanel?.screen==="strength"&&<StrengthCharts/>}
+          {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
+          {sidePanel?.screen==="restday"&&<RestDayContent/>}
+          {sidePanel?.screen==="schedule"&&<WorkoutSchedule/>}
           {sidePanel?.screen==="badges"&&<BadgesScreen/>}
           {sidePanel?.screen==="referral"&&<ReferralScreen user={session.user}/>}
           {sidePanel?.screen==="progress"&&<Progress user={session.user}/>}
