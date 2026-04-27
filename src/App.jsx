@@ -1056,13 +1056,15 @@ function HomeScreen({profile,user,onNavigate}){
   const pbs=Object.values(getPBs()).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
 
   return(
-    <div style={{padding:"1.25rem 1.25rem 1rem",position:"relative",zIndex:1,maxWidth:"600px",margin:"0 auto"}}>
+    <div style={{padding:"1.5rem 1.25rem 1rem",position:"relative",zIndex:1,maxWidth:"600px",margin:"0 auto"}}>
 
       {/* Greeting */}
-      <div style={{marginBottom:"1.5rem"}}>
+      <div style={{marginBottom:"1.5rem",paddingTop:"0.5rem"}}>
         <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>{greet}</div>
-        <div style={{fontSize:"2.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",color:C.white,lineHeight:0.9}}>{profile?.name||"Athlete"}</div>
-        <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"0.35rem"}}>{todayDone?"You crushed it today. 🔥":"Ready to build. Let's go. 💪"}</div>
+        <div style={{fontSize:"3.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",color:C.white,lineHeight:0.9,
+          background:"linear-gradient(135deg,#ffffff,rgba(255,255,255,0.8))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"
+        }}>{profile?.name||"Athlete"}</div>
+        <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"0.4rem"}}>{todayDone?"You crushed it today. 🔥":"Ready to build. Let's go. 💪"}</div>
       </div>
 
       {/* TODAY WORKOUT — hero card */}
@@ -1087,9 +1089,9 @@ function HomeScreen({profile,user,onNavigate}){
       {/* STATS ROW */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.55rem",marginBottom:"0.65rem"}}>
         {[{n:totalWorkouts,l:"Workouts"},{n:thisWeek,l:"This Week"},{n:streak+"🔥",l:"Streak"}].map((x,i)=>(
-          <div key={i} style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:"16px",padding:"0.9rem",textAlign:"center"}}>
-            <div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
-            <div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"3px"}}>{x.l}</div>
+          <div key={i} style={{background:"rgba(255,255,255,0.08)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"16px",padding:"0.9rem",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.2)"}}>
+            <div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,textShadow:"0 0 20px rgba(204,255,0,0.4)"}}>{x.n}</div>
+            <div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"4px"}}>{x.l}</div>
           </div>
         ))}
       </div>
