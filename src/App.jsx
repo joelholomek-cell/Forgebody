@@ -2687,19 +2687,9 @@ function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
         )}
       </div>
 
-      {/* Free PDF bonus */}
-      <div style={{...s.card,background:"linear-gradient(135deg,rgba(204,255,0,0.08),rgba(150,220,0,0.04))",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem"}}>
-        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.75rem"}}>
-          <div style={{width:"42px",height:"42px",borderRadius:"10px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.22)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.3rem"}}>📖</div>
-          <div>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white,marginBottom:"0.15rem"}}>Free Bonus — PDF Guide</div>
-            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>Your complete ForgeBody transformation guide</div>
-          </div>
-        </div>
-        <a href="https://holomek7.gumroad.com/l/naxws" target="_blank" rel="noopener noreferrer" style={{...s.btn,display:"block",textAlign:"center",textDecoration:"none",width:"100%",padding:"0.85rem",borderRadius:"12px",fontSize:"0.88rem"}}>
-          Download Free PDF →
-        </a>
-      </div>
+      {/* Training settings */}
+      <div style={s.card}>
+        <button onClick={()=>setShowTraining(!showTraining)} style={{display:"flex",alignItems:"center",width:"100%",background:"transparent",border:"none",cursor:"pointer",padding:0}}>
           <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white,flex:1,textAlign:"left"}}>Training Settings</div>
           <span style={{color:"rgba(255,255,255,0.4)",fontSize:"0.9rem"}}>{showTraining?"▲":"▼"}</span>
         </button>
