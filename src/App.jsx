@@ -1728,11 +1728,6 @@ function MealPlanner(){
     setExpandedMeal(null);
   }
 
-
-
-    setExpandedMeal(null);
-  }
-
   return(
     <div style={s.content}>
       <Eyebrow label="58+ Meals"/><h2 style={s.sectionTitle}>Meal Planner</h2><p style={s.sectionSub}>Personalised meals with full ingredients and instructions.</p>
