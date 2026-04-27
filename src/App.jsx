@@ -1056,7 +1056,7 @@ function HomeScreen({profile,user,onNavigate}){
   const pbs=Object.values(getPBs()).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
 
   return(
-    <div style={{position:"relative",zIndex:1}}>
+    <div style={{position:"relative",zIndex:1,paddingBottom:"1rem",overflowX:"hidden"}}>
 
       {/* ── HERO SECTION ── */}
       <div style={{padding:"1.5rem 1.25rem 0"}}>
