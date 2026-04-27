@@ -1872,14 +1872,6 @@ function MacroTracker(){
     const pct=Math.min(100,Math.round((val/max)*100));const r=26,circ=2*Math.PI*r;
     return(<div style={{textAlign:"center"}}><svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4"/><circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="4" strokeDasharray={circ} strokeDashoffset={circ*(1-pct/100)} strokeLinecap="round" transform="rotate(-90 32 32)"/><text x="32" y="36" textAnchor="middle" fill={C.white} fontSize="11" fontWeight="900" fontFamily="Barlow Condensed,sans-serif">{val}g</text></svg><div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"Barlow Condensed,sans-serif",marginTop:"2px"}}>{label}</div><div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.25)",fontFamily:"Barlow,sans-serif"}}>{pct}%</div></div>);
   }
-const[search,setSearch]=useState("");const[qty,setQty]=useState("100");const[showSetup,setShowSetup]=useState(false);
-  const filtered=search.length>1?FOODS.filter(f=>f.name.toLowerCase().includes(search.toLowerCase())):[];
-  const totals=log.reduce((acc,item)=>({cal:acc.cal+item.cal,p:acc.p+item.p,c:acc.c+item.c,f:acc.f+item.f}),{cal:0,p:0,c:0,f:0});
-  function addFood(food){const mult=parseFloat(qty)/100;setLog(prev=>[...prev,{...food,cal:Math.round(food.cal*mult),p:Math.round(food.p*mult),c:Math.round(food.c*mult),f:Math.round(food.f*mult),qty,id:Date.now()}]);setSearch("");setQty("100");}
-  function Ring({val,max,color,label}){
-    const pct=Math.min(100,Math.round((val/max)*100));const r=26,circ=2*Math.PI*r;
-    return(<div style={{textAlign:"center"}}><svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4"/><circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="4" strokeDasharray={circ} strokeDashoffset={circ*(1-pct/100)} strokeLinecap="round" transform="rotate(-90 32 32)"/><text x="32" y="36" textAnchor="middle" fill={C.white} fontSize="11" fontWeight="900" fontFamily="'Barlow Condensed',sans-serif">{val}g</text></svg><div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>{label}</div><div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{pct}%</div></div>);
-  }
   return(
     <div style={s.content}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.25rem"}}>
