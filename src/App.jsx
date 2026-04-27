@@ -1242,7 +1242,7 @@ function HomeScreen({profile,user,onNavigate}){
 
 
 // ─── TRAIN TAB ───────────────────────────────────────────────────────────────
-function TrainScreen({onStartWorkout,onSetupComplete}){
+function TrainScreen({onStartWorkout,onSetupComplete,onNavigate}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
   const[settings,setSettings]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");}catch{return{};}});
   const[setupStep,setSetupStep]=useState(0);
@@ -1342,7 +1342,7 @@ function TrainScreen({onStartWorkout,onSetupComplete}){
                 <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Recovery is part of the programme</div>
               </div>
             </div>
-            <button onClick={()=>window.location.hash="#restday"} style={{...s.btnGlass,width:"100%",fontSize:"0.85rem",padding:"0.65rem"}}>View Recovery Routine →</button>
+            <button onClick={()=>onNavigate("sidebar","restday")} style={{...s.btnGlass,width:"100%",fontSize:"0.85rem",padding:"0.65rem"}}>View Recovery Routine →</button>
           </div>
         );
         return null;
@@ -2699,7 +2699,7 @@ function ProgressPhotos(){
 }
 
 // ─── WORKOUT SCHEDULE ────────────────────────────────────────────────────────
-function WorkoutSchedule({onSave}){
+function WorkoutSchedule(){
   const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const[selected,setSelected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem("fb_training_days")||"[1,3,5]");}catch{return[1,3,5];}
@@ -2876,10 +2876,6 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         <div style={{padding:"0.5rem 0"}}>
           {[
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
-            {label:"Progress Photos",icon:"📸",id:"photos"},
-            {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
-            {label:"Training Schedule",icon:"📅",id:"schedule"},
-            {label:"Strength Charts",icon:"📈",id:"strength"},
             {label:"Progress Photos",icon:"📸",id:"photos"},
             {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
             {label:"Training Schedule",icon:"📅",id:"schedule"},
@@ -3178,16 +3174,12 @@ export default function ForgeBodyApp(){
           {tab==="meal"&&!sidePanel&&<MealPlanner/>}
           {tab==="macros"&&!sidePanel&&<MacroTracker/>}
           {tab==="coach"&&!sidePanel&&<AICoach/>}
-          {tab==="train"&&!sidePanel&&<TrainScreen onStartWorkout={startWorkout} onSetupComplete={()=>{}}/>}
+          {tab==="train"&&!sidePanel&&<TrainScreen onStartWorkout={startWorkout} onSetupComplete={()=>{}} onNavigate={navigate}/>}
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
           {sidePanel?.screen==="restday"&&<RestDayContent/>}
           {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
-          {sidePanel?.screen==="schedule"&&<WorkoutSchedule/>}
-          {sidePanel?.screen==="strength"&&<StrengthCharts/>}
-          {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
-          {sidePanel?.screen==="restday"&&<RestDayContent/>}
           {sidePanel?.screen==="schedule"&&<WorkoutSchedule/>}
           {sidePanel?.screen==="badges"&&<BadgesScreen/>}
           {sidePanel?.screen==="referral"&&<ReferralScreen user={session.user}/>}
