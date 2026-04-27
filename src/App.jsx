@@ -766,6 +766,12 @@ function Onboarding({user,onComplete}){
   async function finish(){
     localStorage.setItem("fb_workout_settings",JSON.stringify({split:data.split,days:data.days,level:data.level,wGoal:data.goal}));
     await supabase.from("profiles").upsert({user_id:user.id,name:data.name,goal:data.goal,weight:parseFloat(data.weight)||null,unit:data.unit,diet:data.diet,onboarded:true});
+    // Auto-calculate macro targets from onboarding
+    const w=parseFloat(data.weight)||80;
+    const isLoss=data.goal==="fat loss";const isBulk=data.goal==="muscle"||data.goal==="bulk";
+    const cal=isLoss?Math.round(w*28):isBulk?Math.round(w*35):Math.round(w*31);
+    const p=Math.round(w*2.2);const f=Math.round(cal*0.25/9);const c=Math.round((cal-p*4-f*9)/4);
+    localStorage.setItem("fb_macro_targets",JSON.stringify({cal,p,c,f}));
     // Auto-calculate macro targets from onboarding data
     const w=parseFloat(data.weight)||80;
     const isLoss=data.goal==="fat_loss";
@@ -2696,6 +2702,106 @@ function WorkoutSchedule({onSave}){
   );
 }
 
+// ─── REST DAY ────────────────────────────────────────────────────────────────
+function RestDayContent(){
+  const[done,setDone]=useState({});
+  const MOBILITY=[
+    {name:"Hip Flexor Stretch",dur:"60 sec each",muscle:"Hips"},
+    {name:"Thoracic Rotation",dur:"10 reps each",muscle:"Spine"},
+    {name:"Doorway Chest Stretch",dur:"30 sec each",muscle:"Chest"},
+    {name:"Hamstring Stretch",dur:"45 sec each",muscle:"Hamstrings"},
+    {name:"Child's Pose",dur:"60 sec",muscle:"Back"},
+    {name:"Pigeon Pose",dur:"60 sec each",muscle:"Glutes"},
+    {name:"Cat-Cow Stretch",dur:"10 reps",muscle:"Spine"},
+    {name:"Shoulder Cross Stretch",dur:"30 sec each",muscle:"Shoulders"},
+  ];
+  const doneCount=Object.values(done).filter(Boolean).length;
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Rest & Recover"/>
+      <h2 style={s.sectionTitle}>Rest Day</h2>
+      <p style={s.sectionSub}>Recovery is where the gains actually happen.</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",marginBottom:"0.75rem"}}>
+        {[{icon:"😴",title:"Sleep 8+ Hours",desc:"Growth hormone peaks during deep sleep."},{icon:"💧",title:"Hydrate Hard",desc:"Aim for 3-4L today."},{icon:"🍗",title:"Hit Protein",desc:"Still hit your protein target today."},{icon:"🚶",title:"Light Walk",desc:"15-20 min increases blood flow."}].map((tip,i)=>(
+          <div key={i} style={{...s.card,padding:"1rem",marginBottom:0}}>
+            <span style={{fontSize:"1.4rem",display:"block",marginBottom:"0.4rem"}}>{tip.icon}</span>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white,marginBottom:"0.2rem"}}>{tip.title}</div>
+            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.4}}>{tip.desc}</div>
+          </div>
+        ))}
+      </div>
+      <div style={s.card}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+          <div><Eyebrow label="Mobility Routine"/><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>10 Min Stretch</div></div>
+          <div style={{textAlign:"right"}}><div style={{fontSize:"1.4rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{doneCount}/{MOBILITY.length}</div></div>
+        </div>
+        <div style={s.progressBar}><div style={{...s.progressFill,width:`${Math.round((doneCount/MOBILITY.length)*100)}%`}}/></div>
+        <div style={{marginTop:"0.75rem"}}>
+          {MOBILITY.map((item,i)=>(
+            <div key={i} onClick={()=>setDone(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.6rem 0",borderBottom:i<MOBILITY.length-1?"1px solid rgba(255,255,255,0.05)":"none",cursor:"pointer"}}>
+              <div style={{width:"22px",height:"22px",borderRadius:"6px",border:`1.5px solid ${done[i]?C.lime:"rgba(255,255,255,0.15)"}`,background:done[i]?C.lime:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
+                {done[i]&&<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.88rem",color:done[i]?"rgba(255,255,255,0.35)":C.white,textDecoration:done[i]?"line-through":"none"}}>{item.name}</div>
+                <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{item.dur} · {item.muscle}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {doneCount===MOBILITY.length&&<div style={{textAlign:"center",padding:"0.75rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginTop:"0.25rem"}}>Full routine complete! 🔥</div>}
+      </div>
+    </div>
+  );
+}
+
+// ─── PROGRESS PHOTOS ─────────────────────────────────────────────────────────
+function ProgressPhotos(){
+  const[photos,setPhotos]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");}catch{return[];}});
+  const[uploading,setUploading]=useState(false);
+  const fileRef=useRef(null);
+  function handleFile(e){
+    const file=e.target.files?.[0];if(!file)return;setUploading(true);
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      const newPhotos=[...photos,{id:Date.now(),data:ev.target.result,date:new Date().toISOString(),label:new Date().toLocaleDateString("en-AU",{month:"long",year:"numeric"})}];
+      setPhotos(newPhotos);
+      try{localStorage.setItem("fb_progress_photos",JSON.stringify(newPhotos));}catch{alert("Photo too large. Try a smaller image.");}
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  }
+  function deletePhoto(id){const updated=photos.filter(p=>p.id!==id);setPhotos(updated);localStorage.setItem("fb_progress_photos",JSON.stringify(updated));}
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Visual Progress"/>
+      <h2 style={s.sectionTitle}>Progress Photos</h2>
+      <p style={s.sectionSub}>The most powerful way to see your transformation.</p>
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
+      <button onClick={()=>fileRef.current?.click()} disabled={uploading} style={{...s.btn,width:"100%",padding:"1rem",borderRadius:"14px",marginBottom:"0.75rem"}}>
+        {uploading?"Saving...":"📸 Add Progress Photo"}
+      </button>
+      {photos.length===0?(
+        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+          <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>📸</div>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No photos yet</div>
+          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.5}}>Take one monthly. Seeing your transformation is the most powerful motivator.</div>
+        </div>
+      ):(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
+          {photos.map((photo)=>(
+            <div key={photo.id} style={{...s.card,padding:"0.6rem",marginBottom:0,position:"relative"}}>
+              <img src={photo.data} alt="Progress" style={{width:"100%",borderRadius:"12px",display:"block",marginBottom:"0.4rem",aspectRatio:"3/4",objectFit:"cover"}}/>
+              <div style={{fontSize:"0.72rem",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.2rem"}}>{photo.label}</div>
+              <button onClick={()=>deletePhoto(photo.id)} style={{position:"absolute",top:"0.8rem",right:"0.8rem",background:"rgba(0,0,0,0.6)",border:"none",borderRadius:"50%",width:"24px",height:"24px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── PROFILE TAB ─────────────────────────────────────────────────────────────
 function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
@@ -2821,6 +2927,8 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         <div style={{padding:"0.5rem 0"}}>
           {[
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
+            {label:"Progress Photos",icon:"📸",id:"photos"},
+            {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
             {label:"Strength Charts",icon:"📈",id:"strength"},
             {label:"Progress Photos",icon:"📸",id:"photos"},
             {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
@@ -3124,6 +3232,8 @@ export default function ForgeBodyApp(){
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
+          {sidePanel?.screen==="restday"&&<RestDayContent/>}
+          {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
           {sidePanel?.screen==="strength"&&<StrengthCharts/>}
           {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
           {sidePanel?.screen==="restday"&&<RestDayContent/>}
