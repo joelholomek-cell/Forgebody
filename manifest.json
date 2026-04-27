@@ -1,0 +1,42 @@
+{
+  "name": "ForgeBody — AI Fitness",
+  "short_name": "ForgeBody",
+  "description": "AI workouts, meal plans and a personal coach in your pocket.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["health", "fitness", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Start Workout",
+      "short_name": "Train",
+      "description": "Jump straight into training",
+      "url": "/?tab=train",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "AI Coach",
+      "short_name": "Coach",
+      "description": "Ask your AI coach",
+      "url": "/?tab=coach",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
