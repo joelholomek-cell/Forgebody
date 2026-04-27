@@ -1032,177 +1032,95 @@ function SetLogger({ex,setNum,onSave}){
 
 // ─── HOME SCREEN ─────────────────────────────────────────────────────────────
 function HomeScreen({profile,user,onNavigate}){
-  const now=new Date();
-  const hour=now.getHours();
-  const greet=hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
   const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
-  const macroLog=JSON.parse(localStorage.getItem("fb_macros_"+now.toDateString())||"[]");
-  const macroTargets=JSON.parse(localStorage.getItem("fb_macro_targets")||'{"cal":2200,"p":180,"c":220,"f":70}');
-  const water=parseInt(localStorage.getItem("water_"+now.toDateString())||"0");
   const totalWorkouts=completedDates.length;
-  const thisWeek=completedDates.filter(d=>(now-new Date(d))/(86400000)<=7).length;
+  const thisWeek=completedDates.filter(d=>(new Date()-new Date(d))/(1000*60*60*24)<=7).length;
   const streak=(()=>{let s=0;for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))s++;else if(i>0)break;}return s;})();
-  const todayDone=completedDates.some(d=>new Date(d).toDateString()===now.toDateString());
-  const splitData=settings.split?SPLITS[settings.split]:null;
-  const daysKey=splitData?Object.keys(splitData).filter(k=>k!=="name").find(k=>k.includes(settings.days||"4"))||Object.keys(splitData).filter(k=>k!=="name")[0]:null;
-  const template=daysKey?splitData[daysKey]:null;
-  const todayWorkout=template?template[now.getDay()%template.length]:null;
-  const totalCal=macroLog.reduce((a,x)=>a+(x.cal||0),0);
-  const calLeft=Math.max(0,macroTargets.cal-totalCal);
-  const totalP=macroLog.reduce((a,x)=>a+(x.p||0),0);
-  const pLeft=Math.max(0,macroTargets.p-totalP);
-  const quote=QUOTES[now.getDay()%QUOTES.length];
-  const pbs=Object.values(getPBs()).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
-
+  const quote=QUOTES[new Date().getDay()%QUOTES.length];
+  const hour=new Date().getHours();
+  const greet=hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
   return(
-    <div style={{position:"relative",zIndex:1,paddingBottom:"1rem",overflowX:"hidden"}}>
+    <div style={{...s.content,paddingBottom:"1rem"}}>
+      {/* Greeting */}
+      <div style={{marginBottom:"1.25rem"}}>
+        <div style={{fontSize:"0.7rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif"}}>{greet}</div>
+        <div style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.white,lineHeight:1}}>{profile?.name||"Athlete"} <span style={{color:C.lime}}>🔥</span></div>
+      </div>
 
-      {/* ── HERO SECTION ── */}
-      <div style={{padding:"1.5rem 1.25rem 0"}}>
-        <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif"}}>{greet}</div>
-        <div style={{fontSize:"3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",color:C.white,lineHeight:0.9,marginBottom:"0.25rem"}}>{profile?.name||"Athlete"}</div>
-        <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1.5rem"}}>{todayDone?"You crushed it today. 🔥":"Ready to build. Let's go. 💪"}</div>
+      {/* Weekly recap */}
+      <WeeklyRecap onNavigate={onNavigate}/>
 
-        {/* ── TODAY WORKOUT CARD ── */}
-        <div onClick={()=>onNavigate("train")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.14),rgba(160,230,0,0.06))",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"22px",padding:"1.4rem",marginBottom:"0.65rem",cursor:"pointer",position:"relative",overflow:"hidden",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)"}}>
-          <div style={{position:"absolute",top:"-20px",right:"-20px",width:"100px",height:"100px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",filter:"blur(20px)",pointerEvents:"none"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.5rem"}}>
-            <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"5px",height:"5px",borderRadius:"50%",background:C.lime,display:"inline-block"}}/>{todayDone?"Completed":"Today's Training"}</div>
-            {todayDone&&<div style={{background:"rgba(204,255,0,0.2)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"2px 10px",fontSize:"0.62rem",fontWeight:800,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.06em"}}>DONE ✓</div>}
+      {/* Stats row */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.75rem"}}>
+        {[{n:totalWorkouts,l:"Workouts"},{n:thisWeek,l:"This Week"},{n:`${streak}🔥`,l:"Streak"}].map((x,i)=>(
+          <div key={i} style={s.statCard}>
+            <div style={{...s.statNum,fontSize:"1.6rem"}}>{x.n}</div>
+            <div style={s.statLabel}>{x.l}</div>
           </div>
-          <div style={{fontSize:"1.9rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.white,lineHeight:1,marginBottom:"0.5rem"}}>
-            {todayWorkout?todayWorkout.label:settings.split?"Rest Day":"Set Up Your Programme"}
-          </div>
-          {todayWorkout&&<div style={{display:"flex",gap:"0.35rem",flexWrap:"wrap",marginBottom:"0.85rem"}}>{todayWorkout.muscles.slice(0,4).map(m=><span key={m} style={{...s.tag,fontSize:"0.6rem"}}>{m}</span>)}</div>}
-          <div style={{background:todayDone?"rgba(255,255,255,0.1)":C.lime,color:todayDone?"rgba(255,255,255,0.6)":"#000",border:"none",borderRadius:"10px",padding:"0.65rem 1.25rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",display:"inline-block",cursor:"pointer",boxShadow:todayDone?"none":"0 0 20px rgba(204,255,0,0.3)"}}>
-            {todayDone?"Train Again →":todayWorkout?"Start Workout →":"Build Programme →"}
-          </div>
+        ))}
+      </div>
+
+      {/* Quote card */}
+      <div style={{...s.card,background:"rgba(204,255,0,0.06)",borderColor:"rgba(204,255,0,0.18)",marginBottom:"0.75rem"}}>
+        <div style={{...s.eyebrow,marginBottom:"0.4rem"}}><span style={s.dot}/>Daily Motivation</div>
+        <div style={{fontSize:"1rem",fontWeight:700,color:C.white,fontFamily:"'Barlow',sans-serif",lineHeight:1.5,fontStyle:"italic"}}>"{quote}"</div>
+      </div>
+
+      {/* Today's workout CTA */}
+      <div onClick={()=>onNavigate("train")} style={{...s.cardLime,cursor:"pointer",position:"relative",overflow:"hidden",marginBottom:"0.75rem"}}>
+        <div style={{position:"absolute",top:"-20px",right:"-20px",width:"90px",height:"90px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(18px)",pointerEvents:"none"}}/>
+        <Eyebrow label={settings.split?`${(settings.split||"").replace("_"," ").toUpperCase()} · ${settings.level}`:"Set Up Programme"}/>
+        <div style={{fontSize:"1.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>
+          {settings.split?"Today's Workout":"Start Training"}
         </div>
-
-        {/* ── STATS ROW ── */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.65rem"}}>
-          {[{n:totalWorkouts,l:"Workouts",c:C.lime},{n:thisWeek,l:"This Week",c:C.lime},{n:streak+"🔥",l:"Streak",c:C.lime}].map((x,i)=>(
-            <div key={i} style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:"14px",padding:"0.85rem",textAlign:"center"}}>
-              <div style={{fontSize:"1.7rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
-              <div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"3px"}}>{x.l}</div>
-            </div>
-          ))}
+        <div style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.82rem",marginBottom:"1rem"}}>
+          {settings.split?`${settings.wGoal||"Your programme"} · ${settings.days} days/week`:"Choose your split, level and goal to begin"}
         </div>
+        <div style={{...s.btn,display:"inline-flex",padding:"0.65rem 1.2rem",fontSize:"0.85rem",borderRadius:"10px"}}>
+          {settings.split?"Start Workout →":"Build Programme →"}
+        </div>
+      </div>
 
-        {/* ── NUTRITION DASHBOARD ── */}
-        <div onClick={()=>onNavigate("macros")} style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"22px",padding:"1.25rem",marginBottom:"0.65rem",cursor:"pointer"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1rem"}}>
-            <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"5px",height:"5px",borderRadius:"50%",background:C.lime,display:"inline-block"}}/>Today's Nutrition</div>
-            <span style={{fontSize:"0.72rem",fontWeight:800,color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.06em"}}>Log food →</span>
+      {/* Quick actions */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",marginBottom:"0.75rem"}}>
+        {[
+          {label:"Meal Planner",desc:"Today's meals",icon:"🍽️",action:()=>onNavigate("meal")},
+          {label:"AI Coach",desc:"Ask anything",icon:"💬",action:()=>onNavigate("coach")},
+          {label:"Macro Tracker",desc:"Log food",icon:"📊",action:()=>onNavigate("macros")},
+          {label:"Supplements",desc:"What to take",icon:"💊",action:()=>onNavigate("sidebar","supplements")},
+        ].map((item,i)=>(
+          <div key={i} onClick={item.action} style={{...s.card,cursor:"pointer",padding:"0.9rem",marginBottom:0}}>
+            <span style={{fontSize:"1.4rem",display:"block",marginBottom:"0.35rem"}}>{item.icon}</span>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.white,marginBottom:"0.1rem"}}>{item.label}</div>
+            <div style={{color:"rgba(255,255,255,0.35)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
           </div>
-          <div style={{display:"flex",gap:"1rem",alignItems:"center",marginBottom:"1rem"}}>
-            {/* Calorie ring */}
-            <div style={{flexShrink:0}}>
-              {(()=>{
-                const pct=Math.min(100,Math.round((totalCal/macroTargets.cal)*100));
-                const r=30,circ=2*Math.PI*r;
-                return(
-                  <svg width="76" height="76" viewBox="0 0 76 76">
-                    <circle cx="38" cy="38" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="5"/>
-                    <circle cx="38" cy="38" r={r} fill="none" stroke={C.lime} strokeWidth="5" strokeDasharray={circ} strokeDashoffset={circ*(1-pct/100)} strokeLinecap="round" transform="rotate(-90 38 38)" style={{filter:"drop-shadow(0 0 5px rgba(204,255,0,0.5))"}}/>
-                    <text x="38" y="34" textAnchor="middle" fill={C.white} fontSize="13" fontWeight="900" fontFamily="Barlow Condensed,sans-serif">{totalCal}</text>
-                    <text x="38" y="47" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="Barlow Condensed,sans-serif">KCAL</text>
-                  </svg>
-                );
-              })()}
-            </div>
-            <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
-              {[{l:"Kcal left",v:calLeft,c:C.lime},{l:"Protein left",v:pLeft+"g",c:"#4ade80"}].map((x,i)=>(
-                <div key={i} style={{background:"rgba(255,255,255,0.05)",borderRadius:"10px",padding:"0.45rem 0.65rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.08em"}}>{x.l}</span>
-                  <span style={{fontSize:"1rem",fontWeight:900,color:x.c,fontFamily:"'Barlow Condensed',sans-serif"}}>{x.v}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Macro bars */}
-          {[{l:"Protein",k:"p",c:"#4ade80"},{l:"Carbs",k:"c",c:"#60a5fa"},{l:"Fat",k:"f",c:"#f97316"}].map((m,i)=>{
-            const val=macroLog.reduce((a,x)=>a+(x[m.k]||0),0);
-            const tgt=macroTargets[m.k];
-            const pct=Math.min(100,Math.round((val/tgt)*100));
-            return(
-              <div key={i} style={{marginBottom:i<2?"0.35rem":0}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:"3px"}}>
-                  <span style={{fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>{m.l}</span>
-                  <span style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>{val}g/{tgt}g</span>
-                </div>
-                <div style={{height:"4px",background:"rgba(255,255,255,0.07)",borderRadius:"2px",overflow:"hidden"}}>
-                  <div style={{height:"100%",width:pct+"%",background:m.c,borderRadius:"2px",transition:"width 1s ease"}}/>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        ))}
+      </div>
 
-        {/* ── WATER + AI COACH ── */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.65rem"}}>
-          <div onClick={()=>onNavigate("sidebar","calculator")} style={{background:"rgba(59,130,246,0.08)",border:"1px solid rgba(59,130,246,0.18)",borderRadius:"18px",padding:"1rem",cursor:"pointer",backdropFilter:"blur(15px)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.5rem"}}>
-              <span style={{fontSize:"1.3rem"}}>💧</span>
-              <span style={{fontSize:"1.1rem",fontWeight:900,color:"#60a5fa",fontFamily:"'Barlow Condensed',sans-serif"}}>{water}/8</span>
-            </div>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.white,marginBottom:"0.4rem"}}>Water</div>
-            <div style={{height:"4px",background:"rgba(255,255,255,0.07)",borderRadius:"2px",overflow:"hidden",marginBottom:"0.3rem"}}>
-              <div style={{height:"100%",width:Math.min(100,(water/8)*100)+"%",background:"#3b82f6",borderRadius:"2px"}}/>
-            </div>
-            <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{water>=8?"Goal hit! 🎉":8-water+" glasses to go"}</div>
-          </div>
-          <div onClick={()=>onNavigate("coach")} style={{background:"rgba(168,85,247,0.08)",border:"1px solid rgba(168,85,247,0.18)",borderRadius:"18px",padding:"1rem",cursor:"pointer",backdropFilter:"blur(15px)"}}>
-            <span style={{fontSize:"1.3rem",display:"block",marginBottom:"0.5rem"}}>🤖</span>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.white,marginBottom:"0.25rem"}}>AI Coach</div>
-            <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.4}}>Ask me anything. Available 24/7.</div>
-          </div>
-        </div>
-
-        {/* ── QUICK ACTIONS ── */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.65rem"}}>
-          {[
-            {icon:"🍽️",label:"Meal Planner",desc:"Build today's meals",action:()=>onNavigate("meal"),color:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)"},
-            {icon:"📊",label:"Log Macros",desc:"Track your food",action:()=>onNavigate("macros"),color:"rgba(96,165,250,0.08)",border:"rgba(96,165,250,0.15)"},
-            {icon:"📈",label:"Progress",desc:"Log your weight",action:()=>onNavigate("sidebar","progress"),color:"rgba(74,222,128,0.08)",border:"rgba(74,222,128,0.15)"},
-            {icon:"🧠",label:"Habits",desc:"Daily check-in",action:()=>onNavigate("sidebar","habits"),color:"rgba(204,255,0,0.06)",border:"rgba(204,255,0,0.15)"},
-          ].map((item,i)=>(
-            <div key={i} onClick={item.action} style={{background:`linear-gradient(135deg,${item.color},rgba(255,255,255,0.03))`,border:`1px solid ${item.border}`,borderRadius:"18px",padding:"1rem",cursor:"pointer",backdropFilter:"blur(15px)"}}>
-              <span style={{fontSize:"1.3rem",display:"block",marginBottom:"0.4rem"}}>{item.icon}</span>
-              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white,marginBottom:"0.15rem"}}>{item.label}</div>
-              <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── MOTIVATION ── */}
-        <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.65rem"}}>
-          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.45rem",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"4px",height:"4px",borderRadius:"50%",background:C.lime,display:"inline-block"}}/>Daily Motivation</div>
-          <div style={{fontSize:"1rem",fontWeight:700,color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6,fontStyle:"italic"}}>"{quote}"</div>
-        </div>
-
-        {/* ── PBs ── */}
-        {pbs.length>0&&(
-          <div style={{background:"rgba(251,191,36,0.06)",border:"1px solid rgba(251,191,36,0.15)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.65rem",backdropFilter:"blur(15px)"}}>
+      {/* Recent PBs */}
+      {(()=>{
+        const pbs=Object.values(getPBs()).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+        if(pbs.length===0)return null;
+        return(
+          <div style={{...s.card,marginBottom:"0.75rem"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.6rem"}}>
-              <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"#fbbf24",fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"4px",height:"4px",borderRadius:"50%",background:"#fbbf24",display:"inline-block"}}/>Personal Bests</div>
-              <button onClick={()=>onNavigate("sidebar","pbs")} style={{background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"6px",padding:"2px 8px",color:"#fbbf24",fontSize:"0.62rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}>See all</button>
+              <Eyebrow label="Strength Records"/>
+              <button onClick={()=>onNavigate("sidebar","pbs")} style={{...s.btnSm,fontSize:"0.65rem",padding:"0.25rem 0.6rem"}}>See all</button>
             </div>
             {pbs.map((pb,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.35rem 0",borderBottom:i<pbs.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
-                <span style={{fontSize:"0.95rem"}}>🏆</span>
-                <div style={{flex:1,fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:C.white}}>{pb.name}</div>
-                <span style={{background:"rgba(251,191,36,0.15)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"6px",padding:"2px 7px",fontSize:"0.65rem",fontWeight:800,color:"#fbbf24",fontFamily:"'Barlow Condensed',sans-serif"}}>{pb.weight}kg×{pb.reps}</span>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.4rem 0",borderBottom:i<pbs.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                <span style={{fontSize:"1rem",flexShrink:0}}>🏆</span>
+                <div style={{flex:1}}><div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white}}>{pb.name}</div></div>
+                <span style={{...s.tag,fontSize:"0.65rem"}}>{pb.weight}kg × {pb.reps}</span>
               </div>
             ))}
           </div>
-        )}
+        );
+      })()}
 
-        {/* ── CALENDAR ── */}
-        <WorkoutCalendar completedDates={completedDates}/>
-        <div style={{height:"1rem"}}/>
-      </div>
+      {/* Calendar */}
+      <WorkoutCalendar completedDates={completedDates}/>
     </div>
   );
 }
