@@ -216,11 +216,36 @@ const EXERCISES={
   ],
 };
 
+// ─── SPLITS DATA ─────────────────────────────────────────────────────────────
 const SPLITS={
-  ppl:{name:"Push / Pull / Legs",days3:[{label:"Push",muscles:["chest","shoulders","triceps"]},{label:"Pull",muscles:["back","biceps"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]}],days6:[{label:"Push A",muscles:["chest","shoulders","triceps"]},{label:"Pull A",muscles:["back","biceps"]},{label:"Legs A",muscles:["quads","hamstrings","glutes","calves"]},{label:"Push B",muscles:["chest","shoulders","triceps"]},{label:"Pull B",muscles:["back","biceps"]},{label:"Legs B",muscles:["quads","hamstrings","glutes","calves"]}]},
-  upper_lower:{name:"Upper / Lower",days4:[{label:"Upper A",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower A",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Upper B",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower B",muscles:["quads","hamstrings","glutes","calves","core"]}]},
-  muscle_group:{name:"Muscle Group",days5:[{label:"Chest & Triceps",muscles:["chest","triceps"]},{label:"Back & Biceps",muscles:["back","biceps"]},{label:"Shoulders & Core",muscles:["shoulders","core"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]},{label:"Arms",muscles:["biceps","triceps","core"]}]},
-  full_body:{name:"Full Body / HIIT",days3:[{label:"Full Body A",muscles:["chest","back","quads","core"]},{label:"Full Body B",muscles:["shoulders","hamstrings","glutes","core"]},{label:"HIIT",muscles:["hiit"]}]},
+  ppl:{
+    name:"Push / Pull / Legs",
+    days3:[{label:"Push",muscles:["chest","shoulders","triceps"]},{label:"Pull",muscles:["back","biceps"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]}],
+    days4:[{label:"Push",muscles:["chest","shoulders","triceps"]},{label:"Pull",muscles:["back","biceps"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]},{label:"Push B",muscles:["chest","shoulders","triceps"]}],
+    days5:[{label:"Push A",muscles:["chest","shoulders","triceps"]},{label:"Pull A",muscles:["back","biceps"]},{label:"Legs A",muscles:["quads","hamstrings","glutes","calves"]},{label:"Push B",muscles:["chest","triceps"]},{label:"Pull B",muscles:["back","biceps"]}],
+    days6:[{label:"Push A",muscles:["chest","shoulders","triceps"]},{label:"Pull A",muscles:["back","biceps"]},{label:"Legs A",muscles:["quads","hamstrings","glutes","calves"]},{label:"Push B",muscles:["chest","shoulders","triceps"]},{label:"Pull B",muscles:["back","biceps"]},{label:"Legs B",muscles:["quads","hamstrings","glutes","calves"]}],
+  },
+  upper_lower:{
+    name:"Upper / Lower",
+    days3:[{label:"Upper",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Upper B",muscles:["chest","back","shoulders","biceps","triceps"]}],
+    days4:[{label:"Upper A",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower A",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Upper B",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower B",muscles:["quads","hamstrings","glutes","calves","core"]}],
+    days5:[{label:"Upper A",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower A",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Upper B",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower B",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Full Body",muscles:["chest","back","quads","core"]}],
+    days6:[{label:"Upper A",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower A",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Upper B",muscles:["chest","back","shoulders","biceps","triceps"]},{label:"Lower B",muscles:["quads","hamstrings","glutes","calves","core"]},{label:"Upper C",muscles:["chest","back","shoulders"]},{label:"Lower C",muscles:["quads","hamstrings","glutes","core"]}],
+  },
+  muscle_group:{
+    name:"Muscle Group",
+    days3:[{label:"Push",muscles:["chest","shoulders","triceps"]},{label:"Pull",muscles:["back","biceps"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]}],
+    days4:[{label:"Chest & Triceps",muscles:["chest","triceps"]},{label:"Back & Biceps",muscles:["back","biceps"]},{label:"Shoulders & Core",muscles:["shoulders","core"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]}],
+    days5:[{label:"Chest & Triceps",muscles:["chest","triceps"]},{label:"Back & Biceps",muscles:["back","biceps"]},{label:"Shoulders & Core",muscles:["shoulders","core"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]},{label:"Arms",muscles:["biceps","triceps","core"]}],
+    days6:[{label:"Chest",muscles:["chest"]},{label:"Back",muscles:["back"]},{label:"Shoulders & Core",muscles:["shoulders","core"]},{label:"Legs",muscles:["quads","hamstrings","glutes","calves"]},{label:"Biceps & Triceps",muscles:["biceps","triceps"]},{label:"Full Body",muscles:["chest","back","quads","core"]}],
+  },
+  full_body:{
+    name:"Full Body / HIIT",
+    days3:[{label:"Full Body A",muscles:["chest","back","quads","core"]},{label:"Full Body B",muscles:["shoulders","hamstrings","glutes","core"]},{label:"HIIT",muscles:["hiit"]}],
+    days4:[{label:"Full Body A",muscles:["chest","back","quads","core"]},{label:"HIIT A",muscles:["hiit"]},{label:"Full Body B",muscles:["shoulders","hamstrings","glutes","core"]},{label:"HIIT B",muscles:["hiit"]}],
+    days5:[{label:"Full Body A",muscles:["chest","back","quads","core"]},{label:"HIIT A",muscles:["hiit"]},{label:"Full Body B",muscles:["shoulders","hamstrings","glutes","core"]},{label:"HIIT B",muscles:["hiit"]},{label:"Full Body C",muscles:["chest","back","hamstrings","core"]}],
+    days6:[{label:"Full Body A",muscles:["chest","back","quads","core"]},{label:"HIIT A",muscles:["hiit"]},{label:"Full Body B",muscles:["shoulders","hamstrings","glutes","core"]},{label:"HIIT B",muscles:["hiit"]},{label:"Full Body C",muscles:["chest","back","hamstrings","core"]},{label:"HIIT C",muscles:["hiit"]}],
+  },
 };
 
 const QUOTES=[
@@ -772,15 +797,6 @@ function Onboarding({user,onComplete}){
     const cal=isLoss?Math.round(w*28):isBulk?Math.round(w*35):Math.round(w*31);
     const p=Math.round(w*2.2);const f=Math.round(cal*0.25/9);const c=Math.round((cal-p*4-f*9)/4);
     localStorage.setItem("fb_macro_targets",JSON.stringify({cal,p,c,f}));
-    // Auto-calculate macro targets from onboarding data
-    const w=parseFloat(data.weight)||80;
-    const isLoss=data.goal==="fat_loss";
-    const isBulk=data.goal==="muscle"||data.goal==="bulk";
-    const cal=isLoss?Math.round(w*28):isBulk?Math.round(w*35):Math.round(w*31);
-    const p=Math.round(w*2.2);
-    const f=Math.round(cal*0.25/9);
-    const c=Math.round((cal-p*4-f*9)/4);
-    localStorage.setItem("fb_macro_targets",JSON.stringify({cal,p,c,f}));
     onComplete(data);
   }
   const steps=[
@@ -1051,7 +1067,7 @@ function HomeScreen({profile,user,onNavigate}){
   const streak=(()=>{let s=0;for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))s++;else if(i>0)break;}return s;})();
   const todayDone=completedDates.some(d=>new Date(d).toDateString()===now.toDateString());
   const splitData=settings.split?SPLITS[settings.split]:null;
-  const daysKey=splitData?Object.keys(splitData).filter(k=>k!=="name").find(k=>k.includes(settings.days||"4"))||Object.keys(splitData).filter(k=>k!=="name")[0]:null;
+  const daysKey=splitData?Object.keys(splitData).filter(k=>k!=="name").find(k=>k===`days${settings.days||"4"}`)||Object.keys(splitData).filter(k=>k!=="name")[0]:null;
   const template=daysKey?splitData[daysKey]:null;
   const todayWorkout=template?template[now.getDay()%template.length]:null;
   const totalCal=macroLog.reduce((a,x)=>a+(x.cal||0),0);
@@ -1302,7 +1318,7 @@ function TrainScreen({onStartWorkout,onSetupComplete}){
   }
 
   const splitData=SPLITS[settings.split];
-  const daysKey=Object.keys(splitData).filter(k=>k!=="name").find(k=>k.includes(settings.days||"4"))||Object.keys(splitData).filter(k=>k!=="name")[0];
+  const daysKey=Object.keys(splitData).filter(k=>k!=="name").find(k=>k===`days${settings.days||"4"}`)||Object.keys(splitData).filter(k=>k!=="name")[0];
   const template=splitData[daysKey];
   const todayIdx=new Date().getDay()%template.length;
 
@@ -1361,20 +1377,54 @@ function TrainScreen({onStartWorkout,onSetupComplete}){
 function WorkoutSession({dayIndex,onDone}){
   const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
   const splitData=SPLITS[settings.split||"ppl"];
-  const daysKey=Object.keys(splitData).filter(k=>k!=="name").find(k=>k.includes(settings.days||"4"))||Object.keys(splitData).filter(k=>k!=="name")[0];
+  const daysKey=Object.keys(splitData).filter(k=>k!=="name").find(k=>k===`days${settings.days||"4"}`)||Object.keys(splitData).filter(k=>k!=="name")[0];
   const template=splitData[daysKey];
   const dayIdx=dayIndex!==undefined?dayIndex:new Date().getDay()%template.length;
   const day=template[dayIdx];
   const level=settings.level||"intermediate";
+  const goal=settings.wGoal||"muscle";
 
-  const exercises=day.muscles.reduce((acc,muscle)=>{
-    const pool=EXERCISES[muscle]||[];
-    const count=settings.wGoal==="strength"?3:4;
-    pool.slice(0,count).forEach(ex=>{
-      acc.push({...ex,muscle,sets:level==="beginner"?String(Math.max(2,parseInt(ex.sets)-1)):level==="advanced"?String(parseInt(ex.sets)+1):ex.sets});
-    });
-    return acc;
-  },[]);
+  // Goal-based rep ranges
+  function getGoalReps(baseReps){
+    if(goal==="strength")return"3-5";
+    if(goal==="fat loss")return"15-20";
+    if(goal==="athletic")return"8-12";
+    return baseReps; // muscle = use default
+  }
+  function getGoalSets(baseSets){
+    const base=parseInt(baseSets)||3;
+    if(goal==="strength")return String(base+1); // more sets, fewer reps
+    if(goal==="fat loss")return String(Math.max(2,base-1)); // fewer sets, more reps
+    return String(base);
+  }
+  function getLevelSets(sets){
+    const n=parseInt(sets)||3;
+    if(level==="beginner")return String(Math.max(2,n-1));
+    if(level==="advanced")return String(n+1);
+    return String(n);
+  }
+  function getGoalRest(baseRest){
+    if(goal==="strength")return"3-5 min";
+    if(goal==="fat loss")return"30-45 sec";
+    if(goal==="athletic")return"60 sec";
+    return baseRest;
+  }
+
+  function buildExercises(day){
+    const exCount=goal==="strength"?3:goal==="fat loss"?5:4;
+    return day.muscles.reduce((acc,muscle)=>{
+      const pool=EXERCISES[muscle]||[];
+      pool.slice(0,exCount).forEach(ex=>{
+        const sets=getLevelSets(getGoalSets(ex.sets));
+        const reps=getGoalReps(ex.reps);
+        const rest=getGoalRest(ex.rest);
+        acc.push({...ex,muscle,sets,reps,rest});
+      });
+      return acc;
+    },[]);
+  }
+
+  const[exercises,setExercises]=useState(()=>buildExercises(day));
 
   const[mode,setMode]=useState("overview");
   const[exIdx,setExIdx]=useState(0);
@@ -1461,12 +1511,10 @@ function WorkoutSession({dayIndex,onDone}){
               <div style={{display:"flex",gap:"0.3rem",marginTop:"0.2rem"}}><span style={s.tag}>{ex.muscle}</span><span style={s.tagGray}>{ex.sets}×{ex.reps}</span></div>
             </div>
             <button onClick={()=>{
-              // Swap with next exercise from same muscle group
               const pool=(EXERCISES[ex.muscle]||[]).filter(e=>e.name!==ex.name);
               if(pool.length===0)return;
               const next=pool[Math.floor(Math.random()*pool.length)];
-              exercises[i]={...next,muscle:ex.muscle,sets:ex.sets};
-              setMode("overview"); // re-render
+              setExercises(prev=>{const updated=[...prev];updated[i]={...next,muscle:ex.muscle,sets:ex.sets,reps:ex.reps,rest:ex.rest};return updated;});
             }} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"0.35rem 0.6rem",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"0.7rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",flexShrink:0}}>Swap</button>
           </div>
         ))}
@@ -2703,105 +2751,6 @@ function WorkoutSchedule({onSave}){
 }
 
 // ─── REST DAY ────────────────────────────────────────────────────────────────
-function RestDayContent(){
-  const[done,setDone]=useState({});
-  const MOBILITY=[
-    {name:"Hip Flexor Stretch",dur:"60 sec each",muscle:"Hips"},
-    {name:"Thoracic Rotation",dur:"10 reps each",muscle:"Spine"},
-    {name:"Doorway Chest Stretch",dur:"30 sec each",muscle:"Chest"},
-    {name:"Hamstring Stretch",dur:"45 sec each",muscle:"Hamstrings"},
-    {name:"Child's Pose",dur:"60 sec",muscle:"Back"},
-    {name:"Pigeon Pose",dur:"60 sec each",muscle:"Glutes"},
-    {name:"Cat-Cow Stretch",dur:"10 reps",muscle:"Spine"},
-    {name:"Shoulder Cross Stretch",dur:"30 sec each",muscle:"Shoulders"},
-  ];
-  const doneCount=Object.values(done).filter(Boolean).length;
-  return(
-    <div style={s.content}>
-      <Eyebrow label="Rest & Recover"/>
-      <h2 style={s.sectionTitle}>Rest Day</h2>
-      <p style={s.sectionSub}>Recovery is where the gains actually happen.</p>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",marginBottom:"0.75rem"}}>
-        {[{icon:"😴",title:"Sleep 8+ Hours",desc:"Growth hormone peaks during deep sleep."},{icon:"💧",title:"Hydrate Hard",desc:"Aim for 3-4L today."},{icon:"🍗",title:"Hit Protein",desc:"Still hit your protein target today."},{icon:"🚶",title:"Light Walk",desc:"15-20 min increases blood flow."}].map((tip,i)=>(
-          <div key={i} style={{...s.card,padding:"1rem",marginBottom:0}}>
-            <span style={{fontSize:"1.4rem",display:"block",marginBottom:"0.4rem"}}>{tip.icon}</span>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white,marginBottom:"0.2rem"}}>{tip.title}</div>
-            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.4}}>{tip.desc}</div>
-          </div>
-        ))}
-      </div>
-      <div style={s.card}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-          <div><Eyebrow label="Mobility Routine"/><div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.95rem",color:C.white}}>10 Min Stretch</div></div>
-          <div style={{textAlign:"right"}}><div style={{fontSize:"1.4rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{doneCount}/{MOBILITY.length}</div></div>
-        </div>
-        <div style={s.progressBar}><div style={{...s.progressFill,width:`${Math.round((doneCount/MOBILITY.length)*100)}%`}}/></div>
-        <div style={{marginTop:"0.75rem"}}>
-          {MOBILITY.map((item,i)=>(
-            <div key={i} onClick={()=>setDone(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.6rem 0",borderBottom:i<MOBILITY.length-1?"1px solid rgba(255,255,255,0.05)":"none",cursor:"pointer"}}>
-              <div style={{width:"22px",height:"22px",borderRadius:"6px",border:`1.5px solid ${done[i]?C.lime:"rgba(255,255,255,0.15)"}`,background:done[i]?C.lime:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
-                {done[i]&&<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </div>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.88rem",color:done[i]?"rgba(255,255,255,0.35)":C.white,textDecoration:done[i]?"line-through":"none"}}>{item.name}</div>
-                <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{item.dur} · {item.muscle}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {doneCount===MOBILITY.length&&<div style={{textAlign:"center",padding:"0.75rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",marginTop:"0.25rem"}}>Full routine complete! 🔥</div>}
-      </div>
-    </div>
-  );
-}
-
-// ─── PROGRESS PHOTOS ─────────────────────────────────────────────────────────
-function ProgressPhotos(){
-  const[photos,setPhotos]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");}catch{return[];}});
-  const[uploading,setUploading]=useState(false);
-  const fileRef=useRef(null);
-  function handleFile(e){
-    const file=e.target.files?.[0];if(!file)return;setUploading(true);
-    const reader=new FileReader();
-    reader.onload=(ev)=>{
-      const newPhotos=[...photos,{id:Date.now(),data:ev.target.result,date:new Date().toISOString(),label:new Date().toLocaleDateString("en-AU",{month:"long",year:"numeric"})}];
-      setPhotos(newPhotos);
-      try{localStorage.setItem("fb_progress_photos",JSON.stringify(newPhotos));}catch{alert("Photo too large. Try a smaller image.");}
-      setUploading(false);
-    };
-    reader.readAsDataURL(file);
-  }
-  function deletePhoto(id){const updated=photos.filter(p=>p.id!==id);setPhotos(updated);localStorage.setItem("fb_progress_photos",JSON.stringify(updated));}
-  return(
-    <div style={s.content}>
-      <Eyebrow label="Visual Progress"/>
-      <h2 style={s.sectionTitle}>Progress Photos</h2>
-      <p style={s.sectionSub}>The most powerful way to see your transformation.</p>
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
-      <button onClick={()=>fileRef.current?.click()} disabled={uploading} style={{...s.btn,width:"100%",padding:"1rem",borderRadius:"14px",marginBottom:"0.75rem"}}>
-        {uploading?"Saving...":"📸 Add Progress Photo"}
-      </button>
-      {photos.length===0?(
-        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
-          <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>📸</div>
-          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No photos yet</div>
-          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.5}}>Take one monthly. Seeing your transformation is the most powerful motivator.</div>
-        </div>
-      ):(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
-          {photos.map((photo)=>(
-            <div key={photo.id} style={{...s.card,padding:"0.6rem",marginBottom:0,position:"relative"}}>
-              <img src={photo.data} alt="Progress" style={{width:"100%",borderRadius:"12px",display:"block",marginBottom:"0.4rem",aspectRatio:"3/4",objectFit:"cover"}}/>
-              <div style={{fontSize:"0.72rem",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.2rem"}}>{photo.label}</div>
-              <button onClick={()=>deletePhoto(photo.id)} style={{position:"absolute",top:"0.8rem",right:"0.8rem",background:"rgba(0,0,0,0.6)",border:"none",borderRadius:"50%",width:"24px",height:"24px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── PROFILE TAB ─────────────────────────────────────────────────────────────
 function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
@@ -2929,6 +2878,7 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
             {label:"Progress Photos",icon:"📸",id:"photos"},
             {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
+            {label:"Training Schedule",icon:"📅",id:"schedule"},
             {label:"Strength Charts",icon:"📈",id:"strength"},
             {label:"Progress Photos",icon:"📸",id:"photos"},
             {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
@@ -3234,6 +3184,7 @@ export default function ForgeBodyApp(){
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
           {sidePanel?.screen==="restday"&&<RestDayContent/>}
           {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
+          {sidePanel?.screen==="schedule"&&<WorkoutSchedule/>}
           {sidePanel?.screen==="strength"&&<StrengthCharts/>}
           {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
           {sidePanel?.screen==="restday"&&<RestDayContent/>}
