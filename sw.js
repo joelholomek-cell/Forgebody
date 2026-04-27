@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forgebody-v1';
+const CACHE_NAME = 'forgebody-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
