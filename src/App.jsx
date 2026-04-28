@@ -2751,6 +2751,133 @@ function WorkoutSchedule(){
 }
 
 // ─── REST DAY ────────────────────────────────────────────────────────────────
+// ─── CANCEL FLOW ─────────────────────────────────────────────────────────────
+function CancelFlow({user,profile}){
+  const[show,setShow]=useState(false);
+  const[step,setStep]=useState("retain"); // retain | confirm | loading
+  const[reason,setReason]=useState("");
+
+  const REASONS=[
+    {id:"price",label:"It's too expensive",offer:"We get it. Switch to our Annual plan — just $10/month billed yearly. That's 47% off."},
+    {id:"results",label:"I'm not seeing results",offer:"Let our AI coach build you a new programme today. Results take 6-8 weeks — you're closer than you think."},
+    {id:"notusing",label:"I don't use it enough",offer:"Set a 5 min daily reminder. Consistency beats intensity every time. Give it one more week."},
+    {id:"complex",label:"It's too complicated",offer:"Start with just the workout tab. One feature. One habit. That's all it takes to begin."},
+    {id:"other",label:"Something else",offer:"We'd love to fix whatever's wrong. Message us on WhatsApp and we'll sort it out personally."},
+  ];
+
+  async function handleCancel(){
+    setStep("loading");
+    try{
+      const res=await fetch("/api/cancel",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:user.email})});
+      const data=await res.json();
+      if(data.url){
+        window.location.href=data.url;
+      }else{
+        // Fallback to WhatsApp
+        window.open(`https://wa.me/61493434408?text=Hi%20Joel%2C%20I%27d%20like%20to%20cancel%20my%20ForgeBody%20subscription%20please.%20My%20email%20is%20${encodeURIComponent(user.email)}`,"_blank");
+        setShow(false);
+      }
+    }catch(e){
+      window.open(`https://wa.me/61493434408?text=Hi%20Joel%2C%20I%27d%20like%20to%20cancel%20my%20ForgeBody%20subscription%20please.%20My%20email%20is%20${encodeURIComponent(user.email)}`,"_blank");
+      setShow(false);
+    }
+  }
+
+  const selectedReason=REASONS.find(r=>r.id===reason);
+
+  return(
+    <>
+      <button onClick={()=>{setShow(true);setStep("retain");setReason("");}} style={{display:"block",width:"100%",textAlign:"center",color:"rgba(255,100,100,0.5)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif",textDecoration:"underline",cursor:"pointer",background:"transparent",border:"none",padding:"0.5rem 0"}}>
+        Cancel subscription
+      </button>
+
+      {show&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
+          <div style={{width:"100%",maxWidth:"400px"}}>
+
+            {step==="retain"&&(
+              <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"1.75rem",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(25px)",pointerEvents:"none"}}/>
+
+                <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+                  <div style={{fontSize:"2.5rem",marginBottom:"0.5rem"}}>😢</div>
+                  <div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>Before you go...</div>
+                  <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>Help us understand why. We might be able to fix it.</div>
+                </div>
+
+                <div style={{marginBottom:"1rem"}}>
+                  {REASONS.map(r=>(
+                    <div key={r.id} onClick={()=>setReason(r.id)} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.75rem",marginBottom:"0.4rem",borderRadius:"12px",border:`1px solid ${reason===r.id?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.08)"}`,background:reason===r.id?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.03)",cursor:"pointer",transition:"all 0.15s"}}>
+                      <div style={{width:"18px",height:"18px",borderRadius:"50%",border:`2px solid ${reason===r.id?C.lime:"rgba(255,255,255,0.2)"}`,background:reason===r.id?C.lime:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {reason===r.id&&<div style={{width:"6px",height:"6px",borderRadius:"50%",background:"#000"}}/>}
+                      </div>
+                      <span style={{fontSize:"0.88rem",color:reason===r.id?C.white:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif"}}>{r.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {selectedReason&&(
+                  <div style={{background:"rgba(204,255,0,0.08)",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"12px",padding:"1rem",marginBottom:"1rem",animation:"fadeUp 0.2s ease"}}>
+                    <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>💡 Our offer</div>
+                    <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>{selectedReason.offer}</div>
+                  </div>
+                )}
+
+                <button onClick={()=>setStep("confirm")} style={{width:"100%",padding:"0.9rem",background:"rgba(255,60,60,0.1)",border:"1px solid rgba(255,60,60,0.2)",borderRadius:"12px",color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.5rem"}}>
+                  I still want to cancel
+                </button>
+                <button onClick={()=>setShow(false)} style={{...s.btn,width:"100%",padding:"0.9rem"}}>
+                  Keep My Subscription 🔥
+                </button>
+              </div>
+            )}
+
+            {step==="confirm"&&(
+              <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"1.75rem"}}>
+                <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+                  <div style={{fontSize:"2.5rem",marginBottom:"0.5rem"}}>⚠️</div>
+                  <div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>Are you sure?</div>
+                  <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>You'll lose access to all your workouts, meal plans, progress data and AI coaching.</div>
+                </div>
+
+                <div style={{background:"rgba(255,255,255,0.04)",borderRadius:"12px",padding:"1rem",marginBottom:"1.25rem"}}>
+                  {[
+                    "All your personal bests",
+                    "Your workout history",
+                    "Your progress photos",
+                    "Your meal plans",
+                    "AI coach access",
+                  ].map((item,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.3rem 0",borderBottom:i<4?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                      <span style={{color:"rgba(255,60,60,0.7)",fontSize:"0.85rem"}}>✕</span>
+                      <span style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif"}}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={handleCancel} style={{width:"100%",padding:"0.9rem",background:"rgba(255,60,60,0.1)",border:"1px solid rgba(255,60,60,0.2)",borderRadius:"12px",color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.5rem"}}>
+                  Yes, Cancel My Subscription
+                </button>
+                <button onClick={()=>setStep("retain")} style={{...s.btn,width:"100%",padding:"0.9rem"}}>
+                  Keep My Subscription 🔥
+                </button>
+              </div>
+            )}
+
+            {step==="loading"&&(
+              <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"2rem",textAlign:"center"}}>
+                <LoadingDots/>
+                <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",marginTop:"1rem"}}>Opening cancellation portal...</div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── PROFILE TAB ─────────────────────────────────────────────────────────────
 function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
@@ -2827,12 +2954,8 @@ function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
           </div>
         )}
 
-        {/* Cancel */}
-        {profile?.plan!=="lifetime"&&(
-          <a href={`https://wa.me/61493434408?text=Hi%20Joel%2C%20I%27d%20like%20to%20cancel%20my%20ForgeBody%20subscription%20please.%20My%20email%20is%20${encodeURIComponent(user.email)}`} target="_blank" rel="noopener noreferrer" style={{display:"block",textAlign:"center",color:"rgba(255,100,100,0.5)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif",textDecoration:"underline",cursor:"pointer"}}>
-            Cancel subscription
-          </a>
-        )}
+        {/* Cancel with retention popup */}
+        {profile?.plan!=="lifetime"&&<CancelFlow user={user} profile={profile}/>}
       </div>
 
       {/* Training settings */}
