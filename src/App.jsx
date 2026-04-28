@@ -2773,12 +2773,11 @@ function CancelFlow({user,profile}){
       if(data.url){
         window.location.href=data.url;
       }else{
-        // Fallback to WhatsApp
-        window.open(`https://wa.me/61493434408?text=Hi%20Joel%2C%20I%27d%20like%20to%20cancel%20my%20ForgeBody%20subscription%20please.%20My%20email%20is%20${encodeURIComponent(user.email)}`,"_blank");
+        window.location.href="https://billing.stripe.com/p/login/8x2cN5eIl3jA2tF6lA0Jq00";
         setShow(false);
       }
     }catch(e){
-      window.open(`https://wa.me/61493434408?text=Hi%20Joel%2C%20I%27d%20like%20to%20cancel%20my%20ForgeBody%20subscription%20please.%20My%20email%20is%20${encodeURIComponent(user.email)}`,"_blank");
+      window.location.href="https://billing.stripe.com/p/login/8x2cN5eIl3jA2tF6lA0Jq00";
       setShow(false);
     }
   }
