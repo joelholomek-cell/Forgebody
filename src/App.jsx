@@ -2791,14 +2791,15 @@ function CancelFlow({user,profile}){
       </button>
 
       {show&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
-          <div style={{width:"100%",maxWidth:"400px"}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0"}}>
+          <div style={{width:"100%",maxWidth:"480px",maxHeight:"90vh",overflowY:"auto",borderRadius:"24px 24px 0 0",background:"rgba(20,20,20,0.98)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderBottom:"none",padding:"1.5rem 1.5rem 2rem"}}>
 
             {step==="retain"&&(
-              <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"1.75rem",position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",top:"-30px",right:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(25px)",pointerEvents:"none"}}/>
+              <div style={{position:"relative"}}>
+                <div style={{width:"40px",height:"4px",borderRadius:"2px",background:"rgba(255,255,255,0.2)",margin:"0 auto 1.25rem"}}/>
+                <div style={{position:"absolute",top:"-30px",right:"-15px",width:"100px",height:"100px",borderRadius:"50%",background:"rgba(204,255,0,0.06)",filter:"blur(20px)",pointerEvents:"none"}}/>
 
-                <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+                <div style={{textAlign:"center",marginBottom:"1.25rem"}}>
                   <div style={{fontSize:"2.5rem",marginBottom:"0.5rem"}}>😢</div>
                   <div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>Before you go...</div>
                   <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>Help us understand why. We might be able to fix it.</div>
@@ -2822,31 +2823,26 @@ function CancelFlow({user,profile}){
                   </div>
                 )}
 
-                <button onClick={()=>setStep("confirm")} style={{width:"100%",padding:"0.9rem",background:"rgba(255,60,60,0.1)",border:"1px solid rgba(255,60,60,0.2)",borderRadius:"12px",color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.5rem"}}>
-                  I still want to cancel
-                </button>
-                <button onClick={()=>setShow(false)} style={{...s.btn,width:"100%",padding:"0.9rem"}}>
+                <button onClick={()=>setShow(false)} style={{...s.btn,width:"100%",padding:"0.9rem",marginBottom:"0.5rem"}}>
                   Keep My Subscription 🔥
+                </button>
+                <button onClick={()=>setStep("confirm")} style={{width:"100%",padding:"0.9rem",background:"transparent",border:"1px solid rgba(255,60,60,0.25)",borderRadius:"12px",color:"rgba(255,100,100,0.6)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer"}}>
+                  I still want to cancel
                 </button>
               </div>
             )}
 
             {step==="confirm"&&(
-              <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"1.75rem"}}>
-                <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+              <div>
+                <div style={{width:"40px",height:"4px",borderRadius:"2px",background:"rgba(255,255,255,0.2)",margin:"0 auto 1.25rem"}}/>
+                <div style={{textAlign:"center",marginBottom:"1.25rem"}}>
                   <div style={{fontSize:"2.5rem",marginBottom:"0.5rem"}}>⚠️</div>
                   <div style={{fontSize:"1.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem",lineHeight:1}}>Are you sure?</div>
-                  <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>You'll lose access to all your workouts, meal plans, progress data and AI coaching.</div>
+                  <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>You'll lose access to everything you've built.</div>
                 </div>
 
                 <div style={{background:"rgba(255,255,255,0.04)",borderRadius:"12px",padding:"1rem",marginBottom:"1.25rem"}}>
-                  {[
-                    "All your personal bests",
-                    "Your workout history",
-                    "Your progress photos",
-                    "Your meal plans",
-                    "AI coach access",
-                  ].map((item,i)=>(
+                  {["All your personal bests","Your workout history","Your progress photos","Your meal plans","AI coach access"].map((item,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.3rem 0",borderBottom:i<4?"1px solid rgba(255,255,255,0.05)":"none"}}>
                       <span style={{color:"rgba(255,60,60,0.7)",fontSize:"0.85rem"}}>✕</span>
                       <span style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif"}}>{item}</span>
@@ -2854,17 +2850,17 @@ function CancelFlow({user,profile}){
                   ))}
                 </div>
 
-                <button onClick={handleCancel} style={{width:"100%",padding:"0.9rem",background:"rgba(255,60,60,0.1)",border:"1px solid rgba(255,60,60,0.2)",borderRadius:"12px",color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.5rem"}}>
-                  Yes, Cancel My Subscription
-                </button>
-                <button onClick={()=>setStep("retain")} style={{...s.btn,width:"100%",padding:"0.9rem"}}>
+                <button onClick={()=>setStep("retain")} style={{...s.btn,width:"100%",padding:"0.9rem",marginBottom:"0.5rem"}}>
                   Keep My Subscription 🔥
+                </button>
+                <button onClick={handleCancel} style={{width:"100%",padding:"0.9rem",background:"transparent",border:"1px solid rgba(255,60,60,0.25)",borderRadius:"12px",color:"rgba(255,100,100,0.6)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer"}}>
+                  Yes, Cancel My Subscription
                 </button>
               </div>
             )}
 
             {step==="loading"&&(
-              <div style={{background:"rgba(255,255,255,0.07)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"24px",padding:"2rem",textAlign:"center"}}>
+              <div style={{textAlign:"center",padding:"2rem"}}>
                 <LoadingDots/>
                 <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",marginTop:"1rem"}}>Opening cancellation portal...</div>
               </div>
