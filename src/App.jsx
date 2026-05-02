@@ -143,78 +143,449 @@ const FOODS=[
 
 const EXERCISES={
   chest:[
-    {name:"Barbell Bench Press",sets:"4",reps:"6-8",rest:"2-3 min",cue:"Chest to muscle failure"},
-    {name:"Incline Dumbbell Press",sets:"3",reps:"8-10",rest:"90 sec",cue:"Slight arch, elbows 45°"},
-    {name:"Cable Chest Fly",sets:"3",reps:"12-15",rest:"60 sec",cue:"Full stretch at bottom"},
-    {name:"Dips (chest lean)",sets:"3",reps:"10-12",rest:"90 sec",cue:"Lean forward, elbows wide"},
-    {name:"Push-Up",sets:"3",reps:"15-20",rest:"60 sec",cue:"Full range, chest touches floor"},
+    {name:"Barbell Bench Press",sets:"4",reps:"6-8",rest:"2-3 min",cue:"Lower bar to chest, drive up explosively. Elbows 45°, arch naturally.",gif:"bench_press"},
+    {name:"Incline Barbell Press",sets:"4",reps:"6-8",rest:"2 min",cue:"Set bench to 30-45°. Bar to upper chest, press up and slightly back.",gif:"incline_press"},
+    {name:"Incline Dumbbell Press",sets:"3",reps:"8-10",rest:"90 sec",cue:"Slight arch, elbows 45°. Full stretch at bottom, squeeze at top.",gif:"incline_db_press"},
+    {name:"Flat Dumbbell Press",sets:"3",reps:"8-12",rest:"90 sec",cue:"Wider ROM than barbell. Touch dumbbells at top, deep stretch at bottom.",gif:"db_press"},
+    {name:"Cable Chest Fly",sets:"3",reps:"12-15",rest:"60 sec",cue:"Slight bend in elbows. Full stretch at start, squeeze hands together.",gif:"cable_fly"},
+    {name:"Dumbbell Fly",sets:"3",reps:"12-15",rest:"60 sec",cue:"Keep slight elbow bend throughout. Feel the chest stretch fully.",gif:"db_fly"},
+    {name:"Dips (chest lean)",sets:"3",reps:"10-12",rest:"90 sec",cue:"Lean forward 30°, elbows flare wide. Go deep, drive through chest.",gif:"dips"},
+    {name:"Push-Up",sets:"3",reps:"15-20",rest:"60 sec",cue:"Full range, chest touches floor. Brace core, squeeze glutes.",gif:"pushup"},
+    {name:"Decline Bench Press",sets:"3",reps:"8-10",rest:"90 sec",cue:"Head lower than hips. Targets lower chest. Control the descent.",gif:"decline_press"},
+    {name:"Pec Deck Machine",sets:"3",reps:"12-15",rest:"60 sec",cue:"Elbows at 90°. Squeeze chest hard at peak contraction.",gif:"pec_deck"},
+    {name:"Low Cable Fly",sets:"3",reps:"12-15",rest:"60 sec",cue:"Cables from low setting. Sweep arms up and together. Upper chest focus.",gif:"low_cable_fly"},
+    {name:"Close-Grip Push-Up",sets:"3",reps:"12-15",rest:"60 sec",cue:"Hands shoulder-width. Targets inner chest and triceps.",gif:"close_pushup"},
+    {name:"Chest Press Machine",sets:"3",reps:"10-12",rest:"60 sec",cue:"Great for beginners. Control both directions. Full range.",gif:"chest_machine"},
+    {name:"Landmine Press",sets:"3",reps:"10-12 each",rest:"75 sec",cue:"Single arm. Press bar up and forward. Great for upper chest.",gif:"landmine_press"},
   ],
   back:[
-    {name:"Deadlift",sets:"4",reps:"4-6",rest:"3 min",cue:"Neutral spine, drive hips forward"},
-    {name:"Barbell Row",sets:"4",reps:"6-8",rest:"2 min",cue:"Pull to lower chest, brace core"},
-    {name:"Pull-Up / Lat Pulldown",sets:"4",reps:"8-10",rest:"90 sec",cue:"Depress scapula first"},
-    {name:"Seated Cable Row",sets:"3",reps:"10-12",rest:"90 sec",cue:"Elbows to sides, squeeze lats"},
-    {name:"Face Pull",sets:"3",reps:"15-20",rest:"60 sec",cue:"Pull to forehead, rotate externally"},
+    {name:"Deadlift",sets:"4",reps:"4-6",rest:"3 min",cue:"Bar over mid-foot, neutral spine. Drive floor away, hips lock out at top.",gif:"deadlift"},
+    {name:"Barbell Row",sets:"4",reps:"6-8",rest:"2 min",cue:"Hinge to 45°. Pull bar to belly button. Squeeze lats hard.",gif:"barbell_row"},
+    {name:"Pull-Up",sets:"4",reps:"6-10",rest:"90 sec",cue:"Dead hang start. Depress scapula first. Pull chest to bar.",gif:"pullup"},
+    {name:"Lat Pulldown",sets:"4",reps:"10-12",rest:"90 sec",cue:"Slight lean back. Pull elbows to ribs. Slow eccentric.",gif:"lat_pulldown"},
+    {name:"Seated Cable Row",sets:"3",reps:"10-12",rest:"90 sec",cue:"Chest up, elbows tight. Pull to lower ribs. Full stretch at front.",gif:"cable_row"},
+    {name:"Face Pull",sets:"3",reps:"15-20",rest:"60 sec",cue:"Pull to forehead level. Elbows high. Rotate wrists back.",gif:"face_pull"},
+    {name:"Single-Arm Dumbbell Row",sets:"3",reps:"10-12 each",rest:"75 sec",cue:"Flat back, brace on bench. Pull elbow past torso. Full stretch.",gif:"db_row"},
+    {name:"T-Bar Row",sets:"4",reps:"8-10",rest:"2 min",cue:"Neutral spine, chest on pad. Drive elbows back. Squeeze at top.",gif:"tbar_row"},
+    {name:"Wide-Grip Pull-Up",sets:"3",reps:"6-10",rest:"90 sec",cue:"Wider than shoulder grip. Emphasises lat width. Full hang.",gif:"wide_pullup"},
+    {name:"Close-Grip Lat Pulldown",sets:"3",reps:"10-12",rest:"75 sec",cue:"Neutral grip attachment. Pull to chest. Feel lats stretch.",gif:"close_pulldown"},
+    {name:"Chest-Supported Row",sets:"3",reps:"10-12",rest:"75 sec",cue:"Chest on angled bench. Removes lower back. Pure back work.",gif:"chest_row"},
+    {name:"Meadows Row",sets:"3",reps:"10-12 each",rest:"75 sec",cue:"Staggered stance, landmine setup. Elbow drives back and up.",gif:"meadows_row"},
+    {name:"Rack Pull",sets:"3",reps:"6-8",rest:"2 min",cue:"Pins at knee height. Easier than deadlift. Heavy upper back work.",gif:"rack_pull"},
+    {name:"Straight-Arm Pulldown",sets:"3",reps:"12-15",rest:"60 sec",cue:"Arms straight, slight elbow bend. Drive bar down to thighs.",gif:"straight_pulldown"},
+    {name:"Pendlay Row",sets:"4",reps:"5-6",rest:"2 min",cue:"Bar returns to floor each rep. Explosive pull. Pure power.",gif:"pendlay_row"},
   ],
   shoulders:[
-    {name:"Overhead Press",sets:"4",reps:"6-8",rest:"2 min",cue:"Bar path over forehead"},
-    {name:"Dumbbell Lateral Raise",sets:"4",reps:"12-15",rest:"60 sec",cue:"Lead with elbows, slight lean"},
-    {name:"Arnold Press",sets:"3",reps:"10-12",rest:"90 sec",cue:"Full rotation throughout"},
-    {name:"Rear Delt Fly",sets:"3",reps:"15-20",rest:"60 sec",cue:"Slight bend in elbows"},
-    {name:"Cable Lateral Raise",sets:"3",reps:"15-20",rest:"45 sec",cue:"Constant tension"},
+    {name:"Overhead Press",sets:"4",reps:"6-8",rest:"2 min",cue:"Bar from collarbone, press vertically. Lock out fully at top.",gif:"ohp"},
+    {name:"Dumbbell Shoulder Press",sets:"3",reps:"8-12",rest:"90 sec",cue:"Start at ear height. Press up and together. Don't fully lock.",gif:"db_ohp"},
+    {name:"Dumbbell Lateral Raise",sets:"4",reps:"12-15",rest:"60 sec",cue:"Lead with elbows, pinky up slightly. Raise to shoulder, slow lower.",gif:"lateral_raise"},
+    {name:"Cable Lateral Raise",sets:"3",reps:"12-15",rest:"60 sec",cue:"Constant tension all the way. Cross body. Control eccentric.",gif:"cable_lateral"},
+    {name:"Arnold Press",sets:"3",reps:"10-12",rest:"90 sec",cue:"Start palms in. Rotate as you press. Full rotation throughout.",gif:"arnold_press"},
+    {name:"Rear Delt Fly",sets:"3",reps:"15-20",rest:"60 sec",cue:"Bend forward 90°. Arms wide, slight elbow bend. Feel rear delt.",gif:"rear_delt_fly"},
+    {name:"Face Pull",sets:"3",reps:"15-20",rest:"60 sec",cue:"High pulley. Pull to forehead. Elbows above hands throughout.",gif:"face_pull"},
+    {name:"Upright Row",sets:"3",reps:"10-12",rest:"75 sec",cue:"Narrow grip. Pull to chin, elbows above hands. Pause at top.",gif:"upright_row"},
+    {name:"Front Raise",sets:"3",reps:"10-12",rest:"60 sec",cue:"Slight bend in elbows. Raise to eye level. Alternate or together.",gif:"front_raise"},
+    {name:"Machine Shoulder Press",sets:"3",reps:"10-12",rest:"75 sec",cue:"Adjust seat so handles are at shoulder height. Full range.",gif:"machine_press"},
+    {name:"Cable Y-Raise",sets:"3",reps:"12-15",rest:"60 sec",cue:"Low cables. Raise arms in Y shape. Targets all three heads.",gif:"y_raise"},
+    {name:"Barbell Shrug",sets:"4",reps:"12-15",rest:"75 sec",cue:"Straight arms. Shrug straight up. Hold 1 sec at top.",gif:"shrug"},
+    {name:"Dumbbell Shrug",sets:"3",reps:"12-15",rest:"60 sec",cue:"Full range, deep stretch at bottom. Squeeze traps at top.",gif:"db_shrug"},
+    {name:"Reverse Pec Deck",sets:"3",reps:"12-15",rest:"60 sec",cue:"Machine in reverse. Arms wide, squeeze rear delts.",gif:"reverse_pec_deck"},
   ],
   biceps:[
-    {name:"Barbell Curl",sets:"4",reps:"8-10",rest:"90 sec",cue:"No elbow sway, full ROM"},
-    {name:"Hammer Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Neutral grip, control eccentric"},
-    {name:"Incline Dumbbell Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Full stretch at bottom"},
-    {name:"Cable Curl",sets:"3",reps:"12-15",rest:"60 sec",cue:"Constant tension"},
+    {name:"Barbell Curl",sets:"4",reps:"8-10",rest:"90 sec",cue:"Elbows pinned to sides. Full extension at bottom, squeeze at top.",gif:"barbell_curl"},
+    {name:"Hammer Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Neutral grip throughout. Targets brachialis. Control the descent.",gif:"hammer_curl"},
+    {name:"Incline Dumbbell Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Bench at 60°. Arms hang back. Maximum stretch. Curl slowly.",gif:"incline_curl"},
+    {name:"Cable Curl",sets:"3",reps:"12-15",rest:"60 sec",cue:"Low pulley. Constant tension. Slow eccentric phase.",gif:"cable_curl"},
+    {name:"Concentration Curl",sets:"3",reps:"10-12 each",rest:"60 sec",cue:"Elbow on inner thigh. No swinging. Full squeeze at top.",gif:"concentration_curl"},
+    {name:"Preacher Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Upper arm on pad. Full stretch at bottom. Don't lock elbows.",gif:"preacher_curl"},
+    {name:"Zottman Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Curl up supinated, lower pronated. Works both heads.",gif:"zottman_curl"},
+    {name:"Spider Curl",sets:"3",reps:"10-12",rest:"60 sec",cue:"Chest on incline bench, arms hang. Curl up. Full stretch.",gif:"spider_curl"},
+    {name:"Cable Hammer Curl",sets:"3",reps:"12-15",rest:"60 sec",cue:"Rope attachment. Neutral grip. Elbows stay fixed.",gif:"cable_hammer"},
+    {name:"EZ-Bar Curl",sets:"4",reps:"8-10",rest:"90 sec",cue:"Easier on wrists than straight bar. Same principles apply.",gif:"ezbar_curl"},
+    {name:"Cross-Body Hammer Curl",sets:"3",reps:"10-12 each",rest:"60 sec",cue:"Curl across body. Targets brachialis and brachioradialis.",gif:"cross_hammer"},
+    {name:"21s",sets:"3",reps:"21",rest:"90 sec",cue:"7 half reps bottom, 7 top, 7 full. Brutal pump.",gif:"21s"},
   ],
   triceps:[
-    {name:"Close-Grip Bench Press",sets:"4",reps:"8-10",rest:"90 sec",cue:"Elbows tucked, full extension"},
-    {name:"Tricep Pushdown",sets:"3",reps:"12-15",rest:"60 sec",cue:"Lock elbows at sides"},
-    {name:"Overhead Tricep Extension",sets:"3",reps:"10-12",rest:"75 sec",cue:"Full stretch at top"},
-    {name:"Skull Crusher",sets:"3",reps:"10-12",rest:"75 sec",cue:"Lower to forehead slowly"},
+    {name:"Close-Grip Bench Press",sets:"4",reps:"8-10",rest:"90 sec",cue:"Shoulder-width grip. Elbows tucked. Full extension at top.",gif:"close_grip_bench"},
+    {name:"Tricep Pushdown",sets:"3",reps:"12-15",rest:"60 sec",cue:"Elbows pinned to sides. Push to full extension. Control up.",gif:"pushdown"},
+    {name:"Overhead Tricep Extension",sets:"3",reps:"10-12",rest:"75 sec",cue:"Arms straight up. Lower behind head. Full stretch at bottom.",gif:"overhead_tri"},
+    {name:"Skull Crusher",sets:"3",reps:"10-12",rest:"75 sec",cue:"Lower to forehead slowly. Elbows stay vertical. Drive up.",gif:"skull_crusher"},
+    {name:"Rope Pushdown",sets:"3",reps:"12-15",rest:"60 sec",cue:"Spread rope at bottom. Full extension. Constant tension.",gif:"rope_pushdown"},
+    {name:"Dips (tricep focus)",sets:"3",reps:"10-15",rest:"90 sec",cue:"Upright torso. Elbows tucked close. Full range.",gif:"tri_dips"},
+    {name:"Diamond Push-Up",sets:"3",reps:"12-15",rest:"60 sec",cue:"Hands form diamond shape. Elbows track back. Chest to hands.",gif:"diamond_pushup"},
+    {name:"Single-Arm Pushdown",sets:"3",reps:"12-15 each",rest:"60 sec",cue:"One arm at a time. Isolates better. Full extension each rep.",gif:"single_pushdown"},
+    {name:"Tate Press",sets:"3",reps:"12-15",rest:"60 sec",cue:"Dumbbells point to ceiling. Lower to chest. Elbows flare.",gif:"tate_press"},
+    {name:"JM Press",sets:"3",reps:"8-10",rest:"90 sec",cue:"Hybrid of skull crusher and close-grip. Angle bar to forehead.",gif:"jm_press"},
+    {name:"Cable Overhead Extension",sets:"3",reps:"12-15",rest:"60 sec",cue:"Face away from cable. Both hands on rope. Full stretch.",gif:"cable_overhead_tri"},
+    {name:"Kickback",sets:"3",reps:"12-15 each",rest:"60 sec",cue:"Hinge forward. Extend arm fully back. Squeeze at extension.",gif:"kickback"},
   ],
   quads:[
-    {name:"Barbell Back Squat",sets:"4",reps:"6-8",rest:"3 min",cue:"Break parallel, knees out"},
-    {name:"Leg Press",sets:"4",reps:"10-12",rest:"2 min",cue:"Full range, don't lock out"},
-    {name:"Leg Extension",sets:"3",reps:"15-20",rest:"60 sec",cue:"Pause at top, slow eccentric"},
-    {name:"Bulgarian Split Squat",sets:"3",reps:"10-12",rest:"90 sec",cue:"Vertical torso"},
-    {name:"Walking Lunges",sets:"3",reps:"12 each",rest:"90 sec",cue:"Long stride"},
+    {name:"Barbell Back Squat",sets:"4",reps:"6-8",rest:"3 min",cue:"Break parallel, knees track toes. Drive up through heels.",gif:"back_squat"},
+    {name:"Front Squat",sets:"4",reps:"6-8",rest:"3 min",cue:"Bar on front delts. Upright torso. Knees forward. Quad dominant.",gif:"front_squat"},
+    {name:"Leg Press",sets:"4",reps:"10-12",rest:"2 min",cue:"Full range, don't lock knees. Feet shoulder-width. Drive through heels.",gif:"leg_press"},
+    {name:"Leg Extension",sets:"3",reps:"15-20",rest:"60 sec",cue:"Pause at top, slow 3-sec eccentric. Don't swing.",gif:"leg_extension"},
+    {name:"Bulgarian Split Squat",sets:"3",reps:"10-12 each",rest:"90 sec",cue:"Rear foot elevated. Vertical front shin. Drive through heel.",gif:"bulgarian"},
+    {name:"Walking Lunges",sets:"3",reps:"12 each",rest:"90 sec",cue:"Long stride, knee almost touches floor. Drive through front heel.",gif:"walking_lunge"},
+    {name:"Goblet Squat",sets:"3",reps:"12-15",rest:"75 sec",cue:"Dumbbell at chest. Deep squat, elbows push knees out.",gif:"goblet_squat"},
+    {name:"Hack Squat",sets:"3",reps:"10-12",rest:"90 sec",cue:"Feet forward on platform. Full depth. Great quad isolation.",gif:"hack_squat"},
+    {name:"Sissy Squat",sets:"3",reps:"12-15",rest:"60 sec",cue:"Hold fixed object. Lean back, knees forward. Extreme quad stretch.",gif:"sissy_squat"},
+    {name:"Step-Up",sets:"3",reps:"12 each",rest:"75 sec",cue:"Drive through front heel only. Don't push off back leg.",gif:"step_up"},
+    {name:"Box Squat",sets:"4",reps:"6-8",rest:"2 min",cue:"Sit to box, pause briefly, explode up. Builds power.",gif:"box_squat"},
+    {name:"Narrow Stance Leg Press",sets:"3",reps:"12-15",rest:"75 sec",cue:"Feet close together. Targets outer quad. Don't lock knees.",gif:"narrow_leg_press"},
+    {name:"Cyclist Squat",sets:"3",reps:"12-15",rest:"75 sec",cue:"Heels elevated. Upright torso. Maximum quad activation.",gif:"cyclist_squat"},
   ],
   hamstrings:[
-    {name:"Romanian Deadlift",sets:"4",reps:"8-10",rest:"2 min",cue:"Push hips back, feel stretch"},
-    {name:"Lying Leg Curl",sets:"4",reps:"10-12",rest:"90 sec",cue:"Curl to glutes, slow lower"},
-    {name:"Good Morning",sets:"3",reps:"10-12",rest:"90 sec",cue:"Slight knee bend, hinge from hip"},
-    {name:"Nordic Curl",sets:"3",reps:"6-8",rest:"2 min",cue:"Control the descent"},
+    {name:"Romanian Deadlift",sets:"4",reps:"8-10",rest:"2 min",cue:"Soft knee bend. Push hips back, bar close to legs. Feel stretch.",gif:"rdl"},
+    {name:"Lying Leg Curl",sets:"4",reps:"10-12",rest:"90 sec",cue:"Curl to glutes, pause, 3-sec lower. Don't lift hips.",gif:"leg_curl"},
+    {name:"Seated Leg Curl",sets:"3",reps:"10-12",rest:"75 sec",cue:"Greater stretch than lying version. Full ROM each rep.",gif:"seated_leg_curl"},
+    {name:"Good Morning",sets:"3",reps:"10-12",rest:"90 sec",cue:"Bar on traps. Soft knees. Hinge from hip, feel hamstring stretch.",gif:"good_morning"},
+    {name:"Nordic Curl",sets:"3",reps:"6-8",rest:"2 min",cue:"Kneel, feet anchored. Lower body slowly. Pull back up. Brutal.",gif:"nordic_curl"},
+    {name:"Stiff-Leg Deadlift",sets:"3",reps:"10-12",rest:"90 sec",cue:"Straighter legs than RDL. More hamstring stretch. Keep back flat.",gif:"sldl"},
+    {name:"Glute-Ham Raise",sets:"3",reps:"8-10",rest:"90 sec",cue:"GHD machine. Lower slowly, pull back with hamstrings.",gif:"ghr"},
+    {name:"Cable Pull-Through",sets:"3",reps:"12-15",rest:"75 sec",cue:"Rope between legs, hinge forward. Drive hips forward to stand.",gif:"pull_through"},
+    {name:"Single-Leg RDL",sets:"3",reps:"10-12 each",rest:"75 sec",cue:"Balance on one leg. Hinge, reach dumbbell to floor. Hip height.",gif:"single_rdl"},
+    {name:"Swiss Ball Leg Curl",sets:"3",reps:"10-12",rest:"60 sec",cue:"Hips up, feet on ball. Curl ball toward you. Intense hamstring.",gif:"swiss_curl"},
+    {name:"Sumo Romanian Deadlift",sets:"3",reps:"10-12",rest:"90 sec",cue:"Wide stance, toes out. More inner hamstring and adductor.",gif:"sumo_rdl"},
   ],
   glutes:[
-    {name:"Hip Thrust",sets:"4",reps:"10-12",rest:"90 sec",cue:"Drive through heel, squeeze at top"},
-    {name:"Glute Kickback",sets:"3",reps:"15-20",rest:"60 sec",cue:"Don't rotate hips"},
-    {name:"Sumo Deadlift",sets:"4",reps:"6-8",rest:"2 min",cue:"Wide stance, toes out"},
-    {name:"Step-Up",sets:"3",reps:"12 each",rest:"75 sec",cue:"Drive through front heel"},
+    {name:"Hip Thrust",sets:"4",reps:"10-12",rest:"90 sec",cue:"Bar across hips. Drive through heels. Squeeze hard at top.",gif:"hip_thrust"},
+    {name:"Barbell Glute Bridge",sets:"3",reps:"12-15",rest:"75 sec",cue:"Shoulders on floor. Drive hips up. Pause and squeeze at top.",gif:"glute_bridge"},
+    {name:"Glute Kickback",sets:"3",reps:"15-20",rest:"60 sec",cue:"Cable or machine. Drive heel back and up. Don't rotate hips.",gif:"kickback_glute"},
+    {name:"Sumo Deadlift",sets:"4",reps:"6-8",rest:"2 min",cue:"Wide stance, toes out 45°. Pull bar to hips. Squeeze glutes.",gif:"sumo_deadlift"},
+    {name:"Step-Up",sets:"3",reps:"12 each",rest:"75 sec",cue:"High box for more glute. Drive heel through. Full extension.",gif:"step_up"},
+    {name:"Walking Lunge",sets:"3",reps:"12 each",rest:"90 sec",cue:"Long stride activates glutes more. Drive hips through.",gif:"lunge_glute"},
+    {name:"Abduction Machine",sets:"3",reps:"15-20",rest:"60 sec",cue:"Slow and controlled. Feel outer glute. Don't go too heavy.",gif:"abduction"},
+    {name:"Cable Kickback",sets:"3",reps:"15-20 each",rest:"60 sec",cue:"Ankle strap. Extend leg back and up. Squeeze glute fully.",gif:"cable_kickback"},
+    {name:"Reverse Hyper",sets:"3",reps:"12-15",rest:"75 sec",cue:"Machine or GHD. Swing legs up and back. Lower controlled.",gif:"reverse_hyper"},
+    {name:"Curtsy Lunge",sets:"3",reps:"12 each",rest:"75 sec",cue:"Step behind and across. Great for glute med. Stay upright.",gif:"curtsy_lunge"},
+    {name:"Frog Pump",sets:"3",reps:"20-25",rest:"60 sec",cue:"Soles of feet together. Drive hips up. Intense glute squeeze.",gif:"frog_pump"},
+    {name:"Single-Leg Hip Thrust",sets:"3",reps:"10-12 each",rest:"75 sec",cue:"One leg extended. Drive through grounded heel. Even harder.",gif:"single_hip_thrust"},
   ],
   calves:[
-    {name:"Standing Calf Raise",sets:"4",reps:"15-20",rest:"60 sec",cue:"Full ROM, pause at top"},
-    {name:"Seated Calf Raise",sets:"3",reps:"15-20",rest:"60 sec",cue:"Targets soleus"},
-    {name:"Single-Leg Calf Raise",sets:"3",reps:"12-15 each",rest:"45 sec",cue:"Use wall for balance"},
+    {name:"Standing Calf Raise",sets:"4",reps:"15-20",rest:"60 sec",cue:"Full ROM. Pause at top, deep stretch at bottom. Slow eccentric.",gif:"standing_calf"},
+    {name:"Seated Calf Raise",sets:"3",reps:"15-20",rest:"60 sec",cue:"Targets soleus. Weight on knees. Full range.",gif:"seated_calf"},
+    {name:"Single-Leg Calf Raise",sets:"3",reps:"12-15 each",rest:"45 sec",cue:"Hold for balance. Full stretch. Harder than bilateral.",gif:"single_calf"},
+    {name:"Leg Press Calf Raise",sets:"3",reps:"15-20",rest:"60 sec",cue:"Bottom of platform. Toes pointed. Full range on leg press.",gif:"leg_press_calf"},
+    {name:"Donkey Calf Raise",sets:"3",reps:"15-20",rest:"60 sec",cue:"Bend forward 90°. Weight on lower back. Maximum stretch.",gif:"donkey_calf"},
+    {name:"Jump Rope",sets:"3",reps:"60 sec",rest:"30 sec",cue:"Light on feet. Consistent rhythm. Builds explosive calves.",gif:"jump_rope"},
+    {name:"Tib Bar Raise",sets:"3",reps:"15-20",rest:"45 sec",cue:"Targets anterior tibialis. Sit, lift toes up. Often neglected.",gif:"tib_raise"},
+    {name:"Smith Machine Calf Raise",sets:"3",reps:"15-20",rest:"60 sec",cue:"Heels off edge of plate. Controlled. Good for heavy work.",gif:"smith_calf"},
   ],
   core:[
-    {name:"Plank",sets:"3",reps:"45-60 sec",rest:"45 sec",cue:"Neutral spine, squeeze glutes"},
-    {name:"Cable Crunch",sets:"3",reps:"15-20",rest:"60 sec",cue:"Crunch abs, don't pull neck"},
-    {name:"Hanging Leg Raise",sets:"3",reps:"12-15",rest:"60 sec",cue:"No swinging, control lower"},
-    {name:"Ab Wheel Rollout",sets:"3",reps:"10-12",rest:"75 sec",cue:"Brace core throughout"},
-    {name:"Russian Twist",sets:"3",reps:"20 total",rest:"45 sec",cue:"Rotate from torso"},
+    {name:"Plank",sets:"3",reps:"45-60 sec",rest:"45 sec",cue:"Neutral spine, squeeze glutes and quads. Don't let hips drop.",gif:"plank"},
+    {name:"Cable Crunch",sets:"3",reps:"15-20",rest:"60 sec",cue:"Crunch abs to knees. Don't pull with neck. Range of motion.",gif:"cable_crunch"},
+    {name:"Hanging Leg Raise",sets:"3",reps:"12-15",rest:"60 sec",cue:"Dead hang. Raise legs controlled. No swinging.",gif:"hanging_leg_raise"},
+    {name:"Ab Wheel Rollout",sets:"3",reps:"10-12",rest:"75 sec",cue:"Brace core hard. Roll out slowly. Pull back with abs.",gif:"ab_wheel"},
+    {name:"Russian Twist",sets:"3",reps:"20 total",rest:"45 sec",cue:"Lean back 45°. Rotate from torso, not arms. Add weight.",gif:"russian_twist"},
+    {name:"Decline Sit-Up",sets:"3",reps:"15-20",rest:"60 sec",cue:"Full ROM. Touch chest to knees. Control the descent.",gif:"decline_situp"},
+    {name:"Dragon Flag",sets:"3",reps:"6-8",rest:"90 sec",cue:"Bench hold. Lower whole body slowly. Advanced movement.",gif:"dragon_flag"},
+    {name:"Dead Bug",sets:"3",reps:"10 each",rest:"60 sec",cue:"Lower back pressed to floor. Opposite arm/leg. Slow.",gif:"dead_bug"},
+    {name:"Side Plank",sets:"3",reps:"30-45 sec each",rest:"45 sec",cue:"Hip stacked. Squeeze obliques. Don't let hip drop.",gif:"side_plank"},
+    {name:"Hollow Hold",sets:"3",reps:"30-45 sec",rest:"60 sec",cue:"Arms and legs extended. Press lower back to floor. Gymnastic core.",gif:"hollow_hold"},
+    {name:"V-Up",sets:"3",reps:"15-20",rest:"60 sec",cue:"Meet hands to feet at top. Control descent. Full range.",gif:"v_up"},
+    {name:"Bicycle Crunch",sets:"3",reps:"20 each",rest:"45 sec",cue:"Slow rotation. Elbow to opposite knee. Don't pull neck.",gif:"bicycle_crunch"},
+    {name:"Landmine Rotation",sets:"3",reps:"10 each",rest:"60 sec",cue:"Rotate barbell side to side. Core stays braced. Athletic movement.",gif:"landmine_rotation"},
+    {name:"Cable Woodchop",sets:"3",reps:"12 each",rest:"60 sec",cue:"High to low or low to high. Rotate through torso, not arms.",gif:"woodchop"},
+    {name:"Toes-to-Bar",sets:"3",reps:"8-12",rest:"75 sec",cue:"Dead hang. Raise toes to bar. Control descent.",gif:"toes_to_bar"},
   ],
   hiit:[
-    {name:"Burpee",sets:"4",reps:"15",rest:"45 sec",cue:"Explosive jump at top"},
-    {name:"Box Jump",sets:"4",reps:"10",rest:"60 sec",cue:"Soft landing, hips back"},
-    {name:"Mountain Climber",sets:"3",reps:"30 sec",rest:"30 sec",cue:"Hips down, fast feet"},
-    {name:"Jump Squat",sets:"4",reps:"15",rest:"45 sec",cue:"Land softly, full squat"},
-    {name:"Kettlebell Swing",sets:"4",reps:"20",rest:"60 sec",cue:"Hip hinge, snap hips"},
-    {name:"Sprint Intervals",sets:"6",reps:"20 sec",rest:"40 sec",cue:"Max effort each sprint"},
+    {name:"Burpee",sets:"4",reps:"15",rest:"45 sec",cue:"Explosive jump at top. Full push-up at bottom. Fast pace.",gif:"burpee"},
+    {name:"Box Jump",sets:"4",reps:"10",rest:"60 sec",cue:"Soft landing, hips back. Full hip extension at top. Step down.",gif:"box_jump"},
+    {name:"Mountain Climber",sets:"3",reps:"30 sec",rest:"30 sec",cue:"Hips down, fast feet. Drive knees to chest alternately.",gif:"mountain_climber"},
+    {name:"Jump Squat",sets:"4",reps:"15",rest:"45 sec",cue:"Land softly, full squat. Explode from bottom. Arms assist.",gif:"jump_squat"},
+    {name:"Kettlebell Swing",sets:"4",reps:"20",rest:"60 sec",cue:"Hip hinge power. Snap hips forward. Bell floats to chest height.",gif:"kb_swing"},
+    {name:"Sprint Intervals",sets:"6",reps:"20 sec",rest:"40 sec",cue:"Max effort each sprint. Full recovery. Speed work.",gif:"sprint"},
+    {name:"Jumping Lunge",sets:"3",reps:"12 each",rest:"60 sec",cue:"Explosive switch. Land softly. Keep chest up throughout.",gif:"jump_lunge"},
+    {name:"Kettlebell Clean",sets:"4",reps:"10 each",rest:"75 sec",cue:"Hike bell back, drive hips. Rotate wrist, catch at shoulder.",gif:"kb_clean"},
+    {name:"Battle Ropes",sets:"4",reps:"30 sec",rest:"30 sec",cue:"Alternate waves. Hips drive power. Keep waves consistent.",gif:"battle_ropes"},
+    {name:"Tuck Jump",sets:"3",reps:"10",rest:"60 sec",cue:"Jump and pull knees to chest. Soft landing. Great conditioning.",gif:"tuck_jump"},
+    {name:"Plank to Push-Up",sets:"3",reps:"10",rest:"60 sec",cue:"Alternate forearm to hand plank. Core stays stable.",gif:"plank_pushup"},
+    {name:"High Knees",sets:"4",reps:"30 sec",rest:"30 sec",cue:"Drive knees to hip height. Pump arms. Fast pace.",gif:"high_knees"},
+    {name:"Lateral Bound",sets:"3",reps:"10 each",rest:"60 sec",cue:"Explosive side jump. Stick landing. Builds lateral power.",gif:"lateral_bound"},
+    {name:"Kettlebell Goblet Squat",sets:"3",reps:"15",rest:"60 sec",cue:"Bell at chest. Deep squat. Drive knees out. Upright torso.",gif:"kb_goblet"},
   ],
 };
+
+// ─── EXERCISE ANIMATIONS (CSS) ───────────────────────────────────────────────
+// Renders a liquid glass animated illustration for each exercise
+function ExerciseAnimation({gifKey,muscle}){
+  const muscleColors={
+    chest:"#ef4444",back:"#3b82f6",shoulders:"#a855f7",
+    biceps:"#22c55e",triceps:"#f97316",quads:"#ec4899",
+    hamstrings:"#14b8a6",glutes:"#fbbf24",calves:"#6366f1",
+    core:"#CCFF00",hiit:"#ef4444"
+  };
+  const mc=muscleColors[muscle]||"#CCFF00";
+
+  // Map gif keys to animation types
+  const pushPull=["bench_press","incline_press","incline_db_press","db_press","chest_machine","decline_press","pec_deck","close_grip_bench","landmine_press","ohp","db_ohp","arnold_press","machine_press","chest_row","tate_press","jm_press"];
+  const curl=["barbell_curl","hammer_curl","incline_curl","cable_curl","concentration_curl","preacher_curl","zottman_curl","spider_curl","cable_hammer","ezbar_curl","cross_hammer","21s","pushdown","rope_pushdown","single_pushdown","cable_overhead_tri","kickback"];
+  const squat=["back_squat","front_squat","goblet_squat","hack_squat","sissy_squat","box_squat","cyclist_squat","bulgarian","walking_lunge","lunge_glute","curtsy_lunge"];
+  const hinge=["deadlift","rdl","sldl","sumo_deadlift","sumo_rdl","single_rdl","good_morning","rack_pull","pendlay_row","pull_through"];
+  const row=["barbell_row","cable_row","db_row","tbar_row","meadows_row","chest_row","close_pulldown","lat_pulldown","wide_pullup","straight_pulldown"];
+  const raise=["lateral_raise","cable_lateral","front_raise","rear_delt_fly","y_raise","upright_row","reverse_pec_deck","cable_fly","db_fly","low_cable_fly","pec_deck"];
+  const jump=["burpee","box_jump","jump_squat","jump_lunge","tuck_jump","lateral_bound","high_knees","sprint","mountain_climber","battle_ropes"];
+  const plank=["plank","side_plank","dead_bug","hollow_hold","ab_wheel","dragon_flag","plank_pushup"];
+  const legCurl=["leg_curl","seated_leg_curl","nordic_curl","ghr","swiss_curl","leg_extension","single_rdl"];
+  const thrust=["hip_thrust","glute_bridge","single_hip_thrust","frog_pump","reverse_hyper","abduction","kickback_glute","cable_kickback"];
+  const calf=["standing_calf","seated_calf","single_calf","leg_press_calf","donkey_calf","smith_calf","tib_raise","jump_rope"];
+  const pull=["pullup","wide_pullup","pullup","toes_to_bar","hanging_leg_raise","face_pull"];
+
+  let animType="push";
+  if(curl.includes(gifKey))animType="curl";
+  else if(squat.includes(gifKey))animType="squat";
+  else if(hinge.includes(gifKey))animType="hinge";
+  else if(row.includes(gifKey))animType="row";
+  else if(raise.includes(gifKey))animType="raise";
+  else if(jump.includes(gifKey))animType="jump";
+  else if(plank.includes(gifKey))animType="plank";
+  else if(legCurl.includes(gifKey))animType="legcurl";
+  else if(thrust.includes(gifKey))animType="thrust";
+  else if(calf.includes(gifKey))animType="calf";
+  else if(pull.includes(gifKey))animType="pull";
+
+  const animations={
+    push:`
+      @keyframes pushMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+      @keyframes armPush{0%,100%{transform:rotate(20deg)}50%{transform:rotate(-20deg)}}
+    `,
+    curl:`
+      @keyframes curlMove{0%,100%{transform:rotate(100deg)}50%{transform:rotate(30deg)}}
+      @keyframes curlBody{0%,100%{transform:translateY(2px)}50%{transform:translateY(-2px)}}
+    `,
+    squat:`
+      @keyframes squatMove{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(16px) scaleY(0.82)}}
+      @keyframes squatKnee{0%,100%{transform:rotate(0deg)}50%{transform:rotate(40deg)}}
+    `,
+    hinge:`
+      @keyframes hingeMove{0%,100%{transform:rotate(0deg)}50%{transform:rotate(45deg)}}
+      @keyframes hingeLegs{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+    `,
+    row:`
+      @keyframes rowArm{0%,100%{transform:translateX(0)}50%{transform:translateX(-16px)}}
+      @keyframes rowBody{0%,100%{transform:rotate(-30deg)}100%{transform:rotate(-30deg)}}
+    `,
+    raise:`
+      @keyframes raiseArm{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-75deg)}}
+    `,
+    jump:`
+      @keyframes jumpMove{0%,100%{transform:translateY(0)}40%{transform:translateY(-24px)}60%{transform:translateY(-20px)}}
+      @keyframes jumpLeg{0%,100%{transform:scaleY(1)}40%{transform:scaleY(0.6)}}
+    `,
+    plank:`
+      @keyframes plankBreath{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.04)}}
+    `,
+    legcurl:`
+      @keyframes legcurlMove{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-80deg)}}
+    `,
+    thrust:`
+      @keyframes thrustMove{0%,100%{transform:translateY(8px)}50%{transform:translateY(-8px)}}
+    `,
+    calf:`
+      @keyframes calfMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    `,
+    pull:`
+      @keyframes pullMove{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+      @keyframes pullArm{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(30deg)}}
+    `,
+  };
+
+  const figures={
+    push:(
+      <g>
+        <style>{animations.push}</style>
+        <g style={{animation:"pushMove 1.8s ease-in-out infinite",transformOrigin:"60px 60px"}}>
+          <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="38" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
+          <g style={{animation:"armPush 1.8s ease-in-out infinite",transformOrigin:"52px 44px"}}>
+            <rect x="28" y="40" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+          <g style={{animation:"armPush 1.8s ease-in-out infinite",transformOrigin:"68px 44px",animationDirection:"reverse"}}>
+            <rect x="66" y="40" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+          <rect x="50" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
+          <rect x="62" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
+        </g>
+        <rect x="10" y="88" width="100" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+    curl:(
+      <g>
+        <style>{animations.curl}</style>
+        <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
+        <rect x="52" y="38" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
+        <g style={{animation:"curlMove 1.8s ease-in-out infinite",transformOrigin:"52px 48px"}}>
+          <rect x="28" y="46" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
+          <ellipse cx="24" cy="50" rx="8" ry="5" fill={mc} opacity="0.5"/>
+        </g>
+        <rect x="52" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
+        <rect x="60" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
+        <rect x="8" y="84" width="16" height="8" rx="4" fill={mc} opacity="0.4"/>
+        <style>{`.curlbody{animation:curlBody 1.8s ease-in-out infinite}`}</style>
+      </g>
+    ),
+    squat:(
+      <g>
+        <style>{animations.squat}</style>
+        <g style={{animation:"squatMove 2s ease-in-out infinite",transformOrigin:"60px 55px"}}>
+          <ellipse cx="60" cy="22" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="32" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
+          <rect x="28" y="34" width="64" height="6" rx="3" fill={mc} opacity="0.4"/>
+          <g style={{animation:"squatKnee 2s ease-in-out infinite",transformOrigin:"54px 58px"}}>
+            <rect x="48" y="58" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+          <g style={{animation:"squatKnee 2s ease-in-out infinite",transformOrigin:"66px 58px",animationDirection:"reverse"}}>
+            <rect x="62" y="58" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+        </g>
+        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+    hinge:(
+      <g>
+        <style>{animations.hinge}</style>
+        <g style={{animation:"hingeMove 2s ease-in-out infinite",transformOrigin:"60px 52px"}}>
+          <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="38" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
+        </g>
+        <g style={{animation:"hingeLegs 2s ease-in-out infinite",transformOrigin:"60px 64px"}}>
+          <rect x="50" y="64" width="10" height="24" rx="4" fill={mc} opacity="0.7"/>
+          <rect x="62" y="64" width="10" height="24" rx="4" fill={mc} opacity="0.7"/>
+        </g>
+        <rect x="20" y="86" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
+        <ellipse cx="60" cy="86" rx="30" ry="4" fill={mc} opacity="0.1"/>
+      </g>
+    ),
+    raise:(
+      <g>
+        <style>{animations.raise}</style>
+        <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
+        <rect x="52" y="38" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
+        <g style={{animation:"raiseArm 1.8s ease-in-out infinite",transformOrigin:"52px 44px"}}>
+          <rect x="20" y="40" width="34" height="8" rx="4" fill={mc} opacity="0.7"/>
+          <ellipse cx="16" cy="44" rx="7" ry="5" fill={mc} opacity="0.5"/>
+        </g>
+        <g style={{animation:"raiseArm 1.8s ease-in-out infinite",transformOrigin:"68px 44px",animationDirection:"reverse"}}>
+          <rect x="66" y="40" width="34" height="8" rx="4" fill={mc} opacity="0.7"/>
+          <ellipse cx="104" cy="44" rx="7" ry="5" fill={mc} opacity="0.5"/>
+        </g>
+        <rect x="52" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
+        <rect x="60" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
+      </g>
+    ),
+    jump:(
+      <g>
+        <style>{animations.jump}</style>
+        <g style={{animation:"jumpMove 1.4s ease-in-out infinite",transformOrigin:"60px 60px"}}>
+          <ellipse cx="60" cy="18" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="28" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
+          <g style={{animation:"jumpLeg 1.4s ease-in-out infinite",transformOrigin:"54px 54px"}}>
+            <rect x="48" y="54" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+          <g style={{animation:"jumpLeg 1.4s ease-in-out infinite",transformOrigin:"66px 54px"}}>
+            <rect x="62" y="54" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+        </g>
+        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+    plank:(
+      <g>
+        <style>{animations.plank}</style>
+        <g style={{animation:"plankBreath 2.5s ease-in-out infinite",transformOrigin:"60px 55px"}}>
+          <ellipse cx="85" cy="48" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="30" y="56" width="60" height="12" rx="5" fill={mc} opacity="0.8"/>
+          <rect x="20" y="64" width="14" height="8" rx="3" fill={mc} opacity="0.6"/>
+          <rect x="86" y="64" width="14" height="8" rx="3" fill={mc} opacity="0.6"/>
+        </g>
+        <rect x="10" y="72" width="100" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+    legcurl:(
+      <g>
+        <style>{animations.legcurl}</style>
+        <ellipse cx="40" cy="48" rx="10" ry="10" fill={mc} opacity="0.9"/>
+        <rect x="22" y="56" width="36" height="12" rx="5" fill={mc} opacity="0.8"/>
+        <g style={{animation:"legcurlMove 1.8s ease-in-out infinite",transformOrigin:"58px 68px"}}>
+          <rect x="56" y="56" width="10" height="30" rx="4" fill={mc} opacity="0.7"/>
+          <ellipse cx="61" cy="84" rx="8" ry="5" fill={mc} opacity="0.5"/>
+        </g>
+        <rect x="10" y="80" width="60" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+    thrust:(
+      <g>
+        <style>{animations.thrust}</style>
+        <g style={{animation:"thrustMove 1.8s ease-in-out infinite",transformOrigin:"60px 62px"}}>
+          <ellipse cx="60" cy="48" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="42" y="56" width="36" height="12" rx="5" fill={mc} opacity="0.8"/>
+          <rect x="44" y="68" width="10" height="18" rx="4" fill={mc} opacity="0.7"/>
+          <rect x="62" y="68" width="10" height="18" rx="4" fill={mc} opacity="0.7"/>
+        </g>
+        <rect x="10" y="86" width="40" height="6" rx="3" fill={mc} opacity="0.3"/>
+        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.15"/>
+      </g>
+    ),
+    calf:(
+      <g>
+        <style>{animations.calf}</style>
+        <g style={{animation:"calfMove 1.4s ease-in-out infinite",transformOrigin:"60px 50px"}}>
+          <ellipse cx="60" cy="22" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="32" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
+          <rect x="50" y="60" width="8" height="16" rx="3" fill={mc} opacity="0.7"/>
+          <rect x="62" y="60" width="8" height="16" rx="3" fill={mc} opacity="0.7"/>
+        </g>
+        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+    pull:(
+      <g>
+        <style>{animations.pull}</style>
+        <rect x="55" y="5" width="10" height="8" rx="2" fill={mc} opacity="0.4"/>
+        <g style={{animation:"pullMove 1.8s ease-in-out infinite",transformOrigin:"60px 50px"}}>
+          <ellipse cx="60" cy="32" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="42" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
+          <g style={{animation:"pullArm 1.8s ease-in-out infinite",transformOrigin:"52px 42px"}}>
+            <rect x="28" y="18" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+          <g style={{animation:"pullArm 1.8s ease-in-out infinite",transformOrigin:"68px 42px",animationDirection:"reverse"}}>
+            <rect x="66" y="18" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
+          </g>
+          <rect x="50" y="68" width="8" height="20" rx="3" fill={mc} opacity="0.6"/>
+          <rect x="62" y="68" width="8" height="20" rx="3" fill={mc} opacity="0.6"/>
+        </g>
+      </g>
+    ),
+    row:(
+      <g>
+        <style>{animations.row}</style>
+        <g style={{transform:"rotate(-30deg)",transformOrigin:"60px 55px"}}>
+          <ellipse cx="80" cy="40" rx="10" ry="10" fill={mc} opacity="0.9"/>
+          <rect x="52" y="48" width="36" height="12" rx="5" fill={mc} opacity="0.8"/>
+        </g>
+        <g style={{animation:"rowArm 1.8s ease-in-out infinite",transformOrigin:"52px 55px"}}>
+          <rect x="14" y="51" width="40" height="8" rx="4" fill={mc} opacity="0.7"/>
+          <ellipse cx="10" cy="55" rx="8" ry="5" fill={mc} opacity="0.5"/>
+        </g>
+        <rect x="52" y="68" width="10" height="20" rx="4" fill={mc} opacity="0.6"/>
+        <rect x="65" y="68" width="10" height="20" rx="4" fill={mc} opacity="0.6"/>
+        <rect x="20" y="86" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
+      </g>
+    ),
+  };
+
+  return(
+    <div style={{display:"flex",justifyContent:"center",alignItems:"center",marginBottom:"0.75rem"}}>
+      <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:`1px solid ${mc}30`,borderRadius:"16px",padding:"0.75rem",position:"relative",overflow:"hidden",width:"120px",height:"120px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{position:"absolute",inset:0,background:`radial-gradient(circle at center, ${mc}10, transparent 70%)`,pointerEvents:"none"}}/>
+        <svg width="100" height="100" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+          {figures[animType]||figures.push}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 
 // ─── SPLITS DATA ─────────────────────────────────────────────────────────────
 const SPLITS={
@@ -1571,17 +1942,19 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
     </div>
   );
 
-  // Exercise visual card (liquid glass with animated description)
+  // Exercise visual card (liquid glass with animation + YouTube)
   function ExerciseVisual({ex}){
     const cue=EXERCISE_CUES[ex.name]||EXERCISE_CUES["default"];
     const muscleColors={chest:"rgba(239,68,68,0.3)",back:"rgba(59,130,246,0.3)",shoulders:"rgba(168,85,247,0.3)",biceps:"rgba(34,197,94,0.3)",triceps:"rgba(251,146,60,0.3)",quads:"rgba(236,72,153,0.3)",hamstrings:"rgba(20,184,166,0.3)",glutes:"rgba(251,191,36,0.3)",calves:"rgba(99,102,241,0.3)",core:"rgba(204,255,0,0.3)",hiit:"rgba(239,68,68,0.3)"};
     const mc=muscleColors[ex.muscle]||"rgba(204,255,0,0.3)";
     return(
       <div style={{background:`linear-gradient(135deg,${mc},rgba(255,255,255,0.03))`,border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"1rem 1.1rem",marginBottom:"0.75rem",backdropFilter:"blur(15px)"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.5rem"}}>
-          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>{ex.muscle} · How to do it</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>How to do it</div>
           <span style={{...s.tag,fontSize:"0.58rem"}}>{ex.muscle}</span>
         </div>
+        {/* Animated illustration */}
+        {ex.gif&&<ExerciseAnimation gifKey={ex.gif} muscle={ex.muscle}/>}
         <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6,marginBottom:"0.75rem"}}>{cue}</div>
         <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name+' exercise form tutorial')}`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.5rem",background:"rgba(255,0,0,0.1)",border:"1px solid rgba(255,0,0,0.2)",borderRadius:"8px",padding:"0.5rem 0.75rem",textDecoration:"none"}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff4444"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
