@@ -306,286 +306,161 @@ const EXERCISES={
   ],
 };
 
-// ─── EXERCISE ANIMATIONS (CSS) ───────────────────────────────────────────────
-// Renders a liquid glass animated illustration for each exercise
-function ExerciseAnimation({gifKey,muscle}){
-  const muscleColors={
-    chest:"#ef4444",back:"#3b82f6",shoulders:"#a855f7",
-    biceps:"#22c55e",triceps:"#f97316",quads:"#ec4899",
-    hamstrings:"#14b8a6",glutes:"#fbbf24",calves:"#6366f1",
-    core:"#CCFF00",hiit:"#ef4444"
-  };
-  const mc=muscleColors[muscle]||"#CCFF00";
+// ─── EXERCISE IMAGES ─────────────────────────────────────────────────────────
+const EXERCISE_IMAGES={
+  "Barbell Bench Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/1.jpg"},
+  "Incline Barbell Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip/1.jpg"},
+  "Incline Dumbbell Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/1.jpg"},
+  "Flat Dumbbell Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/1.jpg"},
+  "Cable Chest Fly":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Chest_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Chest_Press/1.jpg"},
+  "Dumbbell Fly":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Flyes/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Flyes/1.jpg"},
+  "Dips (chest lean)":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Chest_Version/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Chest_Version/1.jpg"},
+  "Push-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/1.jpg"},
+  "Decline Bench Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Decline_Bench_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Decline_Bench_Press/1.jpg"},
+  "Low Cable Fly":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Fly/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Fly/1.jpg"},
+  "Close-Grip Push-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/1.jpg"},
+  "Chest Press Machine":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Press_Machine/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Press_Machine/1.jpg"},
+  "Landmine Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Landmine_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Landmine_Press/1.jpg"},
+  "Deadlift":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/1.jpg"},
+  "Barbell Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/1.jpg"},
+  "Pull-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/1.jpg"},
+  "Lat Pulldown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/1.jpg"},
+  "Seated Cable Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Row/1.jpg"},
+  "Face Pull":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/1.jpg"},
+  "Single-Arm Dumbbell Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_One-Arm_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_One-Arm_Row/1.jpg"},
+  "T-Bar Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle/1.jpg"},
+  "Wide-Grip Pull-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Pullup/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Pullup/1.jpg"},
+  "Close-Grip Lat Pulldown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Lat_Pulldown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Lat_Pulldown/1.jpg"},
+  "Rack Pull":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Rack_Pull/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Rack_Pull/1.jpg"},
+  "Straight-Arm Pulldown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Pulldown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Pulldown/1.jpg"},
+  "Overhead Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Seated_Overhead_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Seated_Overhead_Press/1.jpg"},
+  "Dumbbell Shoulder Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Overhead_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Overhead_Press/1.jpg"},
+  "Dumbbell Lateral Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lateral_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lateral_Raise/1.jpg"},
+  "Cable Lateral Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Lateral_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Lateral_Raise/1.jpg"},
+  "Arnold Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/1.jpg"},
+  "Rear Delt Fly":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise/1.jpg"},
+  "Upright Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Upright_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Upright_Row/1.jpg"},
+  "Front Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Front_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Front_Raise/1.jpg"},
+  "Barbell Shrug":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug/1.jpg"},
+  "Dumbbell Shrug":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/1.jpg"},
+  "Barbell Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/1.jpg"},
+  "Hammer Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Hammer_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Hammer_Curl/1.jpg"},
+  "Incline Dumbbell Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/1.jpg"},
+  "Cable Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Curl/1.jpg"},
+  "Concentration Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Concentration_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Concentration_Curl/1.jpg"},
+  "Preacher Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Preacher_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Preacher_Curl/1.jpg"},
+  "Zottman Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/1.jpg"},
+  "EZ-Bar Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Curl/1.jpg"},
+  "Close-Grip Bench Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Close-Grip_Bench_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Close-Grip_Bench_Press/1.jpg"},
+  "Tricep Pushdown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Lying_Triceps_Extension/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Lying_Triceps_Extension/1.jpg"},
+  "Overhead Tricep Extension":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Triceps_Extension/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Triceps_Extension/1.jpg"},
+  "Skull Crusher":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lying_Triceps_Extension/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lying_Triceps_Extension/1.jpg"},
+  "Rope Pushdown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Incline_Triceps_Extension/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Incline_Triceps_Extension/1.jpg"},
+  "Dips (tricep focus)":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Triceps_Version/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Triceps_Version/1.jpg"},
+  "Diamond Push-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Clock_Push-Up/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Clock_Push-Up/1.jpg"},
+  "Kickback":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Kickback/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Kickback/1.jpg"},
+  "Barbell Back Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/1.jpg"},
+  "Front Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Front_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Front_Squat/1.jpg"},
+  "Leg Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/1.jpg"},
+  "Leg Extension":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/1.jpg"},
+  "Bulgarian Split Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bulgarian_Split_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bulgarian_Split_Squat/1.jpg"},
+  "Walking Lunges":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Walking_Lunge/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Walking_Lunge/1.jpg"},
+  "Goblet Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Goblet_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Goblet_Squat/1.jpg"},
+  "Hack Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hack_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hack_Squat/1.jpg"},
+  "Step-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/1.jpg"},
+  "Box Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Box_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Box_Squat/1.jpg"},
+  "Romanian Deadlift":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Romanian_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Romanian_Deadlift/1.jpg"},
+  "Lying Leg Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Curl/1.jpg"},
+  "Seated Leg Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/1.jpg"},
+  "Good Morning":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Good_Morning/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Good_Morning/1.jpg"},
+  "Nordic Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lying_Lifting/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lying_Lifting/1.jpg"},
+  "Stiff-Leg Deadlift":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Stiff-Leg_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Stiff-Leg_Deadlift/1.jpg"},
+  "Single-Leg RDL":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Single_Leg_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Single_Leg_Deadlift/1.jpg"},
+  "Sumo Romanian Deadlift":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/1.jpg"},
+  "Hip Thrust":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/1.jpg"},
+  "Barbell Glute Bridge":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/1.jpg"},
+  "Glute Kickback":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge_One_Leg/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge_One_Leg/1.jpg"},
+  "Sumo Deadlift":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/1.jpg"},
+  "Abduction Machine":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Abductor/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Abductor/1.jpg"},
+  "Cable Kickback":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Hip_Adduction/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Hip_Adduction/1.jpg"},
+  "Curtsy Lunge":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunge/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunge/1.jpg"},
+  "Single-Leg Hip Thrust":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/1.jpg"},
+  "Standing Calf Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raises/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raises/1.jpg"},
+  "Seated Calf Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/1.jpg"},
+  "Single-Leg Calf Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raises/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raises/1.jpg"},
+  "Donkey Calf Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Donkey_Calf_Raises/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Donkey_Calf_Raises/1.jpg"},
+  "Plank":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg"},
+  "Cable Crunch":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kneeling_Cable_Crunch/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kneeling_Cable_Crunch/1.jpg"},
+  "Hanging Leg Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/1.jpg"},
+  "Ab Wheel Rollout":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Roller/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Roller/1.jpg"},
+  "Russian Twist":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/1.jpg"},
+  "Decline Sit-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Crunch/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Crunch/1.jpg"},
+  "Dead Bug":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg-Hip_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg-Hip_Raise/1.jpg"},
+  "Side Plank":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Plank/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Plank/1.jpg"},
+  "V-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/V_Up/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/V_Up/1.jpg"},
+  "Bicycle Crunch":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bicycling/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bicycling/1.jpg"},
+  "Cable Woodchop":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Woodchoppers/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Woodchoppers/1.jpg"},
+  "Burpee":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Air_Bike/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Air_Bike/1.jpg"},
+  "Box Jump":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Box_Jump/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Box_Jump/1.jpg"},
+  "Mountain Climber":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climber/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climber/1.jpg"},
+  "Jump Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Jump_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Jump_Squat/1.jpg"},
+  "Kettlebell Swing":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Double_Windmill/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Double_Windmill/1.jpg"},
+  "Sprint Intervals":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Sprint/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Sprint/1.jpg"},
+  "Jumping Lunge":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Jump_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Jump_Squat/1.jpg"},
+  "Kettlebell Clean":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Double_Windmill/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Double_Windmill/1.jpg"},
+  "Battle Ropes":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/1.jpg"},
+  "Tuck Jump":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Box_Jump/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Box_Jump/1.jpg"},
+  "High Knees":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lunge_Sprint/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lunge_Sprint/1.jpg"},
+  "Kettlebell Goblet Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Goblet_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Goblet_Squat/1.jpg"},
+};
 
-  // Map gif keys to animation types
-  const pushPull=["bench_press","incline_press","incline_db_press","db_press","chest_machine","decline_press","pec_deck","close_grip_bench","landmine_press","ohp","db_ohp","arnold_press","machine_press","chest_row","tate_press","jm_press"];
-  const curl=["barbell_curl","hammer_curl","incline_curl","cable_curl","concentration_curl","preacher_curl","zottman_curl","spider_curl","cable_hammer","ezbar_curl","cross_hammer","21s","pushdown","rope_pushdown","single_pushdown","cable_overhead_tri","kickback"];
-  const squat=["back_squat","front_squat","goblet_squat","hack_squat","sissy_squat","box_squat","cyclist_squat","bulgarian","walking_lunge","lunge_glute","curtsy_lunge"];
-  const hinge=["deadlift","rdl","sldl","sumo_deadlift","sumo_rdl","single_rdl","good_morning","rack_pull","pendlay_row","pull_through"];
-  const row=["barbell_row","cable_row","db_row","tbar_row","meadows_row","chest_row","close_pulldown","lat_pulldown","wide_pullup","straight_pulldown"];
-  const raise=["lateral_raise","cable_lateral","front_raise","rear_delt_fly","y_raise","upright_row","reverse_pec_deck","cable_fly","db_fly","low_cable_fly","pec_deck"];
-  const jump=["burpee","box_jump","jump_squat","jump_lunge","tuck_jump","lateral_bound","high_knees","sprint","mountain_climber","battle_ropes"];
-  const plank=["plank","side_plank","dead_bug","hollow_hold","ab_wheel","dragon_flag","plank_pushup"];
-  const legCurl=["leg_curl","seated_leg_curl","nordic_curl","ghr","swiss_curl","leg_extension","single_rdl"];
-  const thrust=["hip_thrust","glute_bridge","single_hip_thrust","frog_pump","reverse_hyper","abduction","kickback_glute","cable_kickback"];
-  const calf=["standing_calf","seated_calf","single_calf","leg_press_calf","donkey_calf","smith_calf","tib_raise","jump_rope"];
-  const pull=["pullup","wide_pullup","pullup","toes_to_bar","hanging_leg_raise","face_pull"];
+function ExerciseAnimation({exName,muscle}){
+  const imgs=EXERCISE_IMAGES[exName];
+  const[frame,setFrame]=useState(0);
+  const[loaded,setLoaded]=useState(false);
+  const[error,setError]=useState(false);
 
-  let animType="push";
-  if(curl.includes(gifKey))animType="curl";
-  else if(squat.includes(gifKey))animType="squat";
-  else if(hinge.includes(gifKey))animType="hinge";
-  else if(row.includes(gifKey))animType="row";
-  else if(raise.includes(gifKey))animType="raise";
-  else if(jump.includes(gifKey))animType="jump";
-  else if(plank.includes(gifKey))animType="plank";
-  else if(legCurl.includes(gifKey))animType="legcurl";
-  else if(thrust.includes(gifKey))animType="thrust";
-  else if(calf.includes(gifKey))animType="calf";
-  else if(pull.includes(gifKey))animType="pull";
+  useEffect(()=>{
+    if(!imgs)return;
+    setFrame(0);setLoaded(false);setError(false);
+    const t=setInterval(()=>setFrame(f=>f===0?1:0),800);
+    return()=>clearInterval(t);
+  },[exName]);
 
-  const animations={
-    push:`
-      @keyframes pushMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
-      @keyframes armPush{0%,100%{transform:rotate(20deg)}50%{transform:rotate(-20deg)}}
-    `,
-    curl:`
-      @keyframes curlMove{0%,100%{transform:rotate(100deg)}50%{transform:rotate(30deg)}}
-      @keyframes curlBody{0%,100%{transform:translateY(2px)}50%{transform:translateY(-2px)}}
-    `,
-    squat:`
-      @keyframes squatMove{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(16px) scaleY(0.82)}}
-      @keyframes squatKnee{0%,100%{transform:rotate(0deg)}50%{transform:rotate(40deg)}}
-    `,
-    hinge:`
-      @keyframes hingeMove{0%,100%{transform:rotate(0deg)}50%{transform:rotate(45deg)}}
-      @keyframes hingeLegs{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
-    `,
-    row:`
-      @keyframes rowArm{0%,100%{transform:translateX(0)}50%{transform:translateX(-16px)}}
-      @keyframes rowBody{0%,100%{transform:rotate(-30deg)}100%{transform:rotate(-30deg)}}
-    `,
-    raise:`
-      @keyframes raiseArm{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-75deg)}}
-    `,
-    jump:`
-      @keyframes jumpMove{0%,100%{transform:translateY(0)}40%{transform:translateY(-24px)}60%{transform:translateY(-20px)}}
-      @keyframes jumpLeg{0%,100%{transform:scaleY(1)}40%{transform:scaleY(0.6)}}
-    `,
-    plank:`
-      @keyframes plankBreath{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.04)}}
-    `,
-    legcurl:`
-      @keyframes legcurlMove{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-80deg)}}
-    `,
-    thrust:`
-      @keyframes thrustMove{0%,100%{transform:translateY(8px)}50%{transform:translateY(-8px)}}
-    `,
-    calf:`
-      @keyframes calfMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-    `,
-    pull:`
-      @keyframes pullMove{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
-      @keyframes pullArm{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(30deg)}}
-    `,
-  };
+  const muscleColors={chest:"rgba(239,68,68,0.15)",back:"rgba(59,130,246,0.15)",shoulders:"rgba(168,85,247,0.15)",biceps:"rgba(34,197,94,0.15)",triceps:"rgba(251,146,60,0.15)",quads:"rgba(236,72,153,0.15)",hamstrings:"rgba(20,184,166,0.15)",glutes:"rgba(251,191,36,0.15)",calves:"rgba(99,102,241,0.15)",core:"rgba(204,255,0,0.15)",hiit:"rgba(239,68,68,0.15)"};
+  const mc=muscleColors[muscle]||"rgba(204,255,0,0.15)";
 
-  const figures={
-    push:(
-      <g>
-        <style>{animations.push}</style>
-        <g style={{animation:"pushMove 1.8s ease-in-out infinite",transformOrigin:"60px 60px"}}>
-          <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="38" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
-          <g style={{animation:"armPush 1.8s ease-in-out infinite",transformOrigin:"52px 44px"}}>
-            <rect x="28" y="40" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-          <g style={{animation:"armPush 1.8s ease-in-out infinite",transformOrigin:"68px 44px",animationDirection:"reverse"}}>
-            <rect x="66" y="40" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-          <rect x="50" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
-          <rect x="62" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
-        </g>
-        <rect x="10" y="88" width="100" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-    curl:(
-      <g>
-        <style>{animations.curl}</style>
-        <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
-        <rect x="52" y="38" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
-        <g style={{animation:"curlMove 1.8s ease-in-out infinite",transformOrigin:"52px 48px"}}>
-          <rect x="28" y="46" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
-          <ellipse cx="24" cy="50" rx="8" ry="5" fill={mc} opacity="0.5"/>
-        </g>
-        <rect x="52" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
-        <rect x="60" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
-        <rect x="8" y="84" width="16" height="8" rx="4" fill={mc} opacity="0.4"/>
-        <style>{`.curlbody{animation:curlBody 1.8s ease-in-out infinite}`}</style>
-      </g>
-    ),
-    squat:(
-      <g>
-        <style>{animations.squat}</style>
-        <g style={{animation:"squatMove 2s ease-in-out infinite",transformOrigin:"60px 55px"}}>
-          <ellipse cx="60" cy="22" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="32" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
-          <rect x="28" y="34" width="64" height="6" rx="3" fill={mc} opacity="0.4"/>
-          <g style={{animation:"squatKnee 2s ease-in-out infinite",transformOrigin:"54px 58px"}}>
-            <rect x="48" y="58" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-          <g style={{animation:"squatKnee 2s ease-in-out infinite",transformOrigin:"66px 58px",animationDirection:"reverse"}}>
-            <rect x="62" y="58" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-        </g>
-        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-    hinge:(
-      <g>
-        <style>{animations.hinge}</style>
-        <g style={{animation:"hingeMove 2s ease-in-out infinite",transformOrigin:"60px 52px"}}>
-          <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="38" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
-        </g>
-        <g style={{animation:"hingeLegs 2s ease-in-out infinite",transformOrigin:"60px 64px"}}>
-          <rect x="50" y="64" width="10" height="24" rx="4" fill={mc} opacity="0.7"/>
-          <rect x="62" y="64" width="10" height="24" rx="4" fill={mc} opacity="0.7"/>
-        </g>
-        <rect x="20" y="86" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
-        <ellipse cx="60" cy="86" rx="30" ry="4" fill={mc} opacity="0.1"/>
-      </g>
-    ),
-    raise:(
-      <g>
-        <style>{animations.raise}</style>
-        <ellipse cx="60" cy="28" rx="10" ry="10" fill={mc} opacity="0.9"/>
-        <rect x="52" y="38" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
-        <g style={{animation:"raiseArm 1.8s ease-in-out infinite",transformOrigin:"52px 44px"}}>
-          <rect x="20" y="40" width="34" height="8" rx="4" fill={mc} opacity="0.7"/>
-          <ellipse cx="16" cy="44" rx="7" ry="5" fill={mc} opacity="0.5"/>
-        </g>
-        <g style={{animation:"raiseArm 1.8s ease-in-out infinite",transformOrigin:"68px 44px",animationDirection:"reverse"}}>
-          <rect x="66" y="40" width="34" height="8" rx="4" fill={mc} opacity="0.7"/>
-          <ellipse cx="104" cy="44" rx="7" ry="5" fill={mc} opacity="0.5"/>
-        </g>
-        <rect x="52" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
-        <rect x="60" y="66" width="8" height="22" rx="3" fill={mc} opacity="0.6"/>
-      </g>
-    ),
-    jump:(
-      <g>
-        <style>{animations.jump}</style>
-        <g style={{animation:"jumpMove 1.4s ease-in-out infinite",transformOrigin:"60px 60px"}}>
-          <ellipse cx="60" cy="18" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="28" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
-          <g style={{animation:"jumpLeg 1.4s ease-in-out infinite",transformOrigin:"54px 54px"}}>
-            <rect x="48" y="54" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-          <g style={{animation:"jumpLeg 1.4s ease-in-out infinite",transformOrigin:"66px 54px"}}>
-            <rect x="62" y="54" width="10" height="22" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-        </g>
-        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-    plank:(
-      <g>
-        <style>{animations.plank}</style>
-        <g style={{animation:"plankBreath 2.5s ease-in-out infinite",transformOrigin:"60px 55px"}}>
-          <ellipse cx="85" cy="48" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="30" y="56" width="60" height="12" rx="5" fill={mc} opacity="0.8"/>
-          <rect x="20" y="64" width="14" height="8" rx="3" fill={mc} opacity="0.6"/>
-          <rect x="86" y="64" width="14" height="8" rx="3" fill={mc} opacity="0.6"/>
-        </g>
-        <rect x="10" y="72" width="100" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-    legcurl:(
-      <g>
-        <style>{animations.legcurl}</style>
-        <ellipse cx="40" cy="48" rx="10" ry="10" fill={mc} opacity="0.9"/>
-        <rect x="22" y="56" width="36" height="12" rx="5" fill={mc} opacity="0.8"/>
-        <g style={{animation:"legcurlMove 1.8s ease-in-out infinite",transformOrigin:"58px 68px"}}>
-          <rect x="56" y="56" width="10" height="30" rx="4" fill={mc} opacity="0.7"/>
-          <ellipse cx="61" cy="84" rx="8" ry="5" fill={mc} opacity="0.5"/>
-        </g>
-        <rect x="10" y="80" width="60" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-    thrust:(
-      <g>
-        <style>{animations.thrust}</style>
-        <g style={{animation:"thrustMove 1.8s ease-in-out infinite",transformOrigin:"60px 62px"}}>
-          <ellipse cx="60" cy="48" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="42" y="56" width="36" height="12" rx="5" fill={mc} opacity="0.8"/>
-          <rect x="44" y="68" width="10" height="18" rx="4" fill={mc} opacity="0.7"/>
-          <rect x="62" y="68" width="10" height="18" rx="4" fill={mc} opacity="0.7"/>
-        </g>
-        <rect x="10" y="86" width="40" height="6" rx="3" fill={mc} opacity="0.3"/>
-        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.15"/>
-      </g>
-    ),
-    calf:(
-      <g>
-        <style>{animations.calf}</style>
-        <g style={{animation:"calfMove 1.4s ease-in-out infinite",transformOrigin:"60px 50px"}}>
-          <ellipse cx="60" cy="22" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="32" width="16" height="28" rx="4" fill={mc} opacity="0.8"/>
-          <rect x="50" y="60" width="8" height="16" rx="3" fill={mc} opacity="0.7"/>
-          <rect x="62" y="60" width="8" height="16" rx="3" fill={mc} opacity="0.7"/>
-        </g>
-        <rect x="20" y="88" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-    pull:(
-      <g>
-        <style>{animations.pull}</style>
-        <rect x="55" y="5" width="10" height="8" rx="2" fill={mc} opacity="0.4"/>
-        <g style={{animation:"pullMove 1.8s ease-in-out infinite",transformOrigin:"60px 50px"}}>
-          <ellipse cx="60" cy="32" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="42" width="16" height="26" rx="4" fill={mc} opacity="0.8"/>
-          <g style={{animation:"pullArm 1.8s ease-in-out infinite",transformOrigin:"52px 42px"}}>
-            <rect x="28" y="18" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-          <g style={{animation:"pullArm 1.8s ease-in-out infinite",transformOrigin:"68px 42px",animationDirection:"reverse"}}>
-            <rect x="66" y="18" width="26" height="8" rx="4" fill={mc} opacity="0.7"/>
-          </g>
-          <rect x="50" y="68" width="8" height="20" rx="3" fill={mc} opacity="0.6"/>
-          <rect x="62" y="68" width="8" height="20" rx="3" fill={mc} opacity="0.6"/>
-        </g>
-      </g>
-    ),
-    row:(
-      <g>
-        <style>{animations.row}</style>
-        <g style={{transform:"rotate(-30deg)",transformOrigin:"60px 55px"}}>
-          <ellipse cx="80" cy="40" rx="10" ry="10" fill={mc} opacity="0.9"/>
-          <rect x="52" y="48" width="36" height="12" rx="5" fill={mc} opacity="0.8"/>
-        </g>
-        <g style={{animation:"rowArm 1.8s ease-in-out infinite",transformOrigin:"52px 55px"}}>
-          <rect x="14" y="51" width="40" height="8" rx="4" fill={mc} opacity="0.7"/>
-          <ellipse cx="10" cy="55" rx="8" ry="5" fill={mc} opacity="0.5"/>
-        </g>
-        <rect x="52" y="68" width="10" height="20" rx="4" fill={mc} opacity="0.6"/>
-        <rect x="65" y="68" width="10" height="20" rx="4" fill={mc} opacity="0.6"/>
-        <rect x="20" y="86" width="80" height="4" rx="2" fill={mc} opacity="0.2"/>
-      </g>
-    ),
-  };
+  if(!imgs||error){
+    // Fallback - no image available, just show muscle badge
+    return(
+      <div style={{display:"flex",justifyContent:"center",marginBottom:"0.75rem"}}>
+        <div style={{background:mc,border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"0.75rem 1.5rem",display:"flex",alignItems:"center",gap:"0.5rem"}}>
+          <span style={{fontSize:"1.5rem"}}>💪</span>
+          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.85rem",color:"rgba(255,255,255,0.6)"}}>{muscle}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const src=frame===0?imgs.img0:imgs.img1;
 
   return(
-    <div style={{display:"flex",justifyContent:"center",alignItems:"center",marginBottom:"0.75rem"}}>
-      <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:`1px solid ${mc}30`,borderRadius:"16px",padding:"0.75rem",position:"relative",overflow:"hidden",width:"120px",height:"120px",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div style={{position:"absolute",inset:0,background:`radial-gradient(circle at center, ${mc}10, transparent 70%)`,pointerEvents:"none"}}/>
-        <svg width="100" height="100" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
-          {figures[animType]||figures.push}
-        </svg>
+    <div style={{display:"flex",justifyContent:"center",marginBottom:"0.75rem"}}>
+      <div style={{background:mc,backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",overflow:"hidden",position:"relative",width:"100%",maxWidth:"280px",aspectRatio:"4/3"}}>
+        {!loaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:"24px",height:"24px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
+        <img
+          src={src}
+          alt={exName}
+          onLoad={()=>setLoaded(true)}
+          onError={()=>setError(true)}
+          style={{width:"100%",height:"100%",objectFit:"cover",display:loaded?"block":"none",transition:"opacity 0.3s ease"}}
+        />
+        <div style={{position:"absolute",bottom:"6px",right:"8px",background:"rgba(0,0,0,0.6)",borderRadius:"6px",padding:"2px 7px",fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow Condensed',sans-serif"}}>{muscle}</div>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   );
 }
-
 
 // ─── SPLITS DATA ─────────────────────────────────────────────────────────────
 const SPLITS={
@@ -1954,7 +1829,7 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
           <span style={{...s.tag,fontSize:"0.58rem"}}>{ex.muscle}</span>
         </div>
         {/* Animated illustration */}
-        {ex.gif&&<ExerciseAnimation gifKey={ex.gif} muscle={ex.muscle}/>}
+        <ExerciseAnimation exName={ex.name} muscle={ex.muscle}/>
         <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6,marginBottom:"0.75rem"}}>{cue}</div>
         <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name+' exercise form tutorial')}`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.5rem",background:"rgba(255,0,0,0.1)",border:"1px solid rgba(255,0,0,0.2)",borderRadius:"8px",padding:"0.5rem 0.75rem",textDecoration:"none"}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff4444"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
