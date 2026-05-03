@@ -416,25 +416,19 @@ const EXERCISE_IMAGES={
 
 function ExerciseAnimation({exName,muscle}){
   const imgs=EXERCISE_IMAGES[exName];
-  const[frame,setFrame]=useState(0);
+  const[opacity,setOpacity]=useState(0);
   const[loaded0,setLoaded0]=useState(false);
   const[loaded1,setLoaded1]=useState(false);
   const[error,setError]=useState(false);
 
   useEffect(()=>{
     if(!imgs)return;
-    setFrame(0);setLoaded0(false);setLoaded1(false);setError(false);
-    // 4-step sequence: 0(slow) → 1(fast) → 1(slow) → 0(fast) = smooth loop
-    const timings=[600,300,600,300];
-    let step=0;
-    let timeout;
-    function next(){
-      step=(step+1)%4;
-      setFrame(step<2?0:1);
-      timeout=setTimeout(next,timings[step]);
-    }
-    timeout=setTimeout(next,timings[0]);
-    return()=>clearTimeout(timeout);
+    setOpacity(0);setLoaded0(false);setLoaded1(false);setError(false);
+    // 4 equal parts at 500ms each = 2 second full cycle
+    // opacity 0 = show img0, opacity 1 = show img1
+    // Smooth CSS transition handles the crossfade between
+    const t=setInterval(()=>setOpacity(o=>o===0?1:0),1000);
+    return()=>clearInterval(t);
   },[exName]);
 
   const muscleColors={chest:"rgba(239,68,68,0.15)",back:"rgba(59,130,246,0.15)",shoulders:"rgba(168,85,247,0.15)",biceps:"rgba(34,197,94,0.15)",triceps:"rgba(251,146,60,0.15)",quads:"rgba(236,72,153,0.15)",hamstrings:"rgba(20,184,166,0.15)",glutes:"rgba(251,191,36,0.15)",calves:"rgba(99,102,241,0.15)",core:"rgba(204,255,0,0.15)",hiit:"rgba(239,68,68,0.15)"};
@@ -457,12 +451,10 @@ function ExerciseAnimation({exName,muscle}){
     <div style={{display:"flex",justifyContent:"center",marginBottom:"0.75rem"}}>
       <div style={{background:mc,backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",overflow:"hidden",position:"relative",width:"100%",maxWidth:"280px",aspectRatio:"4/3"}}>
         {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}><div style={{width:"24px",height:"24px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
-        {/* Frame 0 */}
         <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)}
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:frame===0&&bothLoaded?1:0,transition:"opacity 0.25s ease"}}/>
-        {/* Frame 1 */}
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?1-opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
         <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)}
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:frame===1&&bothLoaded?1:0,transition:"opacity 0.25s ease"}}/>
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
         <div style={{position:"absolute",bottom:"6px",right:"8px",background:"rgba(0,0,0,0.6)",borderRadius:"6px",padding:"2px 7px",fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow Condensed',sans-serif",zIndex:3}}>{muscle}</div>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
