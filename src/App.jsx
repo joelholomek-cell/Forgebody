@@ -633,6 +633,16 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
   const[dragStartX,setDragStartX]=useState(0);
   const[dragOffset,setDragOffset]=useState(0);
 
+  // Fire ViewContent when landing page loads
+  useEffect(()=>{
+    try{if(window.fbq)window.fbq('track','ViewContent');}catch(e){}
+  },[]);
+
+  function handleCTAClick(){
+    try{if(window.fbq)window.fbq('track','Lead');}catch(e){}
+    onSelectPlan();
+  }
+
   const slides=[
     {icon:"🏋️",title:"Train Smarter",sub:"Personalised programmes built around your split, level and goal. Every set tracked. Every rep counted.",detail:"PPL · Upper/Lower · Muscle Group · HIIT",color:"rgba(204,255,0,0.1)",accent:C.lime,stats:[{n:"80+",l:"Exercises"},{n:"4",l:"Splits"},{n:"∞",l:"Workouts"}]},
     {icon:"🍽️",title:"Eat Right",sub:"AI meal plans with real ingredients and step-by-step cooking instructions. Built for your diet.",detail:"58+ meals · Full macros · Shopping lists",color:"rgba(59,130,246,0.1)",accent:"#60a5fa",stats:[{n:"58+",l:"Meals"},{n:"7",l:"Diets"},{n:"100%",l:"Macro tracked"}]},
@@ -734,7 +744,7 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
           </div>
 
           {/* CTAs */}
-          <button onClick={onSelectPlan} style={{width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem",background:C.lime,color:"#000",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 0 40px rgba(204,255,0,0.35)",transition:"all 0.2s"}}>
+          <button onClick={handleCTAClick} style={{width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",marginBottom:"0.6rem",background:C.lime,color:"#000",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 0 40px rgba(204,255,0,0.35)",transition:"all 0.2s"}}>
             Start Free Trial →
           </button>
           <button onClick={onSignIn} style={{width:"100%",padding:"0.9rem",fontSize:"0.85rem",borderRadius:"14px",background:"rgba(255,255,255,0.07)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.13)",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>
@@ -831,7 +841,7 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
             <div style={{fontSize:"2rem",marginBottom:"0.75rem"}}>🔥</div>
             <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1.6rem",letterSpacing:"-0.02em",color:C.white,marginBottom:"0.4rem",lineHeight:1}}>Ready to Forge<br/>Your Body?</div>
             <div style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",marginBottom:"1.5rem",lineHeight:1.5}}>Join ForgeBody. Train smarter.<br/>Cancel anytime. 7 days free.</div>
-            <button onClick={onSelectPlan} style={{width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",background:C.lime,color:"#000",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 0 30px rgba(204,255,0,0.3)"}}>
+            <button onClick={handleCTAClick} style={{width:"100%",padding:"1.1rem",fontSize:"1rem",borderRadius:"14px",background:C.lime,color:"#000",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 0 30px rgba(204,255,0,0.3)"}}>
               Start Free Trial →
             </button>
           </div>
@@ -867,7 +877,7 @@ function SubscriptionWall({user,onBack,onSubscribed}){
   function onMouseUp(){if(dragOffset<-60&&slide<total-1)goTo(slide+1);else if(dragOffset>60&&slide>0)goTo(slide-1);else setDragOffset(0);setIsDragging(false);}
 
   function selectPlan(plan){
-    // Save plan choice + user id so we can mark subscribed on return
+    try{if(window.fbq)window.fbq('track','StartTrial',{value:19,currency:'AUD',predicted_ltv:114});}catch(e){}
     localStorage.setItem("fb_pending_plan",plan.id);
     localStorage.setItem("fb_pending_user",user?.id||"");
     // Build Stripe URL with email pre-filled so Stripe knows who they are
@@ -992,6 +1002,16 @@ function SubscriptionWall({user,onBack,onSubscribed}){
 // ─── PAYMENT SUCCESS ─────────────────────────────────────────────────────────
 function PaymentSuccess({onContinue,onAlreadyPaid}){
   const[count,setCount]=useState(8);
+
+  // Fire Meta Subscribe pixel event
+  useEffect(()=>{
+    try{
+      if(window.fbq){
+        window.fbq('track','Subscribe',{value:19,currency:'AUD'});
+        window.fbq('track','Purchase',{value:19,currency:'AUD'});
+      }
+    }catch(e){}
+  },[]);
   useEffect(()=>{
     const t=setInterval(()=>setCount(c=>{
       if(c<=1){clearInterval(t);setTimeout(onContinue,100);return 0;}
