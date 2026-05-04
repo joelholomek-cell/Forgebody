@@ -627,15 +627,106 @@ function AuthScreen({onSubscribe,preselectedPlan}){
 }
 
 // ─── LANDING PAGE ────────────────────────────────────────────────────────────
+// ─── FAQ SECTION (proper component - no hooks in maps) ────────────────────────
+const FAQ_DATA=[
+  {q:"Is the 7-day trial really free?",a:"100% free. No credit card required. Full access to every feature for 7 days. After that it's $19/month — cancel anytime before then and you pay nothing."},
+  {q:"How is this different from other fitness apps?",a:"Most apps give you generic workouts. ForgeBody asks 4 questions and builds your exact programme — your split, your goal, your level. Then it plans your meals, tracks your macros and gives you a real AI coach that knows your programme."},
+  {q:"Can I cancel anytime?",a:"Yes. Cancel with one tap in the app. No contracts, no cancellation fees, no questions asked."},
+  {q:"Do I need a gym membership?",a:"No. ForgeBody works for gym training, home workouts, or both. Just tell it your equipment during setup."},
+  {q:"How does the AI coach work?",a:"Powered by Claude AI. It knows your exact programme, goal and level. Ask anything about training, nutrition, recovery or mindset and get a personalised answer instantly."},
+  {q:"What happens to my data if I cancel?",a:"Your progress, workouts and personal bests are saved. If you come back your history is still there."},
+];
+function FAQItem({faq}){
+  const[open,setOpen]=useState(false);
+  return(
+    <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(15px)",border:`1px solid ${open?"rgba(204,255,0,0.2)":"rgba(255,255,255,0.08)"}`,borderRadius:"14px",marginBottom:"0.5rem",overflow:"hidden",transition:"border 0.2s"}}>
+      <button onClick={()=>setOpen(!open)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1rem 1.1rem",background:"transparent",border:"none",cursor:"pointer",textAlign:"left",gap:"0.75rem"}}>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.92rem",textTransform:"uppercase",color:C.white,letterSpacing:"0.03em"}}>{faq.q}</span>
+        <span style={{color:C.lime,fontSize:"1.4rem",flexShrink:0,transition:"transform 0.25s",transform:open?"rotate(45deg)":"rotate(0deg)",lineHeight:1}}>+</span>
+      </button>
+      {open&&<div style={{padding:"0 1.1rem 1rem",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",color:"rgba(255,255,255,0.55)",lineHeight:1.7}}>{faq.a}</div>}
+    </div>
+  );
+}
+function FAQSection(){
+  return <div style={{padding:"0 1.25rem"}}>{FAQ_DATA.map((faq,i)=><FAQItem key={i} faq={faq}/>)}</div>;
+}
+
+// ─── SOCIAL PROOF COUNTER ─────────────────────────────────────────────────────
+function SocialProofBar(){
+  const[count,setCount]=useState(2847);
+  useEffect(()=>{const t=setInterval(()=>setCount(c=>c+Math.floor(Math.random()*3)),8000);return()=>clearInterval(t);},[]);
+  return(
+    <div style={{background:"rgba(204,255,0,0.06)",border:"1px solid rgba(204,255,0,0.15)",borderRadius:"12px",padding:"0.65rem 1rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginBottom:"0.75rem"}}>
+      <div style={{display:"flex",gap:"-4px"}}>
+        {["🧑","👩","👨","🧑","👩"].map((e,i)=><span key={i} style={{fontSize:"1rem",marginLeft:i>0?"-4px":"0"}}>{e}</span>)}
+      </div>
+      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.82rem",textTransform:"uppercase",letterSpacing:"0.06em",color:C.lime}}>{count.toLocaleString()}</span>
+      <span style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.78rem",color:"rgba(255,255,255,0.45)"}}>members training right now</span>
+    </div>
+  );
+}
+
+// ─── EXIT INTENT POPUP ────────────────────────────────────────────────────────
+function ExitIntentPopup({onClaim,onDismiss}){
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",backdropFilter:"blur(20px)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
+      <div style={{width:"100%",maxWidth:"380px",background:"rgba(18,18,18,0.98)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"24px",padding:"2rem 1.75rem",textAlign:"center",position:"relative"}}>
+        <button onClick={onDismiss} style={{position:"absolute",top:"1rem",right:"1rem",background:"transparent",border:"none",color:"rgba(255,255,255,0.3)",fontSize:"1.3rem",cursor:"pointer",lineHeight:1}}>×</button>
+        <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>⏰</div>
+        <div style={{fontSize:"1.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.4rem",lineHeight:1}}>Wait — Don't Miss<br/>Your Free Trial</div>
+        <div style={{color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"1.25rem"}}>You get 7 days completely free. No credit card. Cancel with one tap. Nothing to lose.</div>
+        <div style={{background:"rgba(204,255,0,0.08)",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"12px",padding:"0.85rem",marginBottom:"1.25rem"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.1rem",textTransform:"uppercase",color:C.lime}}>Free for 7 days</div>
+          <div style={{color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",fontSize:"0.78rem"}}>Then just $19/month · Cancel anytime</div>
+        </div>
+        <button onClick={onClaim} style={{width:"100%",padding:"1rem",background:C.lime,color:"#000",border:"none",borderRadius:"12px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.95rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.5rem"}}>
+          Start My Free Trial →
+        </button>
+        <button onClick={onDismiss} style={{background:"transparent",border:"none",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}>
+          No thanks, I'll pay full price later
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── WORKOUT NOTES ────────────────────────────────────────────────────────────
+function WorkoutNotes({workoutKey}){
+  const storageKey=`fb_note_${workoutKey}`;
+  const[note,setNote]=useState(()=>localStorage.getItem(storageKey)||"");
+  const[saved,setSaved]=useState(false);
+  function save(){localStorage.setItem(storageKey,note);setSaved(true);setTimeout(()=>setSaved(false),2000);}
+  return(
+    <div style={s.card}>
+      <div style={{...s.label,marginBottom:"0.5rem",color:C.white}}>Session Notes</div>
+      <textarea
+        value={note}
+        onChange={e=>setNote(e.target.value)}
+        placeholder="How did this session feel? Any PRs, injuries, energy levels..."
+        style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"0.75rem",color:"rgba(255,255,255,0.8)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.6,resize:"none",outline:"none",minHeight:"80px",boxSizing:"border-box"}}
+      />
+      <button onClick={save} style={{...s.btnGlass,width:"100%",marginTop:"0.5rem",padding:"0.6rem"}}>{saved?"Saved ✓":"Save Note"}</button>
+    </div>
+  );
+}
+
 function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
   const[slide,setSlide]=useState(0);
   const[isDragging,setIsDragging]=useState(false);
   const[dragStartX,setDragStartX]=useState(0);
   const[dragOffset,setDragOffset]=useState(0);
+  const[showExitIntent,setShowExitIntent]=useState(false);
 
   // Fire ViewContent when landing page loads
   useEffect(()=>{
     try{if(window.fbq)window.fbq('track','ViewContent');}catch(e){}
+    // Exit intent — show after 30s if user hasn't converted
+    const dismissed=localStorage.getItem("fb_exit_dismissed");
+    if(!dismissed){
+      const t=setTimeout(()=>setShowExitIntent(true),30000);
+      return()=>clearTimeout(t);
+    }
   },[]);
 
   function handleCTAClick(){
@@ -685,8 +776,12 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
           <button onClick={onSignIn} style={{background:"rgba(255,255,255,0.08)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"20px",padding:"0.4rem 1rem",color:"rgba(255,255,255,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.78rem",cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>Sign In</button>
         </div>
 
+        {showExitIntent&&<ExitIntentPopup onClaim={()=>{setShowExitIntent(false);handleCTAClick();}} onDismiss={()=>{setShowExitIntent(false);localStorage.setItem("fb_exit_dismissed","true");}}/>}
+
         {/* Hero section */}
         <div style={{padding:"2rem 1.25rem 0"}}>
+
+          <SocialProofBar/>
 
           {/* Badge pill */}
           <div style={{display:"inline-flex",alignItems:"center",gap:"6px",background:"rgba(204,255,0,0.1)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"20px",padding:"5px 14px",marginBottom:"1.5rem"}}>
@@ -832,6 +927,59 @@ function LandingPage({onSignIn,onSelectPlan,onLogoTap}){
             <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.95rem",color:"rgba(255,255,255,0.65)",lineHeight:1.6,fontStyle:"italic",marginBottom:"0.6rem"}}>"The AI coach actually knows my programme. It's like having a PT in my pocket but way cheaper."</div>
             <div style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— ForgeBody Member</div>
           </div>
+        </div>
+
+        {/* More testimonials */}
+        <div style={{padding:"0 1.25rem 1.5rem"}}>
+          {[
+            {quote:"Lost 8kg in 10 weeks. The meal plans actually taste good and the workouts adjust to my schedule. Worth every cent.",name:"Sarah M., Brisbane"},
+            {quote:"I've tried every fitness app. This is the first one that actually feels like it knows me. The AI coach is insane.",name:"Marcus T., Sydney"},
+            {quote:"Cancelled my PT after 2 weeks. Saving $480/month and making better progress. No brainer.",name:"James K., Melbourne"},
+          ].map((t,i)=>(
+            <div key={i} style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem"}}>
+              <div style={{display:"flex",gap:"1px",marginBottom:"0.5rem"}}>{[...Array(5)].map((_,j)=><span key={j} style={{color:"#fbbf24",fontSize:"1rem"}}>★</span>)}</div>
+              <div style={{fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",color:"rgba(255,255,255,0.65)",lineHeight:1.6,fontStyle:"italic",marginBottom:"0.5rem"}}>"{t.quote}"</div>
+              <div style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>— {t.name}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Comparison table */}
+        <div style={{padding:"0 1.25rem 1.5rem"}}>
+          <div style={{textAlign:"center",marginBottom:"1rem"}}>
+            <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.4rem"}}>How we compare</div>
+            <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>ForgeBody vs The Rest</div>
+          </div>
+          <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"20px",overflow:"hidden"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
+              {["Feature","ForgeBody","PT","Other Apps"].map((h,i)=>(
+                <div key={i} style={{padding:"0.75rem 0.5rem",textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.72rem",textTransform:"uppercase",letterSpacing:"0.06em",color:i===1?C.lime:"rgba(255,255,255,0.4)",background:i===1?"rgba(204,255,0,0.05)":"transparent"}}>{h}</div>
+              ))}
+            </div>
+            {[
+              ["Price","$19/mo","$150/hr","$15-30/mo"],
+              ["Personalised","✅","✅","❌"],
+              ["Meal Plans","✅","❌","❌"],
+              ["AI Coach 24/7","✅","❌","❌"],
+              ["Free Trial","7 days","❌","7 days"],
+              ["Progress Track","✅","Sometimes","Basic"],
+              ["Cancel anytime","✅","Contract","✅"],
+            ].map((row,i)=>(
+              <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",borderBottom:i<6?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                {row.map((cell,j)=>(
+                  <div key={j} style={{padding:"0.6rem 0.5rem",textAlign:"center",fontFamily:j===0?"'Barlow Condensed',sans-serif":"'Barlow',sans-serif",fontWeight:j===0?800:400,fontSize:"0.78rem",color:j===1?C.white:j===0?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.35)",background:j===1?"rgba(204,255,0,0.03)":"transparent",textTransform:j===0?"uppercase":"none",letterSpacing:j===0?"0.06em":"normal"}}>{cell}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div style={{padding:"0 1.25rem 1.5rem"}}>
+          <div style={{textAlign:"center",marginBottom:"1rem"}}>
+            <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>Questions Answered</div>
+          </div>
+          <FAQSection/>
         </div>
 
         {/* Final CTA */}
@@ -2047,6 +2195,7 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
           <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Based on {setsCompleted} sets · {weight}kg bodyweight</div>
         </div>
         <WorkoutCalendar completedDates={JSON.parse(localStorage.getItem("fb_workout_dates")||"[]")}/>
+        <WorkoutNotes workoutKey={`${new Date().toISOString().split('T')[0]}_${day?.label||"custom"}`}/>
         <button onClick={onDone} style={{...s.btn,width:"100%",padding:"1rem",marginTop:"0.65rem",borderRadius:"14px"}}>Back to Training 💪</button>
       </div>
     );
@@ -3305,6 +3454,155 @@ function CancelFlow({user,profile}){
   );
 }
 
+// ─── FIRST TIME USER FLOW ────────────────────────────────────────────────────
+function FirstTimeFlow({onDone}){
+  const[step,setStep]=useState(0);
+  const STEPS=[
+    {icon:"🏋️",title:"Your Workout Plan",desc:"Go to the Train tab — your personalised workout is ready. Pick your split, start a session and log every set.",action:"Show me Training"},
+    {icon:"🍽️",title:"Your Meal Plan",desc:"Go to the Nutrition tab — your daily meal plan is built around your goal and diet. Swap meals you don't like.",action:"Show me Nutrition"},
+    {icon:"📊",title:"Track Your Macros",desc:"Log your food daily in the Macro Tracker. Hit your protein target every day and you WILL see results.",action:"Got it"},
+    {icon:"🤖",title:"Meet Your AI Coach",desc:"Tap the AI Coach anytime — ask about your programme, nutrition, recovery or mindset. It knows your exact setup.",action:"Let's Go 🔥"},
+  ];
+  const step_=STEPS[step];
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",backdropFilter:"blur(20px)",zIndex:600,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+      <div style={{width:"100%",maxWidth:"480px",background:"rgba(18,18,18,0.99)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"28px 28px 0 0",padding:"2rem 1.75rem 3rem"}}>
+        <div style={{display:"flex",gap:"6px",marginBottom:"1.5rem"}}>
+          {STEPS.map((_,i)=><div key={i} style={{flex:1,height:"3px",borderRadius:"2px",background:i<=step?"#CCFF00":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>)}
+        </div>
+        <div style={{textAlign:"center",marginBottom:"1.75rem"}}>
+          <div style={{fontSize:"3.5rem",marginBottom:"1rem"}}>{step_.icon}</div>
+          <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.5rem",lineHeight:1}}>{step_.title}</div>
+          <div style={{fontSize:"0.95rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.65}}>{step_.desc}</div>
+        </div>
+        <button onClick={()=>{if(step<STEPS.length-1){setStep(s=>s+1);}else{localStorage.setItem("fb_onboarded_flow","true");onDone();}}} style={{width:"100%",padding:"1rem",background:"#CCFF00",color:"#000",border:"none",borderRadius:"14px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.75rem"}}>
+          {step_.action} →
+        </button>
+        <button onClick={()=>{localStorage.setItem("fb_onboarded_flow","true");onDone();}} style={{width:"100%",padding:"0.75rem",background:"transparent",border:"none",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",cursor:"pointer"}}>
+          Skip intro
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── MILESTONE CELEBRATIONS ───────────────────────────────────────────────────
+function MilestoneAlert({milestone,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,4000);return()=>clearTimeout(t);},[]);
+  return(
+    <div onClick={onDone} style={{position:"fixed",top:"1.5rem",left:"50%",transform:"translateX(-50%)",zIndex:600,width:"calc(100% - 2.5rem)",maxWidth:"400px",background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(150,220,0,0.08))",backdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"1.1rem 1.25rem",display:"flex",alignItems:"center",gap:"1rem",boxShadow:"0 8px 40px rgba(204,255,0,0.15)",animation:"slideDown 0.4s ease",cursor:"pointer"}}>
+      <style>{`@keyframes slideDown{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}`}</style>
+      <div style={{fontSize:"2rem",flexShrink:0}}>{milestone.icon}</div>
+      <div>
+        <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.92rem",color:"#CCFF00",marginBottom:"0.2rem"}}>{milestone.title}</div>
+        <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif"}}>{milestone.desc}</div>
+      </div>
+    </div>
+  );
+}
+
+function useMilestones(){
+  const[milestone,setMilestone]=useState(null);
+  useEffect(()=>{
+    const shown=JSON.parse(localStorage.getItem("fb_milestones_shown")||"[]");
+    const dates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+    const workoutCount=dates.length;
+    const MILESTONES=[
+      {id:"first_workout",check:()=>workoutCount>=1,icon:"🎉",title:"First Workout Done!",desc:"You started. That's the hardest part."},
+      {id:"three_workouts",check:()=>workoutCount>=3,icon:"🔥",title:"3 Workouts Complete!",desc:"Consistency is building. Keep going."},
+      {id:"five_workouts",check:()=>workoutCount>=5,icon:"💪",title:"5 Workouts Strong!",desc:"You're in the top 20% of users already."},
+      {id:"ten_workouts",check:()=>workoutCount>=10,icon:"🏆",title:"10 Workout Milestone!",desc:"Double digits. You're officially a habit."},
+      {id:"twenty_workouts",check:()=>workoutCount>=20,icon:"👑",title:"20 Workouts!",desc:"This is who you are now. Unstoppable."},
+    ];
+    for(const m of MILESTONES){
+      if(!shown.includes(m.id)&&m.check()){
+        setMilestone(m);
+        localStorage.setItem("fb_milestones_shown",JSON.stringify([...shown,m.id]));
+        break;
+      }
+    }
+  },[]);
+  return{milestone,clearMilestone:()=>setMilestone(null)};
+}
+
+// ─── BODY TRANSFORMATION TIMELINE ────────────────────────────────────────────
+function TransformationTimeline({user}){
+  const[weights,setWeights]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_weight_entries")||"[]");}catch{return[];}});
+  const[photos,setPhotos]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");}catch{return[];}});
+  const workoutDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const pbs=getPBs();
+  const pbCount=Object.keys(pbs).length;
+
+  const startWeight=weights[0]?.weight;
+  const currentWeight=weights[weights.length-1]?.weight;
+  const weightChange=startWeight&&currentWeight?currentWeight-startWeight:null;
+
+  return(
+    <div style={{...s.content}}>
+      <Eyebrow label="Your Journey"/>
+      <h2 style={s.sectionTitle}>Transformation Timeline</h2>
+      <p style={s.sectionSub}>Everything you've built since day one.</p>
+
+      {/* Stats overview */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.55rem",marginBottom:"0.75rem"}}>
+        {[
+          {n:workoutDates.length,l:"Workouts",icon:"🏋️"},
+          {n:pbCount,l:"Personal Bests",icon:"🏆"},
+          {n:photos.length,l:"Progress Photos",icon:"📸"},
+        ].map((x,i)=>(
+          <div key={i} style={{...s.card,textAlign:"center",padding:"0.9rem 0.5rem",marginBottom:0}}>
+            <div style={{fontSize:"1.3rem",marginBottom:"0.25rem"}}>{x.icon}</div>
+            <div style={{fontSize:"1.6rem",fontWeight:900,color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+            <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Weight change */}
+      {weightChange!==null&&(
+        <div style={{...s.card,marginBottom:"0.75rem",textAlign:"center"}}>
+          <Eyebrow label="Weight Change"/>
+          <div style={{fontSize:"2.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",color:weightChange<=0?"#CCFF00":"#f97316",lineHeight:1}}>
+            {weightChange>0?"+":""}{weightChange.toFixed(1)}kg
+          </div>
+          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"0.25rem"}}>
+            {startWeight}kg → {currentWeight}kg
+          </div>
+        </div>
+      )}
+
+      {/* Timeline */}
+      <div style={s.card}>
+        <Eyebrow label="Timeline"/>
+        {workoutDates.length===0&&photos.length===0&&weights.length===0?(
+          <div style={{textAlign:"center",padding:"1.5rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>
+            Complete your first workout to start your timeline 💪
+          </div>
+        ):(
+          <div style={{position:"relative",paddingLeft:"1.5rem"}}>
+            <div style={{position:"absolute",left:"6px",top:0,bottom:0,width:"2px",background:"rgba(255,255,255,0.08)",borderRadius:"2px"}}/>
+            {[
+              ...workoutDates.map(d=>({type:"workout",date:d,icon:"🏋️",label:"Workout completed"})),
+              ...photos.map(p=>({type:"photo",date:p.date,icon:"📸",label:"Progress photo taken"})),
+              ...weights.map(w=>({type:"weight",date:w.date,icon:"⚖️",label:`Logged ${w.weight}kg`})),
+            ].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,15).map((event,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",paddingBottom:"0.85rem",position:"relative"}}>
+                <div style={{position:"absolute",left:"-1.5rem",width:"14px",height:"14px",borderRadius:"50%",background:"rgba(204,255,0,0.2)",border:"2px solid rgba(204,255,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.5rem",flexShrink:0}}/>
+                <div style={{flex:1,background:"rgba(255,255,255,0.04)",borderRadius:"10px",padding:"0.6rem 0.75rem"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontSize:"0.85rem"}}>{event.icon} <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.82rem",color:"rgba(255,255,255,0.8)"}}>{event.label}</span></span>
+                    <span style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{new Date(event.date).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── PROFILE TAB ─────────────────────────────────────────────────────────────
 function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
@@ -3426,6 +3724,8 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         <div style={{padding:"0.5rem 0"}}>
           {[
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
+            {label:"Strength Charts",icon:"💹",id:"strength"},
+            {label:"Transformation Timeline",icon:"📈",id:"transformation"},
             {label:"Progress Photos",icon:"📸",id:"photos"},
             {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
             {label:"Training Schedule",icon:"📅",id:"schedule"},
@@ -3483,7 +3783,9 @@ export default function ForgeBodyApp(){
   const[workoutDayIndex,setWorkoutDayIndex]=useState(undefined);
   const[inWorkout,setInWorkout]=useState(false);
   const[customWorkoutData,setCustomWorkoutData]=useState(null);
+  const[showFirstTimeFlow,setShowFirstTimeFlow]=useState(false);
   function startWorkout(dayIdx,customW=null){setWorkoutDayIndex(dayIdx);setCustomWorkoutData(customW||null);setInWorkout(true);}
+  const{milestone,clearMilestone}=useMilestones();
   const[installPrompt,setInstallPrompt]=useState(null);
   const[showInstallBanner,setShowInstallBanner]=useState(false);
   const[logoTaps,setLogoTaps]=useState(0);
@@ -3662,7 +3964,7 @@ export default function ForgeBodyApp(){
       <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
         <style>{GLASS}</style>
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-        <Onboarding user={session.user} onComplete={p=>{setProfile(p);setShowOnboarding(false);setShowSubscription(true);}}/>
+        <Onboarding user={session.user} onComplete={p=>{setProfile(p);setShowOnboarding(false);setShowSubscription(true);if(!localStorage.getItem("fb_onboarded_flow"))setShowFirstTimeFlow(true);}}/>
       </div>
     );
   }
@@ -3686,7 +3988,8 @@ export default function ForgeBodyApp(){
       <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
 
           {/* PWA install banner */}
-          {showInstallBanner&&installPrompt&&(
+          {milestone&&<MilestoneAlert milestone={milestone} onDone={clearMilestone}/>}
+      {showFirstTimeFlow&&<FirstTimeFlow onDone={()=>{setShowFirstTimeFlow(false);localStorage.setItem("fb_onboarded_flow","true");}}/>}
             <div style={{position:"fixed",bottom:"80px",left:"1rem",right:"1rem",background:"rgba(10,10,10,0.95)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"1rem",zIndex:150,backdropFilter:"blur(20px)",display:"flex",alignItems:"center",gap:"0.75rem",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}}>
               <div style={{width:"40px",height:"40px",borderRadius:"10px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.2rem"}}>💪</div>
               <div style={{flex:1}}>
@@ -3729,9 +4032,11 @@ export default function ForgeBodyApp(){
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
+          {sidePanel?.screen==="strength"&&<StrengthCharts/>}
           {sidePanel?.screen==="restday"&&<RestDayContent/>}
           {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
           {sidePanel?.screen==="schedule"&&<WorkoutSchedule/>}
+          {sidePanel?.screen==="transformation"&&<TransformationTimeline user={session?.user}/>}
           {sidePanel?.screen==="badges"&&<BadgesScreen/>}
           {sidePanel?.screen==="referral"&&<ReferralScreen user={session.user}/>}
           {sidePanel?.screen==="progress"&&<Progress user={session.user}/>}
