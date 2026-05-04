@@ -612,21 +612,38 @@ function PricingFirstAuth({onSignedIn,onBack}){
           </div>
 
           {/* Plans */}
-          <div style={{display:"flex",flexDirection:"column",gap:"0.6rem",marginBottom:"1.25rem"}}>
-            {PLANS.map(p=>(
-              <div key={p.id} onClick={()=>setSelectedPlan(p.id)} style={{background:selectedPlan===p.id?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.04)",border:`2px solid ${selectedPlan===p.id?"#CCFF00":"rgba(255,255,255,0.1)"}`,borderRadius:"16px",padding:"1rem 1.25rem",cursor:"pointer",display:"flex",alignItems:"center",gap:"1rem",transition:"all 0.2s",position:"relative"}}>
-                {p.badge&&<div style={{position:"absolute",top:"-10px",right:"12px",background:selectedPlan===p.id?"#CCFF00":"rgba(255,255,255,0.15)",color:selectedPlan===p.id?"#000":"rgba(255,255,255,0.6)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.62rem",textTransform:"uppercase",letterSpacing:"0.08em",padding:"2px 8px",borderRadius:"20px"}}>{p.badge}</div>}
-                <div style={{width:"20px",height:"20px",borderRadius:"50%",border:`2px solid ${selectedPlan===p.id?"#CCFF00":"rgba(255,255,255,0.2)"}`,background:selectedPlan===p.id?"#CCFF00":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {selectedPlan===p.id&&<div style={{width:"8px",height:"8px",borderRadius:"50%",background:"#000"}}/>}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.75rem",marginBottom:"1.25rem"}}>
+            {[
+              {id:"monthly",label:"Monthly",price:"$19",period:"/month",badge:"Most Popular",saving:"Billed monthly · Cancel anytime",color:"rgba(204,255,0,0.08)",border:"rgba(204,255,0,0.35)",accent:"#CCFF00",icon:"🔥",stripe:"https://buy.stripe.com/8x2cN5eIl3jA2tF6lA0Jq00"},
+              {id:"annual",label:"Annual",price:"$10",period:"/month",badge:"Save 47%",saving:"Billed $120/year · Best ROI",color:"rgba(59,130,246,0.08)",border:"rgba(59,130,246,0.35)",accent:"#60a5fa",icon:"⚡",stripe:"https://buy.stripe.com/fZubJ12ZDdYe5FR25k0Jq02"},
+              {id:"lifetime",label:"Lifetime",price:"$199",period:"once",badge:"Own Forever",saving:"Pay once · Never pay again",color:"rgba(251,191,36,0.08)",border:"rgba(251,191,36,0.35)",accent:"#fbbf24",icon:"👑",stripe:"https://buy.stripe.com/dRm14ncAd1bs3xJeS60Jq03"},
+            ].map(p=>(
+              <div key={p.id} onClick={()=>setSelectedPlan(p.id)} style={{background:selectedPlan===p.id?p.color:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",border:`2px solid ${selectedPlan===p.id?p.border:"rgba(255,255,255,0.08)"}`,borderRadius:"20px",padding:"1.1rem 1.25rem",cursor:"pointer",position:"relative",overflow:"hidden",transition:"all 0.2s",boxShadow:selectedPlan===p.id?`0 0 24px ${p.accent}20`:"none"}}>
+                {selectedPlan===p.id&&<div style={{position:"absolute",top:"-15px",right:"-15px",width:"60px",height:"60px",borderRadius:"50%",background:p.color,filter:"blur(15px)",pointerEvents:"none"}}/>}
+                <div style={{position:"absolute",top:"-1px",right:"16px",background:selectedPlan===p.id?p.accent:"rgba(255,255,255,0.1)",color:selectedPlan===p.id?"#000":"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.62rem",textTransform:"uppercase",letterSpacing:"0.1em",padding:"3px 10px",borderRadius:"0 0 8px 8px"}}>{p.badge}</div>
+                <div style={{display:"flex",alignItems:"center",gap:"1rem"}}>
+                  <div style={{width:"44px",height:"44px",borderRadius:"12px",background:selectedPlan===p.id?`${p.accent}20`:"rgba(255,255,255,0.05)",border:`1px solid ${selectedPlan===p.id?p.border:"rgba(255,255,255,0.1)"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.3rem"}}>{p.icon}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1rem",color:"#fff",letterSpacing:"0.03em"}}>{p.label}</div>
+                    <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"1px"}}>{p.saving}</div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.8rem",color:selectedPlan===p.id?p.accent:"#fff",lineHeight:1}}>{p.price}</div>
+                    <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{p.period}</div>
+                  </div>
                 </div>
-                <div style={{flex:1}}>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.95rem",color:"#fff"}}>{p.label}</div>
-                  {p.saving&&<div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>{p.saving}</div>}
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.5rem",color:selectedPlan===p.id?"#CCFF00":"#fff",lineHeight:1}}>{p.price}</div>
-                  <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{p.period}</div>
-                </div>
+                {selectedPlan===p.id&&(
+                  <div style={{marginTop:"0.85rem",paddingTop:"0.85rem",borderTop:`1px solid ${p.border}40`}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.35rem"}}>
+                      {["AI workouts","Meal plans","Macro tracker","AI coach 24/7","Progress tracking","Personal bests"].map((f,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:"0.4rem"}}>
+                          <span style={{color:p.accent,fontSize:"0.72rem",flexShrink:0}}>✓</span>
+                          <span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif"}}>{f}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
