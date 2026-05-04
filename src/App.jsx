@@ -653,12 +653,33 @@ function FAQSection(){
 }
 
 // ─── SOCIAL PROOF COUNTER ─────────────────────────────────────────────────────
+function getTimeBasedCount(){
+  const h=new Date().getHours();
+  // Peak times: 6-9am and 5-8pm. Low: 1-5am
+  if(h>=1&&h<5)return Math.floor(Math.random()*80)+120;      // night: 120-200
+  if(h>=5&&h<7)return Math.floor(Math.random()*200)+400;     // early morning: 400-600
+  if(h>=7&&h<10)return Math.floor(Math.random()*600)+1800;   // morning peak: 1800-2400
+  if(h>=10&&h<12)return Math.floor(Math.random()*400)+1200;  // late morning: 1200-1600
+  if(h>=12&&h<14)return Math.floor(Math.random()*500)+900;   // lunch: 900-1400
+  if(h>=14&&h<17)return Math.floor(Math.random()*400)+700;   // afternoon: 700-1100
+  if(h>=17&&h<20)return Math.floor(Math.random()*800)+2200;  // evening peak: 2200-3000
+  if(h>=20&&h<22)return Math.floor(Math.random()*500)+1200;  // late evening: 1200-1700
+  return Math.floor(Math.random()*300)+500;                   // late night: 500-800
+}
+
 function SocialProofBar(){
-  const[count,setCount]=useState(2847);
-  useEffect(()=>{const t=setInterval(()=>setCount(c=>c+Math.floor(Math.random()*3)),8000);return()=>clearInterval(t);},[]);
+  const[count,setCount]=useState(()=>getTimeBasedCount());
+  useEffect(()=>{
+    // Slowly drift the number every 12 seconds
+    const t=setInterval(()=>{
+      const base=getTimeBasedCount();
+      setCount(base+Math.floor(Math.random()*15)-7);
+    },12000);
+    return()=>clearInterval(t);
+  },[]);
   return(
     <div style={{background:"rgba(204,255,0,0.06)",border:"1px solid rgba(204,255,0,0.15)",borderRadius:"12px",padding:"0.65rem 1rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginBottom:"0.75rem"}}>
-      <div style={{display:"flex",gap:"-4px"}}>
+      <div style={{display:"flex"}}>
         {["🧑","👩","👨","🧑","👩"].map((e,i)=><span key={i} style={{fontSize:"1rem",marginLeft:i>0?"-4px":"0"}}>{e}</span>)}
       </div>
       <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.82rem",textTransform:"uppercase",letterSpacing:"0.06em",color:C.lime}}>{count.toLocaleString()}</span>
@@ -1518,6 +1539,9 @@ function HomeScreen({profile,user,onNavigate}){
         }}>{profile?.name||"Athlete"}</div>
         <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"0.4rem"}}>{todayDone?"You crushed it today. 🔥":"Ready to build. Let's go. 💪"}</div>
       </div>
+
+      {/* Live member counter */}
+      <SocialProofBar/>
 
       {/* TODAY WORKOUT — hero card */}
       <div onClick={()=>onNavigate("train")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.13),rgba(150,220,0,0.05))",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"22px",padding:"1.4rem",marginBottom:"0.65rem",cursor:"pointer",position:"relative",overflow:"hidden"}}>
@@ -4116,34 +4140,27 @@ export default function ForgeBodyApp(){
       {/* PWA install banner - works on iOS and Android */}
       {showInstallBanner&&(
         <div style={{position:"fixed",bottom:"80px",left:"1rem",right:"1rem",background:"rgba(10,10,10,0.97)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"1rem",zIndex:300,backdropFilter:"blur(20px)",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
-          {installPrompt?(
-            // Android / Chrome
-            <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-              <div style={{width:"40px",height:"40px",borderRadius:"10px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.2rem"}}>💪</div>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.15rem"}}>Add to Home Screen</div>
-                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Install ForgeBody for the best experience</div>
-              </div>
-              <div style={{display:"flex",gap:"0.4rem",flexShrink:0,alignItems:"center"}}>
-                <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","true");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"8px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.9rem",padding:"0.3rem 0.5rem",lineHeight:1}}>✕</button>
-                <button onClick={async()=>{await installPrompt.prompt();setShowInstallBanner(false);}} style={{...s.btn,padding:"0.45rem 0.85rem",fontSize:"0.75rem",borderRadius:"8px"}}>Install</button>
-              </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.6rem"}}>
+              <div style={{width:"32px",height:"32px",borderRadius:"8px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1rem"}}>💪</div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>Add to Home Screen</div>
             </div>
+            <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","true");}} style={{width:"28px",height:"28px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"50%",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:"0.9rem",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,lineHeight:1}}>✕</button>
+          </div>
+          {installPrompt?(
+            <button onClick={async()=>{await installPrompt.prompt();setShowInstallBanner(false);}} style={{...s.btn,width:"100%",padding:"0.75rem",fontSize:"0.85rem",borderRadius:"10px"}}>
+              Install App →
+            </button>
           ):(
-            // iOS Safari instructions
             <div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>Add to Home Screen 📱</div>
-                <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","true");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"8px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.9rem",padding:"0.3rem 0.5rem",lineHeight:1}}>✕</button>
-              </div>
               {[
-                {step:"1",icon:"⬆️",text:'Tap the Share button at the bottom of Safari'},
-                {step:"2",icon:"➕",text:'"Add to Home Screen" → tap Add'},
-                {step:"3",icon:"🚀",text:"ForgeBody opens like a native app"},
-              ].map((s_,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:"0.65rem",marginBottom:"0.5rem"}}>
-                  <div style={{width:"22px",height:"22px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"0.65rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{s_.step}</div>
-                  <span style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif"}}>{s_.icon} {s_.text}</span>
+                {n:"1",icon:"⬆️",text:"Tap the Share button in Safari"},
+                {n:"2",icon:"➕",text:'Select "Add to Home Screen"'},
+                {n:"3",icon:"✅",text:'Tap "Add" — done!'},
+              ].map((step,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:"0.65rem",padding:"0.35rem 0",borderTop:i>0?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                  <div style={{width:"20px",height:"20px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"0.65rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{step.n}</div>
+                  <span style={{fontSize:"0.82rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif"}}>{step.icon} {step.text}</span>
                 </div>
               ))}
             </div>
