@@ -2949,47 +2949,153 @@ function WeeklyRecap({onNavigate}){
 function BadgesScreen(){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
   const pbs=Object.values(getPBs());
+  const measurements=JSON.parse(localStorage.getItem("fb_measurements")||"[]");
+  const photos=JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");
+  const meals=JSON.parse(localStorage.getItem("fb_meal_log")||"{}");
+  const water=JSON.parse(localStorage.getItem("fb_water_log")||"{}");
   const total=completedDates.length;
+  const profile=JSON.parse(localStorage.getItem("fb_profile")||"{}");
+
   let streak=0;
   for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))streak++;else if(i>0)break;}
 
-  const BADGES=[
-    {id:"first",icon:"🌱",name:"First Rep",desc:"Complete your first workout",unlocked:total>=1},
-    {id:"week",icon:"🔥",name:"On Fire",desc:"7-day workout streak",unlocked:streak>=7},
-    {id:"ten",icon:"💪",name:"10 Strong",desc:"Complete 10 workouts",unlocked:total>=10},
-    {id:"month",icon:"📅",name:"30 Day Warrior",desc:"Complete 30 workouts",unlocked:total>=30},
-    {id:"fifty",icon:"⚡",name:"Elite 50",desc:"Complete 50 workouts",unlocked:total>=50},
-    {id:"century",icon:"🏆",name:"Century Club",desc:"Complete 100 workouts",unlocked:total>=100},
-    {id:"pb1",icon:"🎯",name:"Personal Best",desc:"Set your first PB",unlocked:pbs.length>=1},
-    {id:"pb5",icon:"🏋️",name:"Strength Builder",desc:"Set 5 personal bests",unlocked:pbs.length>=5},
-    {id:"pb10",icon:"👑",name:"Record Breaker",desc:"Set 10 personal bests",unlocked:pbs.length>=10},
-    {id:"streak14",icon:"🌊",name:"Unstoppable",desc:"14-day streak",unlocked:streak>=14},
-    {id:"streak30",icon:"🔱",name:"Iron Will",desc:"30-day streak",unlocked:streak>=30},
-    {id:"streak100",icon:"💎",name:"Legend",desc:"100-day streak",unlocked:streak>=100},
+  const mealDays=Object.keys(meals).length;
+  const waterDays=Object.keys(water).length;
+  const hasWeight=profile.weight>0;
+
+  const CATEGORIES=[
+    {
+      name:"💪 Workout Warrior",
+      badges:[
+        {id:"first",icon:"🌱",name:"First Rep",desc:"Complete your first workout",unlocked:total>=1,rarity:"common"},
+        {id:"w3",icon:"🔥",name:"Warming Up",desc:"3 workouts done",unlocked:total>=3,rarity:"common"},
+        {id:"w5",icon:"💪",name:"High Five",desc:"5 workouts done",unlocked:total>=5,rarity:"common"},
+        {id:"w10",icon:"⚡",name:"10 Strong",desc:"10 workouts done",unlocked:total>=10,rarity:"rare"},
+        {id:"w25",icon:"🎯",name:"Committed",desc:"25 workouts done",unlocked:total>=25,rarity:"rare"},
+        {id:"w50",icon:"🏅",name:"Halfway Beast",desc:"50 workouts done",unlocked:total>=50,rarity:"epic"},
+        {id:"w100",icon:"🏆",name:"Century Club",desc:"100 workouts done",unlocked:total>=100,rarity:"epic"},
+        {id:"w250",icon:"👑",name:"Elite Athlete",desc:"250 workouts done",unlocked:total>=250,rarity:"legendary"},
+        {id:"w500",icon:"💎",name:"Unstoppable",desc:"500 workouts done",unlocked:total>=500,rarity:"legendary"},
+      ]
+    },
+    {
+      name:"🔥 Streak Master",
+      badges:[
+        {id:"s3",icon:"🌡️",name:"Heating Up",desc:"3-day streak",unlocked:streak>=3,rarity:"common"},
+        {id:"s7",icon:"🔥",name:"On Fire",desc:"7-day streak",unlocked:streak>=7,rarity:"common"},
+        {id:"s14",icon:"🌊",name:"Two Week Beast",desc:"14-day streak",unlocked:streak>=14,rarity:"rare"},
+        {id:"s21",icon:"⚡",name:"21 Day Habit",desc:"21-day streak",unlocked:streak>=21,rarity:"rare"},
+        {id:"s30",icon:"🔱",name:"Iron Will",desc:"30-day streak",unlocked:streak>=30,rarity:"epic"},
+        {id:"s60",icon:"🌟",name:"Diamond Mindset",desc:"60-day streak",unlocked:streak>=60,rarity:"epic"},
+        {id:"s100",icon:"💎",name:"Legend",desc:"100-day streak",unlocked:streak>=100,rarity:"legendary"},
+        {id:"s365",icon:"🌌",name:"One Full Year",desc:"365-day streak",unlocked:streak>=365,rarity:"legendary"},
+      ]
+    },
+    {
+      name:"🏋️ Strength Gains",
+      badges:[
+        {id:"pb1",icon:"🎯",name:"First PB",desc:"Set your first personal best",unlocked:pbs.length>=1,rarity:"common"},
+        {id:"pb3",icon:"📈",name:"Trending Up",desc:"Set 3 personal bests",unlocked:pbs.length>=3,rarity:"common"},
+        {id:"pb5",icon:"💪",name:"Strength Builder",desc:"Set 5 personal bests",unlocked:pbs.length>=5,rarity:"rare"},
+        {id:"pb10",icon:"🔨",name:"Iron Forged",desc:"Set 10 personal bests",unlocked:pbs.length>=10,rarity:"rare"},
+        {id:"pb20",icon:"👑",name:"Record Breaker",desc:"Set 20 personal bests",unlocked:pbs.length>=20,rarity:"epic"},
+        {id:"pb50",icon:"🌟",name:"Strength Legend",desc:"Set 50 personal bests",unlocked:pbs.length>=50,rarity:"legendary"},
+      ]
+    },
+    {
+      name:"🍽️ Nutrition Champion",
+      badges:[
+        {id:"meal1",icon:"🥗",name:"First Meal Log",desc:"Log your first meal day",unlocked:mealDays>=1,rarity:"common"},
+        {id:"meal7",icon:"🍱",name:"Meal Prep Master",desc:"Log meals for 7 days",unlocked:mealDays>=7,rarity:"rare"},
+        {id:"meal30",icon:"👨‍🍳",name:"Nutrition Ninja",desc:"Log meals for 30 days",unlocked:mealDays>=30,rarity:"epic"},
+        {id:"water1",icon:"💧",name:"Hydrated",desc:"Track water for first time",unlocked:waterDays>=1,rarity:"common"},
+        {id:"water7",icon:"🌊",name:"Water World",desc:"Track water for 7 days",unlocked:waterDays>=7,rarity:"rare"},
+        {id:"water30",icon:"🐋",name:"Deep Waters",desc:"Track water for 30 days",unlocked:waterDays>=30,rarity:"epic"},
+      ]
+    },
+    {
+      name:"📊 Progress Tracker",
+      badges:[
+        {id:"weight1",icon:"⚖️",name:"Weigh In",desc:"Log your first weight",unlocked:hasWeight,rarity:"common"},
+        {id:"measure1",icon:"📏",name:"Body Check",desc:"Log first measurements",unlocked:measurements.length>=1,rarity:"common"},
+        {id:"photo1",icon:"📸",name:"Before Shot",desc:"Take your first progress photo",unlocked:photos.length>=1,rarity:"common"},
+        {id:"photo4",icon:"🎞️",name:"Monthly Tracker",desc:"4 progress photos taken",unlocked:photos.length>=4,rarity:"rare"},
+        {id:"photo12",icon:"🎬",name:"Year in Review",desc:"12 progress photos taken",unlocked:photos.length>=12,rarity:"epic"},
+        {id:"measure6",icon:"🔬",name:"Body Scientist",desc:"Log measurements 6 times",unlocked:measurements.length>=6,rarity:"epic"},
+      ]
+    },
+    {
+      name:"🎖️ Special Achievements",
+      badges:[
+        {id:"earlybird",icon:"🌅",name:"Early Bird",desc:"Complete a workout before 7am",unlocked:completedDates.some(d=>new Date(d).getHours()<7),rarity:"rare"},
+        {id:"nightowl",icon:"🦉",name:"Night Owl",desc:"Complete a workout after 9pm",unlocked:completedDates.some(d=>new Date(d).getHours()>=21),rarity:"rare"},
+        {id:"weekend",icon:"🏖️",name:"No Days Off",desc:"Train on a weekend",unlocked:completedDates.some(d=>[0,6].includes(new Date(d).getDay())),rarity:"common"},
+        {id:"comeback",icon:"🔄",name:"Comeback King",desc:"Return after missing 7+ days",unlocked:(()=>{for(let i=1;i<completedDates.length;i++){const gap=new Date(completedDates[i])-new Date(completedDates[i-1]);if(gap>7*86400000)return true;}return false;})(),rarity:"rare"},
+        {id:"fullbody",icon:"🫀",name:"Full Body Day",desc:"Train every muscle group",unlocked:total>=10,rarity:"epic"},
+        {id:"anniversary",icon:"🎂",name:"One Month In",desc:"Member for 30+ days",unlocked:(()=>{const joined=profile.created_at||localStorage.getItem("fb_joined");if(!joined)return false;return(Date.now()-new Date(joined))>30*86400000;})(),rarity:"epic"},
+      ]
+    },
   ];
 
-  const unlocked=BADGES.filter(b=>b.unlocked).length;
+  const allBadges=CATEGORIES.flatMap(c=>c.badges);
+  const unlocked=allBadges.filter(b=>b.unlocked).length;
+  const RARITY_COLORS={common:"rgba(255,255,255,0.15)",rare:"rgba(59,130,246,0.3)",epic:"rgba(168,85,247,0.3)",legendary:"rgba(251,191,36,0.3)"};
+  const RARITY_TEXT={common:"rgba(255,255,255,0.4)",rare:"#60a5fa",epic:"#c084fc",legendary:"#fbbf24"};
 
   return(
     <div style={s.content}>
       <Eyebrow label="Achievements"/>
-      <h2 style={s.sectionTitle}>Badges</h2>
-      <p style={s.sectionSub}>Earn badges by hitting milestones.</p>
-      <div style={{...s.card,background:"rgba(204,255,0,0.06)",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem",textAlign:"center",padding:"1.25rem"}}>
-        <div style={{fontSize:"2.5rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{unlocked}<span style={{fontSize:"1.2rem",color:"rgba(255,255,255,0.4)"}}>/{BADGES.length}</span></div>
-        <div style={s.statLabel}>Badges Earned</div>
-        <div style={{...s.progressBar,marginTop:"0.75rem"}}><div style={{...s.progressFill,width:`${Math.round((unlocked/BADGES.length)*100)}%`}}/></div>
+      <h2 style={s.sectionTitle}>Badges & Achievements</h2>
+      <p style={s.sectionSub}>Level up your fitness game. Earn every badge.</p>
+
+      {/* Overall progress */}
+      <div style={{...s.card,background:"rgba(204,255,0,0.06)",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.5rem"}}>
+          <div>
+            <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>Total Progress</div>
+            <div style={{fontSize:"2rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{unlocked}<span style={{fontSize:"1rem",color:"rgba(255,255,255,0.3)"}}>/{allBadges.length}</span></div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.2rem"}}>Level</div>
+            <div style={{fontSize:"1.1rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,color:C.white}}>
+              {unlocked===0?"Rookie":unlocked<5?"Beginner":unlocked<10?"Athlete":unlocked<20?"Warrior":unlocked<30?"Champion":unlocked<40?"Legend":"God Mode 🔥"}
+            </div>
+          </div>
+        </div>
+        <div style={s.progressBar}><div style={{...s.progressFill,width:`${Math.round((unlocked/allBadges.length)*100)}%`}}/></div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:"0.4rem"}}>
+          <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{allBadges.length-unlocked} badges remaining</div>
+          <div style={{fontSize:"0.7rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase"}}>{Math.round((unlocked/allBadges.length)*100)}%</div>
+        </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem"}}>
-        {BADGES.map((badge,i)=>(
-          <div key={i} style={{...s.card,padding:"1rem",textAlign:"center",opacity:badge.unlocked?1:0.4,border:`1px solid ${badge.unlocked?"rgba(204,255,0,0.3)":"rgba(255,255,255,0.08)"}`,background:badge.unlocked?"rgba(204,255,0,0.06)":s.card.background,transition:"all 0.2s",marginBottom:0}}>
-            <div style={{fontSize:"2rem",marginBottom:"0.35rem"}}>{badge.icon}</div>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:badge.unlocked?C.white:"rgba(255,255,255,0.4)",marginBottom:"0.2rem",lineHeight:1.2}}>{badge.name}</div>
-            <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.3}}>{badge.desc}</div>
-            {badge.unlocked&&<div style={{...s.tag,fontSize:"0.58rem",marginTop:"0.5rem"}}>Earned ✓</div>}
+
+      {/* Rarity legend */}
+      <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",marginBottom:"0.75rem"}}>
+        {Object.entries(RARITY_TEXT).map(([r,col])=>(
+          <div key={r} style={{display:"flex",alignItems:"center",gap:"4px",background:"rgba(255,255,255,0.05)",borderRadius:"8px",padding:"3px 8px"}}>
+            <div style={{width:"6px",height:"6px",borderRadius:"50%",background:col}}/>
+            <span style={{fontSize:"0.62rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:col,fontFamily:"'Barlow Condensed',sans-serif"}}>{r}</span>
           </div>
         ))}
       </div>
+
+      {/* Categories */}
+      {CATEGORIES.map((cat,ci)=>(
+        <div key={ci} style={{marginBottom:"1.25rem"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.5rem",letterSpacing:"0.04em"}}>{cat.name} <span style={{color:"rgba(255,255,255,0.3)",fontWeight:400}}>· {cat.badges.filter(b=>b.unlocked).length}/{cat.badges.length}</span></div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
+            {cat.badges.map((badge,i)=>(
+              <div key={i} style={{background:badge.unlocked?RARITY_COLORS[badge.rarity]:"rgba(255,255,255,0.03)",border:`1px solid ${badge.unlocked?RARITY_TEXT[badge.rarity]+"60":"rgba(255,255,255,0.06)"}`,borderRadius:"14px",padding:"0.75rem 0.5rem",textAlign:"center",opacity:badge.unlocked?1:0.4,transition:"all 0.2s",position:"relative",overflow:"hidden"}}>
+                {badge.unlocked&&<div style={{position:"absolute",top:"4px",right:"4px",width:"10px",height:"10px",borderRadius:"50%",background:RARITY_TEXT[badge.rarity],boxShadow:`0 0 6px ${RARITY_TEXT[badge.rarity]}`}}/>}
+                <div style={{fontSize:"1.6rem",marginBottom:"0.3rem"}}>{badge.unlocked?badge.icon:"🔒"}</div>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.68rem",color:badge.unlocked?C.white:"rgba(255,255,255,0.3)",lineHeight:1.2,marginBottom:"0.2rem"}}>{badge.name}</div>
+                <div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",lineHeight:1.3}}>{badge.desc}</div>
+                {badge.unlocked&&<div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",color:RARITY_TEXT[badge.rarity],fontFamily:"'Barlow Condensed',sans-serif",marginTop:"0.3rem",letterSpacing:"0.06em"}}>{badge.rarity}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -3749,7 +3855,9 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
             <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>
               ForgeBody {profile?.plan==="lifetime"?"Lifetime — $199 one time":profile?.plan==="annual"?"Annual — $120/year":profile?.plan==="sixmonth"?"6 Month — $84":profile?.plan==="monthly"?"Monthly — $19/month":"Pro"} · Active
             </div>
-            <a href="https://wa.me/61493434408?text=Hi%20Joel%2C%20I%20need%20some%20help%20with%20ForgeBody%20please!" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em",textDecoration:"none"}}><span style={{fontSize:"1rem"}}>💬</span>Support via WhatsApp</a>
+            <a href="https://wa.me/61493434408?text=Hi%20Joel%2C%20I%20need%20some%20help%20with%20ForgeBody%20please!" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em",textDecoration:"none",borderBottom:"1px solid rgba(255,255,255,0.06)"}}><span style={{fontSize:"1rem"}}>💬</span>Support via WhatsApp</a>
+            <a href="https://wa.me/61493434408?text=Hi%20Joel!%20Here's%20my%20feedback%20on%20ForgeBody%3A%20" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em",textDecoration:"none",borderBottom:"1px solid rgba(255,255,255,0.06)"}}><span style={{fontSize:"1rem"}}>💡</span>Send Feedback</a>
+            <a href="https://wa.me/61493434408?text=Hi%20Joel!%20I'd%20love%20to%20refer%20a%20friend%20to%20ForgeBody.%20Can%20you%20help%3F" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"100%",padding:"0.6rem 0",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.04em",textDecoration:"none"}}><span style={{fontSize:"1rem"}}>🎁</span>Refer a Friend</a>
             <button onClick={onSignOut} style={{...s.btnGlass,width:"100%",marginTop:"0.5rem",fontSize:"0.82rem",color:"rgba(255,100,100,0.75)",borderColor:"rgba(255,100,100,0.15)"}}>Sign Out</button>
           </div>
         </div>
@@ -3791,12 +3899,27 @@ export default function ForgeBodyApp(){
   const[logoTaps,setLogoTaps]=useState(0);
 
   useEffect(()=>{
+    // Track referral code on first visit
+    const params=new URLSearchParams(window.location.search);
+    const ref=params.get("ref");
+    if(ref&&!localStorage.getItem("fb_ref_code")){
+      localStorage.setItem("fb_ref_code",ref);
+    }
+    // Android/Chrome install prompt
     window.addEventListener('beforeinstallprompt',(e)=>{
       e.preventDefault();
       setInstallPrompt(e);
-      // Show banner after 30 seconds if not dismissed
-      setTimeout(()=>setShowInstallBanner(true),30000);
+      setTimeout(()=>{
+        if(!localStorage.getItem("fb_install_dismissed"))setShowInstallBanner(true);
+      },15000);
     });
+    // iOS Safari detection — show manual instructions
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isSafari=/safari/i.test(navigator.userAgent)&&!/chrome/i.test(navigator.userAgent);
+    const isStandalone=window.navigator.standalone===true;
+    if(isIOS&&isSafari&&!isStandalone&&!localStorage.getItem("fb_install_dismissed")){
+      setTimeout(()=>setShowInstallBanner(true),15000);
+    }
   },[]);
 
   // Secret dev bypass — tap logo 7 times on landing page
@@ -3987,21 +4110,46 @@ export default function ForgeBodyApp(){
 
       <Sidebar open={sidebarOpen} onClose={()=>setSidebarOpen(false)} user={session.user} profile={profile} onNavigate={navigate} onSignOut={signOut}/>
 
-          {/* PWA install banner */}
-          {milestone&&<MilestoneAlert milestone={milestone} onDone={clearMilestone}/>}
+      {milestone&&<MilestoneAlert milestone={milestone} onDone={clearMilestone}/>}
       {showFirstTimeFlow&&<FirstTimeFlow onDone={()=>{setShowFirstTimeFlow(false);localStorage.setItem("fb_onboarded_flow","true");}}/>}
-            <div style={{position:"fixed",bottom:"80px",left:"1rem",right:"1rem",background:"rgba(10,10,10,0.95)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"1rem",zIndex:150,backdropFilter:"blur(20px)",display:"flex",alignItems:"center",gap:"0.75rem",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}}>
+
+      {/* PWA install banner - works on iOS and Android */}
+      {showInstallBanner&&(
+        <div style={{position:"fixed",bottom:"80px",left:"1rem",right:"1rem",background:"rgba(10,10,10,0.97)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"1rem",zIndex:300,backdropFilter:"blur(20px)",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
+          {installPrompt?(
+            // Android / Chrome
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
               <div style={{width:"40px",height:"40px",borderRadius:"10px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.2rem"}}>💪</div>
               <div style={{flex:1}}>
                 <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white,marginBottom:"0.15rem"}}>Add to Home Screen</div>
                 <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Install ForgeBody for the best experience</div>
               </div>
-              <div style={{display:"flex",gap:"0.4rem",flexShrink:0}}>
-                <button onClick={()=>setShowInstallBanner(false)} style={{background:"transparent",border:"none",color:"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"1.2rem",padding:"0.25rem"}}>×</button>
-                <button onClick={async()=>{if(installPrompt){await installPrompt.prompt();setShowInstallBanner(false);}}} style={{...s.btn,padding:"0.45rem 0.85rem",fontSize:"0.75rem",borderRadius:"8px"}}>Install</button>
+              <div style={{display:"flex",gap:"0.4rem",flexShrink:0,alignItems:"center"}}>
+                <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","true");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"8px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.9rem",padding:"0.3rem 0.5rem",lineHeight:1}}>✕</button>
+                <button onClick={async()=>{await installPrompt.prompt();setShowInstallBanner(false);}} style={{...s.btn,padding:"0.45rem 0.85rem",fontSize:"0.75rem",borderRadius:"8px"}}>Install</button>
               </div>
             </div>
+          ):(
+            // iOS Safari instructions
+            <div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>Add to Home Screen 📱</div>
+                <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","true");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"8px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.9rem",padding:"0.3rem 0.5rem",lineHeight:1}}>✕</button>
+              </div>
+              {[
+                {step:"1",icon:"⬆️",text:'Tap the Share button at the bottom of Safari'},
+                {step:"2",icon:"➕",text:'"Add to Home Screen" → tap Add'},
+                {step:"3",icon:"🚀",text:"ForgeBody opens like a native app"},
+              ].map((s_,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:"0.65rem",marginBottom:"0.5rem"}}>
+                  <div style={{width:"22px",height:"22px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"0.65rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{s_.step}</div>
+                  <span style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif"}}>{s_.icon} {s_.text}</span>
+                </div>
+              ))}
+            </div>
           )}
+        </div>
+      )}
 
       {inWorkout?(
         <WorkoutSession dayIndex={workoutDayIndex} customWorkout={customWorkoutData} onDone={()=>{setInWorkout(false);setCustomWorkoutData(null);setTab("train");}}/>
