@@ -565,6 +565,135 @@ const STRIPE_LINKS = {
 };
 
 // ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
+// ─── PRICING FIRST AUTH ──────────────────────────────────────────────────────
+// Shows pricing FIRST then captures email — removes friction from funnel
+function PricingFirstAuth({onSignedIn,onBack}){
+  const[step,setStep]=useState("pricing"); // pricing | auth
+  const[email,setEmail]=useState("");
+  const[sent,setSent]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[error,setError]=useState("");
+  const[selectedPlan,setSelectedPlan]=useState("monthly");
+
+  const PLANS=[
+    {id:"monthly",label:"Monthly",price:"$19",period:"/month",badge:"Most Popular",stripe:"https://buy.stripe.com/8x2cN5eIl3jA2tF6lA0Jq00",saving:null},
+    {id:"annual",label:"Annual",price:"$10",period:"/month",badge:"Save 47%",stripe:"https://buy.stripe.com/fZubJ12ZDdYe5FR25k0Jq02",saving:"Billed $120/year"},
+    {id:"lifetime",label:"Lifetime",price:"$199",period:"once",badge:"Best Value",stripe:"https://buy.stripe.com/dRm14ncAd1bs3xJeS60Jq03",saving:"Pay once, own forever"},
+  ];
+
+  async function handleGoogle(){
+    setLoading(true);setError("");
+    const redirectTo=window.location.origin+window.location.pathname;
+    const{error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo,queryParams:{access_type:"offline",prompt:"consent"}}});
+    if(error){setError(error.message);setLoading(false);}
+  }
+  async function handleMagic(){
+    if(!email)return;setLoading(true);setError("");
+    const redirectTo=window.location.origin+window.location.pathname;
+    const{error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo}});
+    setLoading(false);
+    if(error)setError(error.message);else setSent(true);
+  }
+
+  if(step==="pricing"){
+    const plan=PLANS.find(p=>p.id===selectedPlan);
+    return(
+      <div style={{minHeight:"100vh",background:"#0a0a0a",padding:"1.5rem 1.25rem",position:"relative"}}>
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 40% at 50% 0%,rgba(204,255,0,0.08) 0%,transparent 60%)",pointerEvents:"none"}}/>
+        <div style={{maxWidth:"440px",margin:"0 auto",position:"relative",zIndex:1}}>
+
+          {/* Back */}
+          <button onClick={onBack} style={{background:"transparent",border:"none",color:"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.82rem",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1.5rem",padding:0,display:"flex",alignItems:"center",gap:"0.4rem"}}>← Back</button>
+
+          {/* Header */}
+          <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+            <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>7-day free trial · No card needed</div>
+            <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:1}}>Choose Your Plan</div>
+          </div>
+
+          {/* Plans */}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.6rem",marginBottom:"1.25rem"}}>
+            {PLANS.map(p=>(
+              <div key={p.id} onClick={()=>setSelectedPlan(p.id)} style={{background:selectedPlan===p.id?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.04)",border:`2px solid ${selectedPlan===p.id?"#CCFF00":"rgba(255,255,255,0.1)"}`,borderRadius:"16px",padding:"1rem 1.25rem",cursor:"pointer",display:"flex",alignItems:"center",gap:"1rem",transition:"all 0.2s",position:"relative"}}>
+                {p.badge&&<div style={{position:"absolute",top:"-10px",right:"12px",background:selectedPlan===p.id?"#CCFF00":"rgba(255,255,255,0.15)",color:selectedPlan===p.id?"#000":"rgba(255,255,255,0.6)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.62rem",textTransform:"uppercase",letterSpacing:"0.08em",padding:"2px 8px",borderRadius:"20px"}}>{p.badge}</div>}
+                <div style={{width:"20px",height:"20px",borderRadius:"50%",border:`2px solid ${selectedPlan===p.id?"#CCFF00":"rgba(255,255,255,0.2)"}`,background:selectedPlan===p.id?"#CCFF00":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {selectedPlan===p.id&&<div style={{width:"8px",height:"8px",borderRadius:"50%",background:"#000"}}/>}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.95rem",color:"#fff"}}>{p.label}</div>
+                  {p.saving&&<div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>{p.saving}</div>}
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.5rem",color:selectedPlan===p.id?"#CCFF00":"#fff",lineHeight:1}}>{p.price}</div>
+                  <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{p.period}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* What's included */}
+          <div style={{background:"rgba(255,255,255,0.04)",borderRadius:"14px",padding:"1rem 1.1rem",marginBottom:"1.25rem"}}>
+            {["AI personalised workout programme","58+ meal plans with full recipes","Macro & calorie tracker","AI coach available 24/7","Progress tracking & personal bests","Cancel anytime — no contracts"].map((f,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.65rem",padding:"0.3rem 0",borderBottom:i<5?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                <span style={{color:"#CCFF00",fontSize:"0.85rem",flexShrink:0}}>✓</span>
+                <span style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.65)",fontFamily:"'Barlow',sans-serif"}}>{f}</span>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={()=>setStep("auth")} style={{width:"100%",padding:"1.1rem",background:"#CCFF00",color:"#000",border:"none",borderRadius:"14px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",boxShadow:"0 0 40px rgba(204,255,0,0.3)",marginBottom:"0.6rem"}}>
+            Start Free Trial →
+          </button>
+          <p style={{textAlign:"center",color:"rgba(255,255,255,0.25)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>7 days free · No credit card · Cancel anytime</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Auth step
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"1.5rem",position:"relative"}}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 10%,rgba(204,255,0,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
+      <div style={{width:"100%",maxWidth:"400px",position:"relative",zIndex:1}}>
+        <button onClick={()=>setStep("pricing")} style={{background:"transparent",border:"none",color:"rgba(255,255,255,0.4)",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.82rem",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"1.5rem",padding:0}}>← Back</button>
+        <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+          <div style={{fontSize:"1.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.35rem",lineHeight:1}}>One Last Step</div>
+          <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif"}}>Create your free account to get started</div>
+        </div>
+        <div style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"20px",padding:"1.5rem"}}>
+          {sent?(
+            <div style={{textAlign:"center",padding:"1rem 0"}}>
+              <div style={{fontSize:"2.5rem",marginBottom:"0.75rem"}}>📬</div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.5rem"}}>Check Your Email</div>
+              <div style={{color:"rgba(255,255,255,0.5)",fontSize:"0.85rem",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>We sent a link to <strong style={{color:"#fff"}}>{email}</strong><br/>Click it to start your free trial.</div>
+            </div>
+          ):(
+            <>
+              <button onClick={handleGoogle} disabled={loading} style={{width:"100%",padding:"0.9rem",background:"#fff",color:"#000",border:"none",borderRadius:"12px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.9rem",cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:"1rem",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.6rem"}}>
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue with Google
+              </button>
+              <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1rem"}}>
+                <div style={{flex:1,height:"1px",background:"rgba(255,255,255,0.1)"}}/>
+                <span style={{color:"rgba(255,255,255,0.3)",fontSize:"0.78rem",fontFamily:"'Barlow',sans-serif"}}>or</span>
+                <div style={{flex:1,height:"1px",background:"rgba(255,255,255,0.1)"}}/>
+              </div>
+              <input style={{...s.input,marginBottom:"0.75rem"}} type="email" placeholder="Enter your email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleMagic()}/>
+              {error&&<p style={{color:"#ff6b6b",fontSize:"0.82rem",marginBottom:"0.6rem",fontFamily:"'Barlow',sans-serif"}}>{error}</p>}
+              <button onClick={handleMagic} disabled={loading||!email} style={{width:"100%",padding:"0.9rem",background:"#CCFF00",color:"#000",border:"none",borderRadius:"12px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.9rem",cursor:"pointer",opacity:!email?0.5:1,letterSpacing:"0.06em",textTransform:"uppercase"}}>
+                {loading?"Sending...":"Get My Free Trial →"}
+              </button>
+              <p style={{textAlign:"center",color:"rgba(255,255,255,0.25)",fontSize:"0.72rem",marginTop:"0.85rem",fontFamily:"'Barlow',sans-serif"}}>
+                No password needed · No credit card · Cancel anytime
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AuthScreen({onSubscribe,preselectedPlan}){
   const[email,setEmail]=useState("");
   const[sent,setSent]=useState(false);
@@ -4075,13 +4204,12 @@ export default function ForgeBodyApp(){
 
   // Plans page — requires sign in first
   if(page==="plans"){
-    // If not signed in, go to sign in first, remember they want plans after
     if(!session){
       return(
         <div style={{background:"#0a0a0a",minHeight:"100vh"}}>
           <style>{GLASS}</style>
           <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
-          <AuthScreen preselectedPlan="plans" onSignedIn={()=>setPage("plans")}/>
+          <PricingFirstAuth onSignedIn={()=>setPage("plans")} onBack={()=>setPage("landing")}/>
         </div>
       );
     }
