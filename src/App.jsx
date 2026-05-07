@@ -2807,7 +2807,7 @@ function AICoach(){
       setMessages(prev=>[...prev,{role:"assistant",text:reply}]);
     }catch(e){
       console.error("AI Coach error:",e);
-      setMessages(prev=>[...prev,{role:"assistant",text:"I'm having trouble connecting right now. Please try again in a moment. If this keeps happening, the AI coach may need a top-up at console.anthropic.com 🔧"}]);
+      setMessages(prev=>[...prev,{role:"assistant",text:`Error: ${e.message}. Please try again.`}]);
     }
     setLoading(false);
   }
