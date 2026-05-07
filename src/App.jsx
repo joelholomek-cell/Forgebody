@@ -3798,6 +3798,33 @@ function ProgrammeSetup({onStart}){
 
   const GEN_STEPS=["Starting...","Building Foundation (weeks 1-4)...","Building Build Phase (weeks 5-8)...","Building Peak Phase (weeks 9-12)...","Finalising your programme..."];
 
+  async function callAI(systemPrompt,userPrompt){
+    // Call Anthropic directly from browser to avoid Vercel 10s timeout
+    const apiKey=window._fbAIKey;
+    if(!apiKey)throw new Error("AI not configured");
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key":apiKey,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body:JSON.stringify({
+        model:"claude-haiku-4-5-20251001",
+        max_tokens:4000,
+        system:systemPrompt,
+        messages:[{role:"user",content:userPrompt}]
+      })
+    });
+    if(!res.ok){const e=await res.json();throw new Error(e?.error?.message||"API error "+res.status);}
+    const d=await res.json();
+    const text=(d.content?.[0]?.text||"").replace(/```json|```/gi,"").trim();
+    const s=text.indexOf("{");const e=text.lastIndexOf("}");
+    if(s===-1||e===-1)throw new Error("No JSON in response");
+    return JSON.parse(text.slice(s,e+1));
+  }
+
   async function generate(){
     setGenerating(true);setError("");setGenStep(0);
     try{
@@ -3805,11 +3832,60 @@ function ProgrammeSetup({onStart}){
       const goalLabel=goal==="muscle"?"Build Muscle":goal==="fatloss"?"Burn Fat":"Athletic Performance";
       const equipLabel=equipment==="gym"?"Full gym (barbells, cables, dumbbells, machines)":"Home (dumbbells and bodyweight only)";
       const levelDesc={
-        beginner:"Beginner (0-1 years). Basic compound movements only. 3 sets. 10-12 reps. No Olympic lifts.",
-        intermediate:"Intermediate (1-3 years). Compound and isolation. 4 sets. 8-10 reps. Moderate intensity.",
-        advanced:"Advanced (3+ years). High intensity. 5 sets. 6-8 reps. Advanced techniques and tempos."
+        beginner:"Beginner. 3 sets. 10-12 reps. Basic compounds only.",
+        intermediate:"Intermediate. 4 sets. 8-10 reps. Compound and isolation.",
+        advanced:"Advanced. 5 sets. 6-8 reps. High intensity techniques."
       }[level];
-      const sys="You are an elite personal trainer. Return ONLY raw valid JSON starting with {. No markdown. No backticks. No text before or after the JSON.";
+      const sys="You are an elite personal trainer. Return ONLY raw valid JSON starting with {. No markdown. No backticks.";
+
+      // ─── PHASE 1 ──────────────────────────────────────────────────────
+      setGenStep(1);
+      const phase1=await callAI(sys,`Create weeks 1-4 Foundation phase for ${goalLabel}. ${days} days/week, ${equipLabel}, ${levelDesc}
+
+Return JSON: {"name":"...","tagline":"...","weeks":[{"week":1,"phase":"Foundation","theme":"4 words","tip":"coaching tip","mindset":"short quote","sessions":[{"day":"Day 1","label":"Push","focus":"chest","exercises":[{"name":"Bench Press","sets":"3","reps":"10-12","rest":"90 sec","cue":"tip"}]}]}]}
+
+Rules: 4 weeks numbered 1-4, ${days} sessions each, 4-5 exercises, Foundation=learn movements, progress each week`);
+      if(!phase1.weeks?.length)throw new Error("Phase 1 failed");
+
+      // ─── PHASE 2 ──────────────────────────────────────────────────────
+      setGenStep(2);
+      const lastW1=phase1.weeks[phase1.weeks.length-1];
+      const phase2=await callAI(sys,`Continue ${goalLabel} programme with weeks 5-8 Build phase. ${days} days/week, ${equipLabel}, ${levelDesc}
+
+Foundation just finished. Last week: ${JSON.stringify(lastW1.sessions?.map(s=>s.exercises?.map(e=>e.name+" "+e.sets+"x"+e.reps)))}
+
+Return JSON: {"weeks":[{"week":5,"phase":"Build","theme":"...","tip":"...","mindset":"...","sessions":[{"day":"Day 1","label":"...","focus":"...","exercises":[{"name":"...","sets":"4","reps":"8-10","rest":"75 sec","cue":"..."}]}]}]}
+
+Rules: 4 weeks numbered 5-8, ${days} sessions each, MORE volume than phase 1, rotate exercise variations`);
+      if(!phase2.weeks?.length)throw new Error("Phase 2 failed");
+
+      // ─── PHASE 3 ──────────────────────────────────────────────────────
+      setGenStep(3);
+      const lastW2=phase2.weeks[phase2.weeks.length-1];
+      const phase3=await callAI(sys,`Create weeks 9-12 Peak phase for ${goalLabel}. ${days} days/week, ${equipLabel}, ${levelDesc}
+
+Build phase just finished. Last week: ${JSON.stringify(lastW2.sessions?.map(s=>s.exercises?.map(e=>e.name+" "+e.sets+"x"+e.reps)))}
+
+Return JSON: {"weeks":[{"week":9,"phase":"Peak","theme":"...","tip":"...","mindset":"...","sessions":[{"day":"Day 1","label":"...","focus":"...","exercises":[{"name":"...","sets":"5","reps":"6-8","rest":"60 sec","cue":"..."}]}]}]}
+
+Rules: 4 weeks numbered 9-12, ${days} sessions each, MAXIMUM intensity, week 11=hardest, week 12=slight taper`);
+      if(!phase3.weeks?.length)throw new Error("Phase 3 failed");
+
+      setGenStep(4);
+      const allWeeks=[...phase1.weeks,...phase2.weeks,...phase3.weeks];
+      allWeeks.forEach((w,i)=>w.week=i+1);
+      const programme={name:phase1.name||goalLabel,tagline:phase1.tagline||"Your personalised 12-week transformation",weeks:allWeeks};
+      setGenStep(5);
+      setTimeout(()=>onStart({...cfg,programme,generatedAt:new Date().toISOString()}),500);
+
+    }catch(e){
+      console.error("Generation error:",e);
+      // Silent fallback to structured programme
+      const programme=buildProgramme({goal,days,equipment,level},null);
+      onStart({goal,days,equipment,level,programme,generatedAt:new Date().toISOString()});
+    }
+    setGenerating(false);
+  }
 
       // ─── PHASE 1: Foundation weeks 1-4 ───────────────────────────────
       setGenStep(1);
@@ -5418,6 +5494,8 @@ export default function ForgeBodyApp(){
   const[logoTaps,setLogoTaps]=useState(0);
 
   useEffect(()=>{
+    // Fetch API key for client-side programme generation (avoids Vercel timeout)
+    fetch("/api/programme-key").then(r=>r.json()).then(d=>{if(d.key)window._fbAIKey=d.key;}).catch(()=>{});
     // Track referral code on first visit
     const params=new URLSearchParams(window.location.search);
     const ref=params.get("ref");
