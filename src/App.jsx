@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"; // v2
+import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = "https://zuxsutxzockyqsisunww.supabase.co";
@@ -4223,7 +4223,7 @@ Start yours → forgebody.fit`;try{if(navigator.share)await navigator.share({tit
             return(
               <div key={i} className="card-anim" style={{animationDelay:`${i*0.06}s`,background:'rgba(255,255,255,0.05)',backdropFilter:'blur(15px)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:'18px',padding:'0.9rem 1rem',marginBottom:'0.5rem',display:'flex',alignItems:'center',gap:'0.9rem'}}>
                 {match?.gif
-                  ?<div style={{width:'50px',height:'50px',borderRadius:'12px',overflow:'hidden',background:'rgba(255,255,255,0.06)',flexShrink:0}}><ExerciseGif exercise={match} size={50}/></div>
+                  ?<div style={{width:'50px',height:'50px',borderRadius:'12px',overflow:'hidden',background:'rgba(255,255,255,0.06)',flexShrink:0}}><ExerciseAnimation exName={match.name} muscle={match.muscle}/></div>
                   :<div style={{width:'50px',height:'50px',borderRadius:'12px',background:GS.bg,border:`1px solid ${GS.border}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:'1.1rem',color:GS.accent}}>{i+1}</div>
                 }
                 <div style={{flex:1}}>
