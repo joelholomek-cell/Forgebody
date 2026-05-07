@@ -3873,28 +3873,25 @@ USER PROFILE:
 - Weight: ${profile.weight||75}kg
 - Diet: ${profile.diet||"standard"}
 
-Generate a complete 12-week programme as JSON. Return ONLY valid JSON, no markdown, no explanation.
+Generate a complete 12-week programme as JSON. Return ONLY valid JSON, no markdown, no explanation, no extra text before or after.
 
 The JSON structure must be exactly:
 {
-  "name": "Programme name (e.g. 'Muscle Builder' or 'Fat Furnace')",
+  "name": "Programme name",
   "tagline": "One line description",
   "weeks": [
     {
       "week": 1,
       "phase": "Foundation",
-      "theme": "Short theme for this week",
-      "tip": "Specific training tip for this week",
-      "mindset": "Motivational quote for this week",
-      "calorieAdjust": "e.g. +200 above maintenance or -300 below maintenance",
-      "proteinTarget": "e.g. 2.2g per kg bodyweight",
+      "tip": "Training tip for this week",
+      "mindset": "Short motivational quote",
       "sessions": [
         {
           "day": "Day 1",
           "label": "Push",
           "exercises": [
-            {"name": "Barbell Bench Press", "sets": "4", "reps": "8-10", "rest": "90 sec"},
-            {"name": "Incline Dumbbell Press", "sets": "3", "reps": "10-12", "rest": "75 sec"}
+            {"name": "Barbell Bench Press", "sets": "4", "reps": "8-10"},
+            {"name": "Incline Dumbbell Press", "sets": "3", "reps": "10-12"}
           ]
         }
       ]
@@ -3905,15 +3902,13 @@ The JSON structure must be exactly:
 Rules:
 - Exactly 12 weeks
 - Each week has exactly ${days} sessions
-- Weeks 1-4: Foundation phase, moderate volume
-- Weeks 5-8: Build phase, increased volume and intensity  
-- Weeks 9-12: Peak phase, maximum intensity
-- Progressive overload: add weight or reps each week
-- Use exercises appropriate for ${equipment} training
-- Level ${level}: ${level==="beginner"?"3 sets max, compound movements only, longer rest":level==="advanced"?"5 sets, advanced techniques, shorter rest":"4 sets, mix of compound and isolation"}
-- For fat loss include some HIIT sessions
-- For muscle add volume each week
-- For athletic add power and speed work`;
+- Weeks 1-4: Foundation, Weeks 5-8: Build, Weeks 9-12: Peak
+- Progressive overload each week — increase sets or reps
+- ${equipment==="gym"?"Use gym exercises (barbells, cables, machines)":"Use home exercises (dumbbells, bodyweight only)"}
+- ${level==="beginner"?"Beginner: 3 sets, compound movements only":"Intermediate/Advanced: 4-5 sets, compound + isolation"}
+- Keep exercise names short and exact
+- 4-6 exercises per session maximum
+- IMPORTANT: Generate all 12 weeks completely`;
 
       const res=await fetch("/api/chat",{
         method:"POST",
@@ -3926,8 +3921,17 @@ Rules:
       if(!res.ok)throw new Error("API error "+res.status);
       const data=await res.json();
       const text=data.content?.[0]?.text||"";
-      const clean=text.replace(/```json|```/g,"").trim();
+      if(!text)throw new Error("Empty response from AI");
+
+      // Clean and parse JSON — handle markdown fences and trailing content
+      let clean=text.replace(/```json|```/g,"").trim();
+      // Find the JSON object boundaries
+      const start=clean.indexOf("{");
+      const end=clean.lastIndexOf("}");
+      if(start===-1||end===-1)throw new Error("No JSON found in response");
+      clean=clean.slice(start,end+1);
       const programme=JSON.parse(clean);
+      if(!programme.weeks||programme.weeks.length===0)throw new Error("Invalid programme structure");
 
       // Save and start
       const cfg={goal,days,equipment,level,programme,generatedAt:new Date().toISOString()};
@@ -5564,18 +5568,27 @@ export default function ForgeBodyApp(){
       if(!data||!data.onboarded){setShowOnboarding(true);setPage("app");return;}
       setProfile(data);
 
-      // Send welcome email once
+      // Send welcome email once on first login
       if(!localStorage.getItem("fb_welcome_sent")){
         localStorage.setItem("fb_welcome_sent","true");
-        sendEmail("welcome",user.email,data.name||"Athlete");
+        sendEmail("welcome",user.email,data.name||"");
       }
 
-      // Send day 6 trial reminder
-      if(data.subscribed_at&&!localStorage.getItem("fb_trial_email_sent")){
+      // Day 3 check-in
+      if(data.subscribed_at&&!localStorage.getItem("fb_day3_sent")){
         const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
-        if(daysSince>=6){
-          localStorage.setItem("fb_trial_email_sent","true");
-          sendEmail("trial_ending",user.email,data.name||"Athlete");
+        if(daysSince>=3){
+          localStorage.setItem("fb_day3_sent","true");
+          sendEmail("day3",user.email,data.name||"");
+        }
+      }
+
+      // Week 1 celebration
+      if(data.subscribed_at&&!localStorage.getItem("fb_week1_sent")){
+        const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
+        if(daysSince>=7){
+          localStorage.setItem("fb_week1_sent","true");
+          sendEmail("week1",user.email,data.name||"");
         }
       }
 
