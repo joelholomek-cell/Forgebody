@@ -965,10 +965,13 @@ function RunFeature(){
       <Eyebrow label="Cardio"/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
         <h2 style={{...s.sectionTitle,marginBottom:0}}>Run Tracker</h2>
-        <div style={{display:"flex",background:"rgba(255,255,255,0.06)",borderRadius:"8px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.1)"}}>
-          {["km","mi"].map(u=>(
-            <button key={u} onClick={()=>{setUnit(u);localStorage.setItem("fb_run_unit",u);}} style={{padding:"0.3rem 0.65rem",background:unit===u?C.lime:"transparent",color:unit===u?"#000":"rgba(255,255,255,0.5)",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",textTransform:"uppercase"}}>{u}</button>
-          ))}
+        <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+          <span style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em"}}>Units:</span>
+          <div style={{display:"flex",background:"rgba(255,255,255,0.06)",borderRadius:"8px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.1)"}}>
+            {["km","mi"].map(u=>(
+              <button key={u} onClick={()=>{setUnit(u);localStorage.setItem("fb_run_unit",u);}} style={{padding:"0.3rem 0.65rem",background:unit===u?C.lime:"transparent",color:unit===u?"#000":"rgba(255,255,255,0.5)",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",textTransform:"uppercase"}}>{u}</button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1018,7 +1021,7 @@ function RunFeature(){
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem",marginBottom:"0.75rem"}}>
               <div>
                 <label style={s.label}>Distance ({unit})</label>
-                <input type="number" step="0.01" placeholder="5.00" value={dist} onChange={e=>setDist(e.target.value)} style={{...s.input,marginBottom:0,fontSize:"1.1rem",fontWeight:700}}/>
+                <input type="number" step="0.01" placeholder={`e.g. 5.00`} value={dist} onChange={e=>setDist(e.target.value)} style={{...s.input,marginBottom:0,fontSize:"1.1rem",fontWeight:700}}/>
               </div>
               <div>
                 <label style={s.label}>Time</label>
@@ -2310,6 +2313,9 @@ function HomeScreen({profile,user,onNavigate}){
           ))}
         </div>
       )}
+
+      {/* 12-WEEK PROGRAMME CARD */}
+      <ProgrammeHomeCard onNavigate={onNavigate}/>
 
       {/* STREAK PROTECTION */}
       <StreakProtectionAlert streak={streak} onNavigate={onNavigate}/>
@@ -3682,6 +3688,677 @@ function WeeklyRecap({onNavigate}){
   );
 }
 
+// ─── 12-WEEK TRANSFORMATION PROGRAMME ───────────────────────────────────────
+
+const PROGRAMME_DATA={
+  muscle:{
+    name:"Build Muscle",icon:"💪",color:"rgba(204,255,0,0.15)",accent:"#CCFF00",
+    phases:[
+      {weeks:[1,2,3,4],name:"Foundation",focus:"Build the base. Master the movements. 3 sets per exercise.",intensity:"60-70%"},
+      {weeks:[5,6,7,8],name:"Build",focus:"More volume. Heavier weights. Progressive overload every session.",intensity:"70-80%"},
+      {weeks:[9,10,11,12],name:"Peak",focus:"Maximum intensity. Push your limits. This is where you transform.",intensity:"80-90%"},
+    ],
+    weeklyTips:[
+      "Focus on form over weight. Perfect reps build perfect muscle.",
+      "Protein is your priority. Hit your target every single day.",
+      "Sleep 8 hours. Growth hormone peaks during deep sleep.",
+      "Track every set. What gets measured gets improved.",
+      "Increase weight by 2.5kg this week. Progressive overload is the law.",
+      "Add one extra set to each compound movement.",
+      "Deload slightly. Let your body absorb the gains.",
+      "Back to full intensity. You should feel fresh and strong.",
+      "Push harder than you ever have. Week 9 is where champions are made.",
+      "Match or beat last week's numbers on every lift.",
+      "Final push. Leave nothing in the tank.",
+      "Peak week. Maximum effort. You've earned this.",
+    ],
+    mindset:[
+      "You're building a habit that will last a lifetime.",
+      "Every rep is a vote for the person you want to become.",
+      "Discomfort is where growth lives. Lean into it.",
+      "Your body is responding. Trust the process.",
+      "Halfway there. The second half is where real change happens.",
+      "The gap between who you are and who you want to be is closing.",
+      "Recovery is part of the programme. Rest without guilt.",
+      "You've built a foundation. Now it's time to build a physique.",
+      "The hardest weeks produce the biggest results.",
+      "You're not the same person who started week 1.",
+      "One week left in Phase 3. Make it your best.",
+      "This is your transformation. Own every rep of it.",
+    ],
+  },
+  fatloss:{
+    name:"Burn Fat",icon:"🔥",color:"rgba(239,68,68,0.12)",accent:"#f87171",
+    phases:[
+      {weeks:[1,2,3,4],name:"Reset",focus:"Establish the caloric deficit. Build cardio base. 3 sessions per week.",intensity:"Moderate"},
+      {weeks:[5,6,7,8],name:"Accelerate",focus:"Increase intensity. Add HIIT. Tighten nutrition.",intensity:"High"},
+      {weeks:[9,10,11,12],name:"Shred",focus:"Maximum fat burning. Combine strength and cardio. Final push.",intensity:"Very High"},
+    ],
+    weeklyTips:[
+      "Eat in a 300-500 calorie deficit. Not more — you'll lose muscle.",
+      "Protein is your best friend. High protein preserves muscle while losing fat.",
+      "Add 20 min of walking daily. Low intensity cardio burns fat without stress.",
+      "Don't skip resistance training. Muscle burns calories at rest.",
+      "Add one HIIT session this week. 20 mins is enough.",
+      "Cut processed sugar. Switch to whole foods this week.",
+      "Drink 3L of water daily. Hunger is often thirst in disguise.",
+      "Track everything you eat. Awareness is the most powerful tool.",
+      "Increase cardio by 10 minutes this week.",
+      "Final nutrition push. Tighten your deficit slightly.",
+      "You can see the finish line. Don't stop now.",
+      "Last week. Make every session count.",
+    ],
+    mindset:[
+      "Fat loss is a marathon, not a sprint. Consistency beats intensity.",
+      "You're not on a diet. You're changing your relationship with food.",
+      "The scale is one metric. Energy, strength, and confidence matter more.",
+      "Cravings are temporary. Your goal is permanent.",
+      "You've lost weight and gained strength. That's rare. Be proud.",
+      "Halfway. The discipline you've built is more valuable than the weight you've lost.",
+      "Your body is fighting change. Your mind is stronger.",
+      "You look different. People are noticing.",
+      "The final phase is the hardest. It's also the most rewarding.",
+      "You've done what most people only talk about.",
+      "One week left. Your future self is watching.",
+      "You did it. Now maintain it.",
+    ],
+  },
+  athletic:{
+    name:"Athletic Performance",icon:"⚡",color:"rgba(59,130,246,0.12)",accent:"#60a5fa",
+    phases:[
+      {weeks:[1,2,3,4],name:"Conditioning",focus:"Build aerobic base. Improve mobility. Establish movement patterns.",intensity:"Moderate"},
+      {weeks:[5,6,7,8],name:"Power",focus:"Explosive movements. Speed work. Strength foundation.",intensity:"High"},
+      {weeks:[9,10,11,12],name:"Peak Performance",focus:"Sport-specific training. Max power output. Competition ready.",intensity:"Maximum"},
+    ],
+    weeklyTips:[
+      "Mobility first. 10 min warm up before every session.",
+      "Focus on compound movements. Squats, deadlifts, pulls.",
+      "Add plyometrics. Box jumps and jump squats build explosive power.",
+      "Track your sprint times and jump height. Measure athleticism.",
+      "Power cleans and Olympic movements this phase.",
+      "Agility ladder work. Add 15 mins before each session.",
+      "Active recovery. Swim or cycle at low intensity.",
+      "Back to full power. You should feel explosive.",
+      "Peak week prep. Maximum intensity starts now.",
+      "Beat every metric from week 1. You're a different athlete.",
+      "Taper slightly. Save energy for week 12.",
+      "Peak performance week. Show what 12 weeks built.",
+    ],
+    mindset:[
+      "Athletes are built in training. Champions are built in the mind.",
+      "Every session makes you faster, stronger, more powerful.",
+      "Pain is weakness leaving the body.",
+      "You don't rise to the occasion. You fall to your level of training.",
+      "Halfway. Your athleticism has already transformed.",
+      "Champions train when they don't feel like it.",
+      "Your body needs to recover to perform. Rest is training.",
+      "You're entering the performance phase. Everything changes now.",
+      "Maximum intensity. This is what you trained for.",
+      "Your metrics don't lie. You're objectively a better athlete.",
+      "One week. Leave your legacy on every rep.",
+      "Peak performance. This is who you are now.",
+    ],
+  },
+};
+
+const WEEK_WORKOUTS={
+  muscle:{
+    gym:{
+      days3:[
+        {day:"Day 1",label:"Push",exercises:[{name:"Barbell Bench Press",sets:"3",reps:"8-10"},{name:"Incline Dumbbell Press",sets:"3",reps:"10-12"},{name:"Overhead Press",sets:"3",reps:"8-10"},{name:"Dumbbell Lateral Raise",sets:"3",reps:"12-15"},{name:"Tricep Pushdown",sets:"3",reps:"12-15"}]},
+        {day:"Day 2",label:"Pull",exercises:[{name:"Deadlift",sets:"3",reps:"5-6"},{name:"Barbell Row",sets:"3",reps:"8-10"},{name:"Lat Pulldown",sets:"3",reps:"10-12"},{name:"Face Pull",sets:"3",reps:"15-20"},{name:"Barbell Curl",sets:"3",reps:"10-12"}]},
+        {day:"Day 3",label:"Legs",exercises:[{name:"Barbell Back Squat",sets:"3",reps:"8-10"},{name:"Romanian Deadlift",sets:"3",reps:"10-12"},{name:"Leg Press",sets:"3",reps:"12-15"},{name:"Leg Extension",sets:"3",reps:"15-20"},{name:"Standing Calf Raise",sets:"4",reps:"15-20"}]},
+      ],
+      days4:[
+        {day:"Day 1",label:"Push A",exercises:[{name:"Barbell Bench Press",sets:"4",reps:"6-8"},{name:"Incline Dumbbell Press",sets:"3",reps:"10-12"},{name:"Overhead Press",sets:"3",reps:"8-10"},{name:"Cable Lateral Raise",sets:"3",reps:"12-15"},{name:"Skull Crusher",sets:"3",reps:"10-12"}]},
+        {day:"Day 2",label:"Pull A",exercises:[{name:"Deadlift",sets:"4",reps:"4-6"},{name:"Barbell Row",sets:"4",reps:"6-8"},{name:"Lat Pulldown",sets:"3",reps:"10-12"},{name:"Face Pull",sets:"3",reps:"15-20"},{name:"Hammer Curl",sets:"3",reps:"10-12"}]},
+        {day:"Day 3",label:"Legs",exercises:[{name:"Barbell Back Squat",sets:"4",reps:"6-8"},{name:"Romanian Deadlift",sets:"3",reps:"10-12"},{name:"Leg Press",sets:"3",reps:"12-15"},{name:"Lying Leg Curl",sets:"3",reps:"12-15"},{name:"Standing Calf Raise",sets:"4",reps:"15-20"}]},
+        {day:"Day 4",label:"Push B",exercises:[{name:"Incline Barbell Press",sets:"4",reps:"6-8"},{name:"Flat Dumbbell Press",sets:"3",reps:"10-12"},{name:"Arnold Press",sets:"3",reps:"10-12"},{name:"Rear Delt Fly",sets:"3",reps:"15-20"},{name:"Close-Grip Bench Press",sets:"3",reps:"10-12"}]},
+      ],
+      days5:[
+        {day:"Day 1",label:"Chest",exercises:[{name:"Barbell Bench Press",sets:"4",reps:"6-8"},{name:"Incline Dumbbell Press",sets:"3",reps:"10-12"},{name:"Cable Chest Fly",sets:"3",reps:"12-15"},{name:"Dips (chest lean)",sets:"3",reps:"10-12"}]},
+        {day:"Day 2",label:"Back",exercises:[{name:"Deadlift",sets:"4",reps:"4-6"},{name:"Barbell Row",sets:"4",reps:"6-8"},{name:"Lat Pulldown",sets:"3",reps:"10-12"},{name:"Seated Cable Row",sets:"3",reps:"10-12"},{name:"Face Pull",sets:"3",reps:"15-20"}]},
+        {day:"Day 3",label:"Shoulders",exercises:[{name:"Overhead Press",sets:"4",reps:"6-8"},{name:"Dumbbell Lateral Raise",sets:"4",reps:"12-15"},{name:"Rear Delt Fly",sets:"3",reps:"15-20"},{name:"Arnold Press",sets:"3",reps:"10-12"},{name:"Barbell Shrug",sets:"3",reps:"12-15"}]},
+        {day:"Day 4",label:"Legs",exercises:[{name:"Barbell Back Squat",sets:"4",reps:"6-8"},{name:"Romanian Deadlift",sets:"3",reps:"10-12"},{name:"Leg Press",sets:"3",reps:"12-15"},{name:"Lying Leg Curl",sets:"3",reps:"12-15"},{name:"Standing Calf Raise",sets:"4",reps:"15-20"}]},
+        {day:"Day 5",label:"Arms",exercises:[{name:"Barbell Curl",sets:"4",reps:"8-10"},{name:"Hammer Curl",sets:"3",reps:"10-12"},{name:"Preacher Curl",sets:"3",reps:"10-12"},{name:"Close-Grip Bench Press",sets:"4",reps:"8-10"},{name:"Skull Crusher",sets:"3",reps:"10-12"},{name:"Tricep Pushdown",sets:"3",reps:"12-15"}]},
+      ],
+    },
+  },
+};
+
+function getProgrammePhase(weekNum,goal){
+  const prog=PROGRAMME_DATA[goal]||PROGRAMME_DATA.muscle;
+  return prog.phases.find(p=>p.weeks.includes(weekNum))||prog.phases[0];
+}
+
+function getProgrammeWorkouts(weekNum,goal,equipment,days){
+  const baseWorkouts=WEEK_WORKOUTS[goal]?.[equipment]?.[`days${days}`]||WEEK_WORKOUTS.muscle.gym[`days${days}`]||WEEK_WORKOUTS.muscle.gym.days4;
+  // Progressive overload: increase sets/reps based on week
+  const multiplier=weekNum<=4?1:weekNum<=8?1.1:1.2;
+  return baseWorkouts.map(day=>({
+    ...day,
+    exercises:day.exercises.map(ex=>{
+      if(weekNum<=4)return ex;
+      if(weekNum<=8)return{...ex,sets:String(parseInt(ex.sets)+1)};
+      return{...ex,sets:String(parseInt(ex.sets)+1),reps:ex.reps.replace(/\d+/g,n=>String(Math.max(parseInt(n)-1,1)))};
+    })
+  }));
+}
+
+function ProgrammeSetup({onStart}){
+  const[goal,setGoal]=useState("muscle");
+  const[days,setDays]=useState(4);
+  const[equipment,setEquipment]=useState("gym");
+  const[level,setLevel]=useState("intermediate");
+  const[generating,setGenerating]=useState(false);
+  const[error,setError]=useState("");
+
+  const GOALS=[
+    {id:"muscle",icon:"💪",name:"Build Muscle",desc:"Add size and strength over 12 weeks"},
+    {id:"fatloss",icon:"🔥",name:"Burn Fat",desc:"Lose fat while preserving muscle"},
+    {id:"athletic",icon:"⚡",name:"Athletic Performance",desc:"Speed, power and conditioning"},
+  ];
+
+  async function generate(){
+    setGenerating(true);setError("");
+    try{
+      const profile=JSON.parse(localStorage.getItem("fb_profile")||"{}");
+      const prompt=`You are ForgeBody AI — an expert personal trainer generating a personalised 12-week transformation programme.
+
+USER PROFILE:
+- Goal: ${goal==="muscle"?"Build Muscle":goal==="fatloss"?"Burn Fat":"Athletic Performance"}
+- Training days per week: ${days}
+- Equipment: ${equipment==="gym"?"Full gym (barbells, dumbbells, cables, machines)":"Home (dumbbells, bodyweight only)"}
+- Level: ${level}
+- Weight: ${profile.weight||75}kg
+- Diet: ${profile.diet||"standard"}
+
+Generate a complete 12-week programme as JSON. Return ONLY valid JSON, no markdown, no explanation.
+
+The JSON structure must be exactly:
+{
+  "name": "Programme name (e.g. 'Muscle Builder' or 'Fat Furnace')",
+  "tagline": "One line description",
+  "weeks": [
+    {
+      "week": 1,
+      "phase": "Foundation",
+      "theme": "Short theme for this week",
+      "tip": "Specific training tip for this week",
+      "mindset": "Motivational quote for this week",
+      "calorieAdjust": "e.g. +200 above maintenance or -300 below maintenance",
+      "proteinTarget": "e.g. 2.2g per kg bodyweight",
+      "sessions": [
+        {
+          "day": "Day 1",
+          "label": "Push",
+          "exercises": [
+            {"name": "Barbell Bench Press", "sets": "4", "reps": "8-10", "rest": "90 sec"},
+            {"name": "Incline Dumbbell Press", "sets": "3", "reps": "10-12", "rest": "75 sec"}
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Exactly 12 weeks
+- Each week has exactly ${days} sessions
+- Weeks 1-4: Foundation phase, moderate volume
+- Weeks 5-8: Build phase, increased volume and intensity  
+- Weeks 9-12: Peak phase, maximum intensity
+- Progressive overload: add weight or reps each week
+- Use exercises appropriate for ${equipment} training
+- Level ${level}: ${level==="beginner"?"3 sets max, compound movements only, longer rest":level==="advanced"?"5 sets, advanced techniques, shorter rest":"4 sets, mix of compound and isolation"}
+- For fat loss include some HIIT sessions
+- For muscle add volume each week
+- For athletic add power and speed work`;
+
+      const res=await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          system:"You are a professional personal trainer. Return only valid JSON with no markdown formatting.",
+          messages:[{role:"user",content:prompt}]
+        })
+      });
+      if(!res.ok)throw new Error("API error "+res.status);
+      const data=await res.json();
+      const text=data.content?.[0]?.text||"";
+      const clean=text.replace(/```json|```/g,"").trim();
+      const programme=JSON.parse(clean);
+
+      // Save and start
+      const cfg={goal,days,equipment,level,programme,generatedAt:new Date().toISOString()};
+      onStart(cfg);
+    }catch(e){
+      console.error(e);
+      setError("Couldn't generate your programme. Check your AI coach is active and try again.");
+    }
+    setGenerating(false);
+  }
+
+  if(generating){
+    return(
+      <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center",position:"relative"}}>
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 30%,rgba(204,255,0,0.08) 0%,transparent 60%)",pointerEvents:"none"}}/>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontSize:"4rem",marginBottom:"1.5rem",animation:"pulse 1.5s ease-in-out infinite"}}>🤖</div>
+          <div style={{fontSize:"1.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.5rem",lineHeight:1}}>Building Your<br/><span style={{color:C.lime}}>Programme</span></div>
+          <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"2rem",lineHeight:1.6}}>Our AI is creating your personalised<br/>12-week transformation plan...</div>
+          <LoadingDots/>
+          <style>{`@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",padding:"1.5rem 1.25rem 3rem",position:"relative"}}>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 40% at 50% 0%,rgba(204,255,0,0.07) 0%,transparent 60%)",pointerEvents:"none"}}/>
+      <div style={{maxWidth:"440px",margin:"0 auto",position:"relative",zIndex:1}}>
+        <div style={{marginBottom:"2rem",textAlign:"center"}}>
+          <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.5rem"}}>AI-Personalised For You</div>
+          <div style={{fontSize:"2.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:0.9,marginBottom:"0.5rem"}}>12-WEEK<br/><span style={{color:C.lime}}>PROGRAMME</span></div>
+          <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Answer 4 questions. Claude builds your exact plan.</div>
+        </div>
+
+        {/* Goal */}
+        <div style={{marginBottom:"1.25rem"}}>
+          <div style={{...s.label,marginBottom:"0.75rem",color:C.white,fontSize:"0.78rem"}}>What's your goal?</div>
+          {GOALS.map(g=>(
+            <div key={g.id} onClick={()=>setGoal(g.id)} style={{display:"flex",alignItems:"center",gap:"1rem",background:goal===g.id?PROGRAMME_DATA[g.id].color:"rgba(255,255,255,0.04)",border:`2px solid ${goal===g.id?PROGRAMME_DATA[g.id].accent:"rgba(255,255,255,0.08)"}`,borderRadius:"16px",padding:"1rem 1.1rem",cursor:"pointer",marginBottom:"0.5rem",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+              <div style={{width:"42px",height:"42px",borderRadius:"12px",background:PROGRAMME_DATA[g.id].color,border:`1px solid ${PROGRAMME_DATA[g.id].accent}40`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.3rem"}}>{g.icon}</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.95rem",color:"#fff"}}>{g.name}</div>
+                <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>{g.desc}</div>
+              </div>
+              {goal===g.id&&<div style={{width:"20px",height:"20px",borderRadius:"50%",background:PROGRAMME_DATA[g.id].accent,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg></div>}
+            </div>
+          ))}
+        </div>
+
+        {/* Days */}
+        <div style={{marginBottom:"1.25rem"}}>
+          <div style={{...s.label,marginBottom:"0.75rem",color:C.white,fontSize:"0.78rem"}}>How many days per week?</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0.5rem"}}>
+            {[{n:3,desc:"3 days"},{n:4,desc:"4 days"},{n:5,desc:"5 days"}].map(d=>(
+              <button key={d.n} onClick={()=>setDays(d.n)} style={{padding:"1rem 0.5rem",background:days===d.n?"rgba(204,255,0,0.1)":"rgba(255,255,255,0.04)",border:`2px solid ${days===d.n?C.lime:"rgba(255,255,255,0.08)"}`,borderRadius:"14px",cursor:"pointer",textAlign:"center",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+                <div style={{fontSize:"1.8rem",fontWeight:900,color:days===d.n?C.lime:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{d.n}</div>
+                <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.06em"}}>days/wk</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Equipment */}
+        <div style={{marginBottom:"1.25rem"}}>
+          <div style={{...s.label,marginBottom:"0.75rem",color:C.white,fontSize:"0.78rem"}}>Where do you train?</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem"}}>
+            {[{id:"gym",icon:"🏋️",label:"Gym",desc:"Full equipment"},{id:"home",icon:"🏠",label:"Home",desc:"Dumbbells & bodyweight"}].map(e=>(
+              <button key={e.id} onClick={()=>setEquipment(e.id)} style={{padding:"1rem",background:equipment===e.id?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.04)",border:`2px solid ${equipment===e.id?C.lime:"rgba(255,255,255,0.08)"}`,borderRadius:"14px",cursor:"pointer",textAlign:"center",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+                <div style={{fontSize:"1.8rem",marginBottom:"0.25rem"}}>{e.icon}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.85rem",color:equipment===e.id?C.lime:"rgba(255,255,255,0.5)"}}>{e.label}</div>
+                <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{e.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Level */}
+        <div style={{marginBottom:"1.5rem"}}>
+          <div style={{...s.label,marginBottom:"0.75rem",color:C.white,fontSize:"0.78rem"}}>Your experience level?</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0.5rem"}}>
+            {[{id:"beginner",icon:"🌱",label:"Beginner",desc:"0-1 years"},{id:"intermediate",icon:"💪",label:"Intermediate",desc:"1-3 years"},{id:"advanced",icon:"👑",label:"Advanced",desc:"3+ years"}].map(l=>(
+              <button key={l.id} onClick={()=>setLevel(l.id)} style={{padding:"0.85rem 0.4rem",background:level===l.id?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.04)",border:`2px solid ${level===l.id?C.lime:"rgba(255,255,255,0.08)"}`,borderRadius:"14px",cursor:"pointer",textAlign:"center",transition:"all 0.2s",backdropFilter:"blur(10px)"}}>
+                <div style={{fontSize:"1.3rem",marginBottom:"0.2rem"}}>{l.icon}</div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.65rem",color:level===l.id?C.lime:"rgba(255,255,255,0.4)",letterSpacing:"0.04em"}}>{l.label}</div>
+                <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{l.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error&&<div style={{background:"rgba(255,60,60,0.1)",border:"1px solid rgba(255,60,60,0.2)",borderRadius:"10px",padding:"0.75rem 1rem",marginBottom:"0.75rem",fontSize:"0.82rem",color:"rgba(255,100,100,0.9)",fontFamily:"'Barlow',sans-serif"}}>{error}</div>}
+
+        <button onClick={generate} style={{width:"100%",padding:"1.1rem",background:C.lime,color:"#000",border:"none",borderRadius:"14px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",boxShadow:"0 0 40px rgba(204,255,0,0.25)",marginBottom:"0.75rem"}}>
+          Generate My Programme →
+        </button>
+        <p style={{textAlign:"center",color:"rgba(255,255,255,0.2)",fontSize:"0.72rem",fontFamily:"'Barlow',sans-serif"}}>AI-generated in seconds · Unique to you · Progressive overload built in</p>
+      </div>
+    </div>
+  );
+}
+
+function ProgrammeScreen({onStartWorkout}){
+  const[config,setConfig]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_programme_config")||"null");}catch{return null;}});
+  const[currentWeek,setCurrentWeek]=useState(()=>parseInt(localStorage.getItem("fb_programme_week")||"1"));
+  const[currentDay,setCurrentDay]=useState(()=>parseInt(localStorage.getItem("fb_programme_day")||"0"));
+  const[completedSessions,setCompletedSessions]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_programme_completed")||"[]");}catch{return[];}});
+  const[showDay,setShowDay]=useState(null);
+  const[showComplete,setShowComplete]=useState(false);
+
+  function startProgramme(cfg){
+    localStorage.setItem("fb_programme_config",JSON.stringify(cfg));
+    localStorage.setItem("fb_programme_week","1");
+    localStorage.setItem("fb_programme_day","0");
+    setConfig(cfg);setCurrentWeek(1);setCurrentDay(0);
+  }
+
+  function markSessionDone(weekNum,dayIdx){
+    const key=`w${weekNum}d${dayIdx}`;
+    if(completedSessions.includes(key))return;
+    const updated=[...completedSessions,key];
+    setCompletedSessions(updated);
+    localStorage.setItem("fb_programme_completed",JSON.stringify(updated));
+    // Advance to next day
+    const workouts=getProgrammeWorkouts(weekNum,config.goal,config.equipment,config.days);
+    if(dayIdx<workouts.length-1){
+      const nextDay=dayIdx+1;
+      setCurrentDay(nextDay);
+      localStorage.setItem("fb_programme_day",String(nextDay));
+    } else if(weekNum<12){
+      const nextWeek=weekNum+1;
+      setCurrentWeek(nextWeek);
+      setCurrentDay(0);
+      localStorage.setItem("fb_programme_week",String(nextWeek));
+      localStorage.setItem("fb_programme_day","0");
+    } else {
+      setShowComplete(true);
+    }
+    setShowDay(null);
+  }
+
+  function resetProgramme(){
+    localStorage.removeItem("fb_programme_config");
+    localStorage.removeItem("fb_programme_week");
+    localStorage.removeItem("fb_programme_day");
+    localStorage.removeItem("fb_programme_completed");
+    setConfig(null);setCurrentWeek(1);setCurrentDay(0);setCompletedSessions([]);
+  }
+
+  if(!config)return <ProgrammeSetup onStart={startProgramme}/>;
+
+  const prog=PROGRAMME_DATA[config?.goal]||PROGRAMME_DATA.muscle;
+  const aiProg=config?.programme;
+  const currentWeekData=aiProg?.weeks?.[currentWeek-1];
+  const workouts=currentWeekData?.sessions||getProgrammeWorkouts(currentWeek,config?.goal,config?.equipment,config?.days);
+  const todayWorkout=workouts[currentDay];
+  const totalSessions=12*config?.days;
+  const completedCount=completedSessions.length;
+  const progressPct=Math.round((completedCount/totalSessions)*100);
+  const weekTip=currentWeekData?.tip||prog.weeklyTips?.[currentWeek-1]||"";
+  const mindset=currentWeekData?.mindset||prog.mindset?.[currentWeek-1]||"";
+  const phase=currentWeekData?.phase||getProgrammePhase(currentWeek,config?.goal)?.name||"Foundation";
+
+  // Completion certificate screen
+  if(showComplete){
+    const completedAt=new Date().toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"});
+    const profile=JSON.parse(localStorage.getItem("fb_profile")||"{}");
+    return(
+      <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",position:"relative",textAlign:"center"}}>
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 30%,rgba(204,255,0,0.12) 0%,transparent 60%)",pointerEvents:"none"}}/>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:"380px"}}>
+          {/* Certificate card */}
+          <div style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"24px",padding:"2rem 1.5rem",marginBottom:"1.25rem",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:"-30px",left:"-30px",width:"120px",height:"120px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(25px)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:"-30px",right:"-30px",width:"100px",height:"100px",borderRadius:"50%",background:"rgba(204,255,0,0.06)",filter:"blur(20px)",pointerEvents:"none"}}/>
+
+            {/* ForgeBody logo */}
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.3)",marginBottom:"1rem"}}>FORGE<span style={{color:C.lime}}>/</span>BODY</div>
+
+            <div style={{fontSize:"0.72rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.75rem"}}>Certificate of Completion</div>
+
+            <div style={{fontSize:"3.5rem",marginBottom:"0.75rem"}}>🏆</div>
+
+            <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.35rem"}}>This certifies that</div>
+            <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,lineHeight:1,marginBottom:"0.35rem"}}>{profile.name||"Athlete"}</div>
+            <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>has successfully completed</div>
+
+            <div style={{background:prog.color,border:`1px solid ${prog.accent}40`,borderRadius:"12px",padding:"0.75rem 1rem",marginBottom:"0.75rem"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1.1rem",color:C.white}}>{prog.icon} {aiProg?.name||prog.name}</div>
+              <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif"}}>12 Weeks · {config?.days*12} Sessions · {config?.level}</div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0.5rem",marginBottom:"1rem"}}>
+              {[{n:"12",l:"Weeks"},{n:config?.days*12,l:"Sessions"},{n:"100%",l:"Complete"}].map((x,i)=>(
+                <div key={i} style={{background:"rgba(0,0,0,0.3)",borderRadius:"10px",padding:"0.6rem",textAlign:"center"}}>
+                  <div style={{fontSize:"1.3rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+                  <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>Completed {completedAt}</div>
+          </div>
+
+          {/* Share button */}
+          <button onClick={async()=>{
+            const text=`I just completed the ForgeBody 12-Week ${prog.name} Programme! 💪🏆\n${config?.days*12} sessions. Zero excuses.\nStart your transformation free → forgebody.fit`;
+            try{if(navigator.share)await navigator.share({title:"ForgeBody Certificate",text});else await navigator.clipboard.writeText(text);}catch(e){}
+          }} style={{width:"100%",padding:"0.9rem",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"12px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",color:C.white,marginBottom:"0.5rem"}}>
+            Share My Achievement 📤
+          </button>
+
+          <button onClick={()=>resetProgramme()} style={{width:"100%",padding:"1rem",background:C.lime,color:"#000",border:"none",borderRadius:"12px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.95rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer"}}>
+            Start New Programme →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Day detail view
+  if(showDay!==null){
+    const dayWorkout=workouts[showDay];
+    const sessionKey=`w${currentWeek}d${showDay}`;
+    const isDone=completedSessions.includes(sessionKey);
+    return(
+      <div style={{minHeight:"100vh",background:"#0a0a0a",padding:"1.5rem 1.25rem",position:"relative"}}>
+        <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 80% 40% at 15% 5%,${prog.color} 0%,transparent 55%)`,pointerEvents:"none"}}/>
+        <div style={{maxWidth:"440px",margin:"0 auto",position:"relative",zIndex:1}}>
+          <button onClick={()=>setShowDay(null)} style={{...s.btnSm,marginBottom:"1.25rem"}}>← Back</button>
+          <Eyebrow label={`Week ${currentWeek} · ${phase.name}`}/>
+          <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.25rem",lineHeight:1}}>{dayWorkout.label}</div>
+          <div style={{fontSize:"0.82rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1.25rem"}}>{dayWorkout.exercises.length} exercises · {phase.intensity} intensity</div>
+
+          {dayWorkout.exercises.map((ex,i)=>(
+            <div key={i} style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"1rem 1.1rem",marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
+              <div style={{width:"36px",height:"36px",borderRadius:"10px",background:prog.color,border:`1px solid ${prog.accent}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.88rem",color:prog.accent}}>{i+1}</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.9rem",color:"#fff",marginBottom:"0.2rem"}}>{ex.name}</div>
+                <div style={{display:"flex",gap:"0.5rem"}}>
+                  <span style={s.tag}>{ex.sets} sets</span>
+                  <span style={s.tagGray}>{ex.reps} reps</span>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {!isDone?(
+            <button onClick={()=>markSessionDone(currentWeek,showDay)} style={{width:"100%",padding:"1.1rem",background:prog.accent,color:prog.accent===C.lime?"#000":"#fff",border:"none",borderRadius:"14px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",boxShadow:`0 0 30px ${prog.accent}30`,marginTop:"0.75rem"}}>
+              Mark Session Complete ✓
+            </button>
+          ):(
+            <div style={{textAlign:"center",padding:"1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.9rem"}}>✓ Session Complete</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Main programme view
+  return(
+    <div style={{minHeight:"100vh",background:"#0a0a0a",padding:"1.5rem 1.25rem 6rem",position:"relative"}}>
+      <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 80% 40% at 15% 5%,${prog.color} 0%,transparent 55%)`,pointerEvents:"none"}}/>
+      <div style={{maxWidth:"440px",margin:"0 auto",position:"relative",zIndex:1}}>
+
+        {/* Header */}
+        <div style={{marginBottom:"1.25rem"}}>
+          <Eyebrow label="12-Week Transformation"/>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:1}}>{prog.icon} {prog.name}</div>
+              <div style={{fontSize:"0.82rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Week {currentWeek} of 12 · {phase.name} Phase</div>
+            </div>
+            <button onClick={resetProgramme} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"0.35rem 0.65rem",color:"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase"}}>Reset</button>
+          </div>
+        </div>
+
+        {/* Overall progress */}
+        <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",border:`1px solid ${prog.accent}30`,borderRadius:"20px",padding:"1.1rem 1.25rem",marginBottom:"0.75rem"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.6rem"}}>
+            <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:prog.accent,fontFamily:"'Barlow Condensed',sans-serif"}}>Overall Progress</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",color:prog.accent}}>{progressPct}%</div>
+          </div>
+          <div style={{height:"6px",background:"rgba(255,255,255,0.08)",borderRadius:"3px",overflow:"hidden",marginBottom:"0.5rem"}}>
+            <div style={{height:"100%",width:`${progressPct}%`,background:`linear-gradient(90deg,${prog.accent},${prog.accent}cc)`,borderRadius:"3px",transition:"width 0.5s ease",boxShadow:`0 0 8px ${prog.accent}60`}}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between"}}>
+            <span style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{completedCount} of {totalSessions} sessions done</span>
+            <span style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{totalSessions-completedCount} remaining</span>
+          </div>
+        </div>
+
+        {/* Current week card */}
+        <div style={{background:`linear-gradient(135deg,${prog.color},rgba(255,255,255,0.03))`,backdropFilter:"blur(20px)",border:`1px solid ${prog.accent}40`,borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:prog.color,filter:"blur(20px)",pointerEvents:"none"}}/>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.85rem"}}>
+            <div>
+              <Eyebrow label={`Week ${currentWeek} · ${phase.name}`}/>
+              <div style={{fontSize:"1.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:1}}>{phase.focus.split(".")[0]}</div>
+            </div>
+            <div style={{background:`${prog.accent}20`,border:`1px solid ${prog.accent}40`,borderRadius:"10px",padding:"0.35rem 0.65rem",textAlign:"center",flexShrink:0}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.4rem",color:prog.accent,lineHeight:1}}>{currentWeek}</div>
+              <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Barlow Condensed',sans-serif"}}>Week</div>
+            </div>
+          </div>
+
+          {/* This week's sessions */}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",marginBottom:"0.85rem"}}>
+            {workouts.map((workout,i)=>{
+              const sessionKey=`w${currentWeek}d${i}`;
+              const isDone=completedSessions.includes(sessionKey);
+              const isCurrent=i===currentDay&&!isDone;
+              return(
+                <div key={i} onClick={()=>setShowDay(i)} style={{display:"flex",alignItems:"center",gap:"0.75rem",background:isCurrent?`${prog.accent}15`:isDone?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.25)",border:`1px solid ${isCurrent?prog.accent:isDone?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.06)"}`,borderRadius:"12px",padding:"0.75rem 0.85rem",cursor:"pointer",transition:"all 0.2s"}}>
+                  <div style={{width:"28px",height:"28px",borderRadius:"8px",background:isDone?`${prog.accent}20`:isCurrent?`${prog.accent}15`:"rgba(255,255,255,0.06)",border:`1px solid ${isDone?prog.accent:isCurrent?prog.accent+"60":"rgba(255,255,255,0.08)"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"0.75rem"}}>
+                    {isDone?<span style={{color:prog.accent}}>✓</span>:isCurrent?<span style={{color:prog.accent,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.8rem"}}>{i+1}</span>:<span style={{color:"rgba(255,255,255,0.2)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.8rem",fontWeight:800}}>{i+1}</span>}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.88rem",color:isDone?"rgba(255,255,255,0.4)":isCurrent?"#fff":"rgba(255,255,255,0.6)",textDecoration:isDone?"line-through":"none"}}>{workout.label}</div>
+                    <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{workout.exercises.length} exercises</div>
+                  </div>
+                  {isCurrent&&<div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.65rem",textTransform:"uppercase",color:prog.accent,letterSpacing:"0.08em"}}>TODAY →</div>}
+                  {isDone&&<div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.65rem",textTransform:"uppercase",color:"rgba(255,255,255,0.25)",letterSpacing:"0.08em"}}>DONE</div>}
+                </div>
+              );
+            })}
+          </div>
+
+          <button onClick={()=>setShowDay(currentDay)} style={{width:"100%",padding:"0.95rem",background:prog.accent,color:prog.accent===C.lime?"#000":"#fff",border:"none",borderRadius:"12px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.92rem",letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",boxShadow:`0 0 20px ${prog.accent}30`}}>
+            {completedSessions.includes(`w${currentWeek}d${currentDay}`)?"View Next Session →":"Start Today's Session →"}
+          </button>
+        </div>
+
+        {/* Week tip */}
+        <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"1rem 1.1rem",marginBottom:"0.75rem"}}>
+          <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:prog.accent,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.4rem"}}>💡 Week {currentWeek} Focus</div>
+          <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.65)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>{weekTip}</div>
+        </div>
+
+        {/* Mindset */}
+        <div style={{background:"rgba(168,85,247,0.06)",border:"1px solid rgba(168,85,247,0.2)",borderRadius:"16px",padding:"1rem 1.1rem",marginBottom:"0.75rem"}}>
+          <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"#c084fc",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.4rem"}}>🧠 Mindset</div>
+          <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6,fontStyle:"italic"}}>"{mindset}"</div>
+        </div>
+
+        {/* Week navigation */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(12,1fr)",gap:"3px",marginBottom:"0.75rem"}}>
+          {Array.from({length:12},(_,i)=>{
+            const wk=i+1;
+            const wkSessions=Array.from({length:config.days},(_,d)=>completedSessions.includes(`w${wk}d${d}`));
+            const wkDone=wkSessions.every(Boolean);
+            const wkCurrent=wk===currentWeek;
+            return(
+              <div key={i} style={{aspectRatio:"1",borderRadius:"6px",background:wkDone?prog.accent:wkCurrent?`${prog.accent}30`:"rgba(255,255,255,0.06)",border:`1px solid ${wkCurrent?prog.accent:wkDone?prog.accent:"rgba(255,255,255,0.06)"}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}} onClick={()=>{setCurrentWeek(wk);setCurrentDay(0);}}>
+                <span style={{fontSize:"0.55rem",fontWeight:900,color:wkDone?"#000":wkCurrent?prog.accent:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>{wk}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif",textAlign:"center",marginBottom:"0.5rem"}}>Tap any week to jump to it</div>
+      </div>
+    </div>
+  );
+}
+
+// Home screen programme card
+function ProgrammeHomeCard({onNavigate}){
+  const config=JSON.parse(localStorage.getItem("fb_programme_config")||"null");
+  const currentWeek=parseInt(localStorage.getItem("fb_programme_week")||"1");
+  const currentDay=parseInt(localStorage.getItem("fb_programme_day")||"0");
+  const completedSessions=JSON.parse(localStorage.getItem("fb_programme_completed")||"[]");
+
+  if(!config){
+    return(
+      <div onClick={()=>onNavigate("sidebar","programme")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.1),rgba(150,220,0,0.04))",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",cursor:"pointer",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(20px)",pointerEvents:"none"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:"1rem"}}>
+          <div style={{width:"52px",height:"52px",borderRadius:"14px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.6rem"}}>📋</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1.1rem",color:"#fff",lineHeight:1,marginBottom:"0.25rem"}}>12-Week Programme</div>
+            <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Get your personalised transformation plan</div>
+          </div>
+          <div style={{color:C.lime,fontSize:"1.2rem",flexShrink:0}}>→</div>
+        </div>
+        <div style={{background:"rgba(204,255,0,0.08)",border:"1px solid rgba(204,255,0,0.15)",borderRadius:"10px",padding:"0.6rem 0.85rem",marginTop:"0.85rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.75rem",textTransform:"uppercase",letterSpacing:"0.06em",color:C.lime}}>Start Free</span>
+          <span style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>84 sessions · Progressive overload</span>
+        </div>
+      </div>
+    );
+  }
+
+  const prog=PROGRAMME_DATA[config.goal]||PROGRAMME_DATA.muscle;
+  const workouts=getProgrammeWorkouts(currentWeek,config.goal,config.equipment,config.days);
+  const todayWorkout=workouts[currentDay];
+  const totalSessions=12*config.days;
+  const completedCount=completedSessions.length;
+  const progressPct=Math.round((completedCount/totalSessions)*100);
+  const sessionDone=completedSessions.includes(`w${currentWeek}d${currentDay}`);
+
+  return(
+    <div onClick={()=>onNavigate("sidebar","programme")} style={{background:`linear-gradient(135deg,${prog.color},rgba(255,255,255,0.02))`,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:`1px solid ${prog.accent}35`,borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",cursor:"pointer",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-20px",right:"-20px",width:"90px",height:"90px",borderRadius:"50%",background:prog.color,filter:"blur(25px)",pointerEvents:"none"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.85rem"}}>
+        <div>
+          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:prog.accent,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.2rem"}}>12-Week Programme</div>
+          <div style={{fontSize:"1.3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:1}}>{prog.icon} {prog.name}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"0.2rem"}}>Week {currentWeek} · {todayWorkout?.label}</div>
+        </div>
+        <div style={{background:`${prog.accent}20`,border:`1px solid ${prog.accent}40`,borderRadius:"10px",padding:"0.4rem 0.75rem",textAlign:"center",flexShrink:0}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.3rem",color:prog.accent,lineHeight:1}}>{progressPct}%</div>
+          <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif"}}>Done</div>
+        </div>
+      </div>
+
+      <div style={{height:"4px",background:"rgba(255,255,255,0.08)",borderRadius:"2px",overflow:"hidden",marginBottom:"0.85rem"}}>
+        <div style={{height:"100%",width:`${progressPct}%`,background:`linear-gradient(90deg,${prog.accent},${prog.accent}cc)`,borderRadius:"2px",transition:"width 0.5s ease",boxShadow:`0 0 6px ${prog.accent}60`}}/>
+      </div>
+
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(0,0,0,0.25)",borderRadius:"12px",padding:"0.75rem 0.9rem"}}>
+        <div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.85rem",color:"#fff"}}>{sessionDone?"Next up: Session "+(currentDay+2):"Today: "+todayWorkout?.label}</div>
+          <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{todayWorkout?.exercises?.length} exercises · Tap to open</div>
+        </div>
+        <div style={{color:prog.accent,fontSize:"1.3rem",flexShrink:0}}>→</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── PROGRESSIVE OVERLOAD ENGINE ─────────────────────────────────────────────
 function ProgressiveOverloadCard({onStartWorkout}){
   const pbs=getPBs();
@@ -4684,6 +5361,7 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         </div>}
         <div style={{padding:"0.5rem 0"}}>
           {[
+            {label:"12-Week Programme",icon:"📋",id:"programme"},
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
             {label:"Strength Charts",icon:"💹",id:"strength"},
             {label:"Run Tracker",icon:"🏃",id:"runs"},
@@ -5028,6 +5706,7 @@ export default function ForgeBodyApp(){
           {tab==="train"&&!sidePanel&&<TrainScreen onStartWorkout={startWorkout} onSetupComplete={()=>{}} onNavigate={navigate}/>}
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
+          {sidePanel?.screen==="programme"&&<ProgrammeScreen onStartWorkout={startWorkout}/>}
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
           {sidePanel?.screen==="strength"&&<StrengthCharts/>}
           {sidePanel?.screen==="runs"&&<RunFeature/>}
