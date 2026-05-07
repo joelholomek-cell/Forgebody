@@ -430,7 +430,7 @@ const EXERCISE_IMAGES={
   "Kettlebell Goblet Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Goblet_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Goblet_Squat/1.jpg"},
 };
 
-function ExerciseAnimation({exName,muscle}){
+function ExerciseAnimation({exName,muscle,size="full"}){
   const imgs=EXERCISE_IMAGES[exName];
   const[opacity,setOpacity]=useState(0);
   const[loaded0,setLoaded0]=useState(false);
@@ -440,9 +440,6 @@ function ExerciseAnimation({exName,muscle}){
   useEffect(()=>{
     if(!imgs)return;
     setOpacity(0);setLoaded0(false);setLoaded1(false);setError(false);
-    // 4 equal parts at 500ms each = 2 second full cycle
-    // opacity 0 = show img0, opacity 1 = show img1
-    // Smooth CSS transition handles the crossfade between
     const t=setInterval(()=>setOpacity(o=>o===0?1:0),1000);
     return()=>clearInterval(t);
   },[exName]);
@@ -450,30 +447,35 @@ function ExerciseAnimation({exName,muscle}){
   const muscleColors={chest:"rgba(239,68,68,0.15)",back:"rgba(59,130,246,0.15)",shoulders:"rgba(168,85,247,0.15)",biceps:"rgba(34,197,94,0.15)",triceps:"rgba(251,146,60,0.15)",quads:"rgba(236,72,153,0.15)",hamstrings:"rgba(20,184,166,0.15)",glutes:"rgba(251,191,36,0.15)",calves:"rgba(99,102,241,0.15)",core:"rgba(204,255,0,0.15)",hiit:"rgba(239,68,68,0.15)"};
   const mc=muscleColors[muscle]||"rgba(204,255,0,0.15)";
 
+  // Small thumbnail mode — used in exercise list
+  if(size==="thumb"){
+    if(!imgs||error) return null; // caller shows number fallback
+    const bothLoaded=loaded0&&loaded1;
+    return(
+      <div style={{width:"100%",height:"100%",position:"relative",borderRadius:"12px",overflow:"hidden",background:mc}}>
+        {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:"16px",height:"16px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.2)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
+        <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?1-opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
+        <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
+      </div>
+    );
+  }
+
+  // Full size — used in active workout
   if(!imgs||error){
     return(
-      <div style={{display:"flex",justifyContent:"center",marginBottom:"0.75rem"}}>
-        <div style={{background:mc,border:"1px solid rgba(255,255,255,0.1)",borderRadius:"12px",padding:"0.75rem 1.5rem",display:"flex",alignItems:"center",gap:"0.5rem"}}>
-          <span style={{fontSize:"1.5rem"}}>💪</span>
-          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.85rem",color:"rgba(255,255,255,0.6)"}}>{muscle}</span>
-        </div>
+      <div style={{width:"100%",aspectRatio:"16/9",background:mc,borderRadius:"20px",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"1.25rem"}}>
+        <span style={{fontSize:"3rem"}}>💪</span>
       </div>
     );
   }
 
   const bothLoaded=loaded0&&loaded1;
-
   return(
-    <div style={{display:"flex",justifyContent:"center",marginBottom:"0.75rem"}}>
-      <div style={{background:mc,backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",overflow:"hidden",position:"relative",width:"100%",maxWidth:"280px",aspectRatio:"4/3"}}>
-        {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}><div style={{width:"24px",height:"24px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
-        <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)}
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?1-opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
-        <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)}
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
-        <div style={{position:"absolute",bottom:"6px",right:"8px",background:"rgba(0,0,0,0.6)",borderRadius:"6px",padding:"2px 7px",fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow Condensed',sans-serif",zIndex:3}}>{muscle}</div>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
+    <div style={{width:"100%",aspectRatio:"16/9",borderRadius:"20px",overflow:"hidden",position:"relative",background:mc,marginBottom:"1.25rem",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}}>
+      {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}><div style={{width:"28px",height:"28px",borderRadius:"50%",border:"2.5px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
+      <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?1-opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
+      <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
@@ -2727,12 +2729,12 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
 
         <div style={s.label}>Exercise Plan</div>
         {exercises.map((ex,i)=>(
-          <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
-            <div style={{width:"52px",height:"52px",borderRadius:"12px",overflow:"hidden",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",flexShrink:0}}>
+          <div key={i} style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"0.85rem 1rem",marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
+            <div style={{width:"58px",height:"58px",borderRadius:"14px",overflow:"hidden",background:"rgba(255,255,255,0.06)",flexShrink:0,position:"relative"}}>
               {EXERCISE_IMAGES[ex.name]
-                ?<ExerciseAnimation exName={ex.name} muscle={ex.muscle}/>
-                :<div style={{width:"52px",height:"52px",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)"}}>
-                  <span style={{fontWeight:900,fontSize:"1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
+                ?<ExerciseAnimation exName={ex.name} muscle={ex.muscle} size="thumb"/>
+                :<div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)"}}>
+                  <span style={{fontWeight:900,fontSize:"1.1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
                 </div>
               }
             </div>
@@ -2783,82 +2785,123 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
     return(
       <div style={{minHeight:"100vh",background:"#0a0a0a",paddingBottom:"80px",position:"relative"}}>
         {showDurationPicker&&<DurationPicker/>}
-        <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 55% at 15% 5%,rgba(204,255,0,0.09) 0%,transparent 55%)",pointerEvents:"none",zIndex:0}}/>
         {showLogger&&<SetLogger ex={ex} setNum={completedCount+1} onSave={saveLog}/>}
         {showPBCelebration&&<ConfettiCelebration exName={showPBCelebration.exName} weight={showPBCelebration.weight} reps={showPBCelebration.reps} onDone={()=>{const[eI]=pendingKey.split("-").map(Number);setShowPBCelebration(null);setTimerSecs(getRest(exercises[eI].rest));setShowTimer(true);}}/>}
         {showTimer&&<RestTimer seconds={timerSecs} onDone={()=>setShowTimer(false)}/>}
         {showQuit&&<QuitModal onConfirm={()=>{setShowQuit(false);onDone();}} onStay={()=>setShowQuit(false)}/>}
 
+        {/* Progress bar */}
         <div style={{height:"3px",background:"rgba(255,255,255,0.07)",position:"sticky",top:0,zIndex:50}}>
-          <div style={{height:"100%",background:C.lime,width:`${(exIdx/exercises.length)*100}%`,transition:"width 0.4s ease",boxShadow:"0 0 8px rgba(204,255,0,0.5)"}}/>
+          <div style={{height:"100%",background:C.lime,width:`${((exIdx+completedCount/Math.max(1,parseInt(ex.sets)||3))/exercises.length)*100}%`,transition:"width 0.4s ease",boxShadow:"0 0 8px rgba(204,255,0,0.5)"}}/>
         </div>
 
-        <div style={{padding:"1rem 1.25rem",position:"relative",zIndex:1}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
-            <button onClick={()=>setMode("overview")} style={s.btnSm}>← Overview</button>
-            <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
-              <button onClick={()=>setShowDurationPicker(true)} style={{...s.btnSm,background:"rgba(204,255,0,0.08)",borderColor:"rgba(204,255,0,0.2)",color:C.lime}}>⏱ {duration}m</button>
-              <span style={{color:"rgba(255,255,255,0.35)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,letterSpacing:"0.1em"}}>{exIdx+1}/{exercises.length}</span>
-            </div>
-            <button onClick={()=>setShowQuit(true)} style={{background:"rgba(255,60,60,0.1)",border:"1px solid rgba(255,60,60,0.25)",borderRadius:"8px",padding:"0.4rem 0.85rem",color:"rgba(255,100,100,0.9)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.75rem",cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>Quit</button>
+        {/* Top nav */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.85rem 1.1rem",position:"relative",zIndex:1}}>
+          <button onClick={()=>setMode("overview")} style={s.btnSm}>← Back</button>
+          <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+            {Array.from({length:exercises.length},(_,i)=>(
+              <div key={i} style={{width:i===exIdx?"20px":"6px",height:"6px",borderRadius:"3px",background:i<exIdx?C.lime:i===exIdx?C.lime:"rgba(255,255,255,0.15)",transition:"all 0.3s ease",boxShadow:i===exIdx?"0 0 6px rgba(204,255,0,0.5)":"none"}}/>
+            ))}
+          </div>
+          <button onClick={()=>setShowQuit(true)} style={{background:"rgba(255,60,60,0.08)",border:"1px solid rgba(255,60,60,0.2)",borderRadius:"8px",padding:"0.4rem 0.75rem",color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>Quit</button>
+        </div>
+
+        <div style={{padding:"0 1.1rem",position:"relative",zIndex:1}}>
+
+          {/* Exercise name + muscle */}
+          <div style={{marginBottom:"0.75rem",animation:"fadeUp 0.3s ease"}}>
+            <div style={{fontSize:"0.58rem",fontWeight:800,letterSpacing:"0.18em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"4px"}}>{ex.muscle}</div>
+            <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:0.95,letterSpacing:"-0.5px"}}>{ex.name}</div>
           </div>
 
-          {/* Exercise card with liquid glass */}
-          <div style={{position:"relative",borderRadius:"20px",padding:"2px",background:"linear-gradient(135deg,#CCFF00,#88ff00,#CCFF00,#aaee00)",backgroundSize:"300% 300%",animation:"gradSpin 3s ease infinite",marginBottom:"1rem",boxShadow:"0 0 24px rgba(204,255,0,0.12)"}}>
-            <div style={{background:"rgba(8,8,8,0.97)",borderRadius:"18px",padding:"1.5rem",backdropFilter:"blur(20px)"}}>
-              <Eyebrow label={ex.muscle}/>
-              <div style={{fontSize:"1.9rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",lineHeight:1.05,marginBottom:"1rem",color:C.white}}>{ex.name}</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.65rem",marginBottom:"1rem"}}>
-                {[{l:"Sets",v:ex.sets},{l:"Reps",v:ex.reps},{l:"Rest",v:ex.rest}].map((x,i)=>(
-                  <div key={i} style={{background:"rgba(255,255,255,0.05)",borderRadius:"10px",padding:"0.7rem",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
-                    <div style={{fontSize:"1.1rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.v}</div>
-                    <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",marginTop:"3px",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+          {/* Full width gif — the hero */}
+          <ExerciseAnimation exName={ex.name} muscle={ex.muscle} size="full"/>
+
+          {/* Stats row */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"1rem"}}>
+            {[{l:"Sets",v:ex.sets},{l:"Reps",v:ex.reps},{l:"Rest",v:ex.rest}].map((x,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(15px)",borderRadius:"14px",padding:"0.75rem 0.5rem",textAlign:"center",border:"1px solid rgba(255,255,255,0.08)"}}>
+                <div style={{fontSize:"1.3rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.v}</div>
+                <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",marginTop:"3px",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Coaching cue */}
+          {ex.cue&&(
+            <div style={{background:"rgba(204,255,0,0.05)",borderRadius:"12px",padding:"0.75rem 0.9rem",borderLeft:`3px solid ${C.lime}`,marginBottom:"1rem"}}>
+              <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",lineHeight:1.55}}>{ex.cue}</div>
+            </div>
+          )}
+
+          {/* SET TRACKER — the main interaction */}
+          <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem"}}>
+            {/* Set dots */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.88rem",textTransform:"uppercase",color:"rgba(255,255,255,0.5)",letterSpacing:"0.06em"}}>
+                {allDone?`All ${totalSets} sets done 🔥`:`Set ${Math.min(completedCount+1,totalSets)} of ${totalSets}`}
+              </div>
+              <div style={{display:"flex",gap:"6px"}}>
+                {Array.from({length:totalSets},(_,i)=>(
+                  <div key={i} style={{width:"28px",height:"28px",borderRadius:"50%",background:i<completedCount?"#CCFF00":i===completedCount?"rgba(204,255,0,0.15)":"rgba(255,255,255,0.08)",border:`2px solid ${i<completedCount?"#CCFF00":i===completedCount?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.1)"}`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.3s ease",boxShadow:i<completedCount?"0 0 8px rgba(204,255,0,0.4)":"none"}}>
+                    {i<completedCount&&<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    {i===completedCount&&!allDone&&<span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.7rem",color:C.lime}}>{i+1}</span>}
                   </div>
                 ))}
               </div>
-              <div style={{background:"rgba(204,255,0,0.05)",borderRadius:"10px",padding:"0.8rem",borderLeft:`3px solid ${C.lime}`,marginBottom:"0.75rem"}}>
-                <div style={{fontSize:"0.6rem",color:C.lime,fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.25rem"}}>Coaching Cue</div>
-                <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5}}>{ex.cue}</div>
+            </div>
+
+            {/* Completed sets log */}
+            {completedCount>0&&(
+              <div style={{marginBottom:"0.85rem",display:"flex",flexDirection:"column",gap:"4px"}}>
+                {Array.from({length:completedCount},(_,i)=>{
+                  const lg=setLogs[`${exIdx}-${i}`];
+                  return(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",background:"rgba(204,255,0,0.06)",borderRadius:"10px",padding:"0.5rem 0.75rem"}}>
+                      <div style={{width:"18px",height:"18px",borderRadius:"50%",background:C.lime,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        <svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                      <span style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.78rem",textTransform:"uppercase",color:C.lime}}>Set {i+1}</span>
+                      {lg?.weight&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,0.5)",fontSize:"0.78rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800}}>{lg.weight}kg × {lg.reps}</span>}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Exercise visual + YouTube */}
-          <ExerciseVisual ex={ex}/>
-
-          {/* Set tracker */}
-          <div style={s.card}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-              <div style={{...s.label,marginBottom:0,color:C.white}}>Set {Math.min(completedCount+1,totalSets)} of {totalSets}</div>
-              <div style={{display:"flex",gap:"3px"}}>{Array.from({length:totalSets},(_,i)=><div key={i} style={{width:"22px",height:"3px",borderRadius:"2px",background:i<completedCount?C.lime:i===completedCount?"rgba(204,255,0,0.35)":"rgba(255,255,255,0.08)",transition:"background 0.3s"}}/>)}</div>
-            </div>
+            {/* Complete set button */}
             {!allDone?(
-              <button onClick={()=>completeSet(exIdx,completedCount)} style={{display:"flex",alignItems:"center",gap:"1rem",padding:"1.1rem",borderRadius:"14px",border:"1.5px solid rgba(204,255,0,0.35)",background:"rgba(204,255,0,0.05)",cursor:"pointer",width:"100%"}}>
-                <div style={{width:"38px",height:"38px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.45)",background:"rgba(204,255,0,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <button onClick={()=>completeSet(exIdx,completedCount)} style={{width:"100%",padding:"1.1rem",background:"rgba(204,255,0,0.08)",border:"2px solid rgba(204,255,0,0.35)",borderRadius:"14px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.75rem",transition:"all 0.15s",animation:"glowPulse 2.5s ease-in-out infinite"}} className="press">
+                <div style={{width:"36px",height:"36px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.5)",background:"rgba(204,255,0,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                   <span style={{fontWeight:900,fontSize:"1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{completedCount+1}</span>
                 </div>
-                <div style={{flex:1,textAlign:"left"}}>
-                  <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.95rem",textTransform:"uppercase",letterSpacing:"0.05em",color:C.white}}>Complete Set {completedCount+1}</div>
-                  <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.78rem",fontFamily:"'Barlow',sans-serif",marginTop:"2px"}}>{ex.reps} reps · tap when done</div>
+                <div style={{textAlign:"left"}}>
+                  <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1rem",textTransform:"uppercase",letterSpacing:"0.05em",color:"#fff"}}>Complete Set {completedCount+1}</div>
+                  <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",fontFamily:"'Barlow',sans-serif"}}>{ex.reps} reps · tap when done</div>
                 </div>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.lime} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <svg style={{marginLeft:"auto"}} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.lime} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               </button>
             ):(
-              <div style={{textAlign:"center",padding:"0.85rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>All {totalSets} sets done! 🔥</div>
-            )}
-            {completedCount>0&&(
-              <div style={{marginTop:"0.75rem",borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:"0.75rem"}}>
-                <div style={{...s.label,marginBottom:"0.4rem"}}>Completed</div>
-                {Array.from({length:completedCount},(_,i)=>{const lg=setLogs[`${exIdx}-${i}`];return(<div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.3rem 0"}}><div style={{width:"18px",height:"18px",borderRadius:"50%",background:C.lime,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg></div><span style={{fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.8rem",textTransform:"uppercase",color:C.lime}}>Set {i+1}</span>{lg?.weight?<span style={{marginLeft:"auto",color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",fontFamily:"'Barlow Condensed',sans-serif"}}>{lg.weight}kg × {lg.reps}</span>:null}</div>);})}
+              <div style={{textAlign:"center",padding:"1rem",color:C.lime,fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"1rem",animation:"heartbeat 1.5s ease-in-out infinite"}}>
+                All {totalSets} sets done! 🔥
               </div>
             )}
           </div>
 
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.7rem",marginTop:"0.5rem"}}>
-            <button onClick={()=>exIdx>0&&setExIdx(i=>i-1)} disabled={exIdx===0} style={{...s.btnGlass,opacity:exIdx===0?0.3:1,padding:"0.85rem"}}>← Prev</button>
-            <button onClick={()=>{if(!allDone){alert(`Complete all ${totalSets} sets first!`);return;}if(isLast){finishWorkout();}else{setExIdx(i=>i+1);}}} style={{...s.btn,padding:"0.85rem",opacity:allDone?1:0.4,cursor:allDone?"pointer":"not-allowed"}}>{isLast?"Finish 🔥":"Next →"}</button>
+          {/* YouTube link */}
+          <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name+' exercise form tutorial')}`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:"0.5rem",background:"rgba(255,0,0,0.08)",border:"1px solid rgba(255,0,0,0.15)",borderRadius:"12px",padding:"0.6rem 0.9rem",textDecoration:"none",marginBottom:"0.75rem"}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff4444"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+            <span style={{fontSize:"0.75rem",fontWeight:800,color:"rgba(255,100,100,0.8)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.06em"}}>Watch Form Demo</span>
+          </a>
+
+          {/* Prev / Next */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.7rem"}}>
+            <button onClick={()=>exIdx>0&&setExIdx(i=>i-1)} disabled={exIdx===0} style={{...s.btnGlass,opacity:exIdx===0?0.3:1,padding:"0.9rem",borderRadius:"14px"}}>← Prev</button>
+            <button onClick={()=>{if(!allDone){alert(`Complete all ${totalSets} sets first!`);return;}if(isLast){finishWorkout();}else{setExIdx(i=>i+1);}}} style={{...s.btn,padding:"0.9rem",borderRadius:"14px",opacity:allDone?1:0.4,cursor:allDone?"pointer":"not-allowed"}} className={allDone?"press":""}>{isLast?"Finish 🔥":"Next →"}</button>
           </div>
         </div>
+      </div>
+    );        </div>
       </div>
     );
   }
