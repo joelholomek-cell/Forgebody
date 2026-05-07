@@ -2728,8 +2728,13 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
         <div style={s.label}>Exercise Plan</div>
         {exercises.map((ex,i)=>(
           <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.5rem"}}>
-            <div style={{width:"30px",height:"30px",borderRadius:"8px",background:"rgba(204,255,0,0.1)",border:"1px solid rgba(204,255,0,0.18)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <span style={{fontWeight:900,fontSize:"0.82rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
+            <div style={{width:"52px",height:"52px",borderRadius:"12px",overflow:"hidden",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",flexShrink:0}}>
+              {EXERCISE_IMAGES[ex.name]
+                ?<ExerciseAnimation exName={ex.name} muscle={ex.muscle}/>
+                :<div style={{width:"52px",height:"52px",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)"}}>
+                  <span style={{fontWeight:900,fontSize:"1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
+                </div>
+              }
             </div>
             <div style={{flex:1}}>
               <div style={{fontWeight:900,fontSize:"0.9rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{ex.name}</div>
@@ -4211,17 +4216,21 @@ Start yours → forgebody.fit`;try{if(navigator.share)await navigator.share({tit
     const isDone=completed.includes(`w${currentWeek}d${showDay}`);
 
     if(!isDone){
+      const ALL_EX_FLAT=Object.entries(EXERCISES).flatMap(([muscle,exs])=>exs.map(ex=>({...ex,muscle})));
       const customWorkout={
         name:`Week ${currentWeek} · ${dayW.label}`,
         label:dayW.label,
-        exercises:(dayW.exercises||[]).map(ex=>({
-          name:ex.name,
-          sets:parseInt(ex.sets)||3,
-          reps:ex.reps||'8-10',
-          rest:ex.rest||'90 sec',
-          notes:ex.cue||'',
-          muscle:'chest',
-        }))
+        exercises:(dayW.exercises||[]).map(ex=>{
+          const match=ALL_EX_FLAT.find(e=>e.name?.toLowerCase()===ex.name?.toLowerCase());
+          return{
+            name:ex.name,
+            sets:parseInt(ex.sets)||3,
+            reps:ex.reps||'8-10',
+            rest:ex.rest||'90 sec',
+            notes:ex.cue||'',
+            muscle:match?.muscle||'chest',
+          };
+        })
       };
       return <WorkoutSession customWorkout={customWorkout} onDone={()=>markDone(currentWeek,showDay)}/>;
     }
