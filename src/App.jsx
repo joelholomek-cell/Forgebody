@@ -4558,6 +4558,8 @@ function BadgesScreen(){
         {id:"halfmarathon",icon:"🎖️",name:"Half Marathoner",desc:"Complete a half marathon",unlocked:runs.some(r=>r.distance>=21),rarity:"epic"},
       ]
     },
+    {
+      name:"🎖️ Special Achievements",
       badges:[
         {id:"earlybird",icon:"🌅",name:"Early Bird",desc:"Complete a workout before 7am",unlocked:completedDates.some(d=>new Date(d).getHours()<7),rarity:"rare"},
         {id:"nightowl",icon:"🦉",name:"Night Owl",desc:"Complete a workout after 9pm",unlocked:completedDates.some(d=>new Date(d).getHours()>=21),rarity:"rare"},
