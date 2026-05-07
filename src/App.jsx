@@ -2311,6 +2311,15 @@ function HomeScreen({profile,user,onNavigate}){
         </div>
       )}
 
+      {/* STREAK PROTECTION */}
+      <StreakProtectionAlert streak={streak} onNavigate={onNavigate}/>
+
+      {/* COACH CHECK-IN */}
+      <CoachCheckIn/>
+
+      {/* PROGRESSIVE OVERLOAD */}
+      <ProgressiveOverloadCard onStartWorkout={()=>onNavigate("tab","train")}/>
+
       {/* WEEKLY RECAP */}
       <WeeklyRecap onNavigate={onNavigate}/>
 
@@ -3569,46 +3578,205 @@ function NutritionTips(){
 }
 
 // ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
+// ─── STREAK PROTECTION ───────────────────────────────────────────────────────
+function StreakProtectionAlert({streak,onNavigate}){
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const today=new Date().toDateString();
+  const trainedToday=completedDates.some(c=>new Date(c).toDateString()===today);
+  const dismissed=localStorage.getItem("fb_streak_dismissed")===today;
+  const[show,setShow]=useState(!trainedToday&&streak>=3&&!dismissed);
+
+  if(!show)return null;
+
+  return(
+    <div style={{position:"relative",background:"linear-gradient(135deg,rgba(251,146,60,0.12),rgba(239,68,68,0.06))",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(251,146,60,0.3)",borderRadius:"20px",padding:"1.1rem 1.25rem",marginBottom:"0.75rem",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(251,146,60,0.15)",filter:"blur(20px)",pointerEvents:"none"}}/>
+      <button onClick={()=>{setShow(false);localStorage.setItem("fb_streak_dismissed",today);}} style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"50%",width:"24px",height:"24px",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>×</button>
+      <div style={{display:"flex",alignItems:"center",gap:"0.85rem"}}>
+        <div style={{width:"48px",height:"48px",borderRadius:"14px",background:"rgba(251,146,60,0.15)",border:"1px solid rgba(251,146,60,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.5rem"}}>🔥</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1rem",color:"#fb923c",letterSpacing:"0.02em",lineHeight:1,marginBottom:"0.25rem"}}>
+            Don't lose your {streak}-day streak!
+          </div>
+          <div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.4}}>Log a workout today to keep it alive. Even 10 minutes counts.</div>
+        </div>
+      </div>
+      <button onClick={()=>{setShow(false);onNavigate("tab","train");}} style={{...s.btn,width:"100%",padding:"0.75rem",marginTop:"0.85rem",fontSize:"0.85rem",background:"rgba(251,146,60,0.2)",border:"1px solid rgba(251,146,60,0.4)",color:"#fb923c"}}>
+        Start Quick Workout →
+      </button>
+    </div>
+  );
+}
+
+// ─── WEEKLY SUMMARY ───────────────────────────────────────────────────────────
 function WeeklyRecap({onNavigate}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const runs=JSON.parse(localStorage.getItem("fb_runs")||"[]");
   const now=new Date();
-  const dayOfWeek=now.getDay(); // 0=Sun
-  const isSunday=dayOfWeek===0;
+  const dayOfWeek=now.getDay();
   const startOfWeek=new Date(now);startOfWeek.setDate(now.getDate()-dayOfWeek);startOfWeek.setHours(0,0,0,0);
   const endOfLastWeek=new Date(startOfWeek);endOfLastWeek.setDate(startOfWeek.getDate()-1);
   const startOfLastWeek=new Date(endOfLastWeek);startOfLastWeek.setDate(endOfLastWeek.getDate()-6);startOfLastWeek.setHours(0,0,0,0);
+  const isSunday=dayOfWeek===0;
 
   const thisWeekWorkouts=completedDates.filter(d=>{const dt=new Date(d);return dt>=startOfWeek&&dt<=now;}).length;
   const lastWeekWorkouts=completedDates.filter(d=>{const dt=new Date(d);return dt>=startOfLastWeek&&dt<=endOfLastWeek;}).length;
+  const thisWeekRuns=runs.filter(r=>{const dt=new Date(r.date);return dt>=startOfWeek&&dt<=now;});
+  const thisWeekDist=thisWeekRuns.reduce((a,r)=>a+(r.distance||0),0);
 
-  // Streak
   let streak=0;
   for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))streak++;else if(i>0)break;}
 
   const pbs=Object.values(getPBs());
   const recentPBs=pbs.filter(p=>(now-new Date(p.date))/(1000*60*60*24)<=7).length;
 
-  if(!isSunday&&thisWeekWorkouts===0)return null;
+  const macroLogs=JSON.parse(localStorage.getItem("fb_macro_log")||"{}");
+  const macroTarget=JSON.parse(localStorage.getItem("fb_macro_targets")||"{}");
+  const thisWeekMacroDays=Object.keys(macroLogs).filter(d=>new Date(d)>=startOfWeek).length;
+
+  if(!isSunday&&thisWeekWorkouts===0&&streak<3)return null;
+
+  const getMessage=()=>{
+    const count=isSunday?lastWeekWorkouts:thisWeekWorkouts;
+    if(count>=5)return"Absolute beast mode this week. Your future self thanks you. 🔥";
+    if(count>=3)return"Solid week. Consistency is how champions are built.";
+    if(count>=1)return"You showed up. That's more than most. Keep going.";
+    return"New week, fresh start. Let's make it count. 💪";
+  };
 
   return(
-    <div style={{...s.card,background:"linear-gradient(135deg,rgba(204,255,0,0.09),rgba(150,220,0,0.04))",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.08)",filter:"blur(20px)",pointerEvents:"none"}}/>
+    <div style={{background:"linear-gradient(135deg,rgba(204,255,0,0.09),rgba(150,220,0,0.04))",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-20px",right:"-20px",width:"90px",height:"90px",borderRadius:"50%",background:"rgba(204,255,0,0.07)",filter:"blur(20px)",pointerEvents:"none"}}/>
       <Eyebrow label={isSunday?"Weekly Recap 📋":"This Week So Far"}/>
-      <div style={{fontSize:"1.3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.75rem",lineHeight:1}}>
-        {isSunday?`Week of ${startOfLastWeek.toLocaleDateString("en-AU",{month:"short",day:"numeric"})}`:`${now.toLocaleDateString("en-AU",{month:"short",day:"numeric"})} Week`}
+      <div style={{fontSize:"1.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.85rem",lineHeight:1}}>
+        {isSunday?`Week of ${startOfLastWeek.toLocaleDateString("en-AU",{month:"short",day:"numeric"})}`:`${now.toLocaleDateString("en-AU",{weekday:"long",month:"short",day:"numeric"})}`}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.75rem"}}>
-        {[{n:isSunday?lastWeekWorkouts:thisWeekWorkouts,l:"Workouts",icon:"🏋️"},{n:`${streak}🔥`,l:"Streak",icon:""},{n:recentPBs>0?recentPBs:"—",l:"New PBs",icon:"🏆"}].map((x,i)=>(
-          <div key={i} style={{background:"rgba(0,0,0,0.25)",borderRadius:"12px",padding:"0.75rem",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
-            <div style={{fontSize:"1.5rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
-            <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"3px"}}>{x.l}</div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.5rem",marginBottom:"0.85rem"}}>
+        {[
+          {n:isSunday?lastWeekWorkouts:thisWeekWorkouts,l:"Workouts",icon:"🏋️",color:C.lime},
+          {n:`${streak}`,l:"Day Streak 🔥",icon:"",color:"#fb923c"},
+          {n:thisWeekDist>0?`${thisWeekDist.toFixed(1)}km`:"—",l:"Km Run",icon:"🏃",color:"#60a5fa"},
+          {n:recentPBs>0?recentPBs:"—",l:"New PBs",icon:"🏆",color:"#fbbf24"},
+        ].map((x,i)=>(
+          <div key={i} style={{background:"rgba(0,0,0,0.3)",backdropFilter:"blur(10px)",borderRadius:"14px",padding:"0.85rem",border:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",gap:"0.6rem"}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:"1.6rem",fontWeight:900,color:x.color,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+              <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"2px"}}>{x.l}</div>
+            </div>
           </div>
         ))}
       </div>
-      {lastWeekWorkouts>0&&isSunday&&<div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.55)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>
-        {lastWeekWorkouts>=4?"Incredible week. You showed up and delivered.":lastWeekWorkouts>=2?"Solid effort last week. Keep building.":"Every week is a fresh start. Make this one count."}
-      </div>}
-      <button onClick={()=>onNavigate("sidebar","history")} style={{...s.btnSm,width:"100%",padding:"0.6rem",textAlign:"center"}}>View Full History →</button>
+
+      <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.55,marginBottom:"0.85rem",fontStyle:"italic"}}>"{getMessage()}"</div>
+
+      {macroTarget.cal>0&&(
+        <div style={{background:"rgba(0,0,0,0.2)",borderRadius:"12px",padding:"0.7rem 0.85rem",marginBottom:"0.85rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>🍽️ Nutrition tracked</span>
+          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.9rem",color:C.lime}}>{thisWeekMacroDays}/7 days</span>
+        </div>
+      )}
+
+      <button onClick={()=>onNavigate("sidebar","history")} style={{...s.btnSm,width:"100%",padding:"0.6rem",textAlign:"center",background:"rgba(204,255,0,0.08)",borderColor:"rgba(204,255,0,0.2)",color:C.lime}}>View Full History →</button>
+    </div>
+  );
+}
+
+// ─── PROGRESSIVE OVERLOAD ENGINE ─────────────────────────────────────────────
+function ProgressiveOverloadCard({onStartWorkout}){
+  const pbs=getPBs();
+  const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
+
+  // Get the key lifts based on their split
+  const KEY_LIFTS={
+    ppl:["Barbell Bench Press","Barbell Row","Barbell Back Squat","Overhead Press","Romanian Deadlift"],
+    upper_lower:["Barbell Bench Press","Barbell Row","Barbell Back Squat","Overhead Press","Deadlift"],
+    muscle_group:["Barbell Bench Press","Deadlift","Barbell Back Squat","Overhead Press","Barbell Row"],
+    full_body:["Barbell Back Squat","Deadlift","Overhead Press","Barbell Bench Press","Barbell Row"],
+  };
+
+  const lifts=KEY_LIFTS[settings.split||"ppl"];
+  const suggestions=lifts.map(name=>{
+    const pb=pbs[name];
+    if(!pb)return null;
+    const nextWeight=Math.ceil(pb.weight/2.5)*2.5+2.5; // next 2.5kg increment
+    const daysSince=Math.round((Date.now()-new Date(pb.date))/(1000*60*60*24));
+    return{name,currentWeight:pb.weight,currentReps:pb.reps,nextWeight,daysSince};
+  }).filter(Boolean).slice(0,3);
+
+  if(suggestions.length===0)return null;
+
+  return(
+    <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-15px",right:"-15px",width:"70px",height:"70px",borderRadius:"50%",background:"rgba(99,102,241,0.1)",filter:"blur(15px)",pointerEvents:"none"}}/>
+      <Eyebrow label="Progressive Overload 📈"/>
+      <div style={{fontSize:"1.1rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.25rem",lineHeight:1}}>Time to Level Up</div>
+      <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1rem"}}>Based on your recent personal bests</div>
+
+      {suggestions.map((s_,i)=>(
+        <div key={i} style={{background:"rgba(0,0,0,0.25)",borderRadius:"14px",padding:"0.85rem",marginBottom:"0.5rem",border:"1px solid rgba(255,255,255,0.07)",display:"flex",alignItems:"center",gap:"0.85rem"}}>
+          <div style={{width:"42px",height:"42px",borderRadius:"12px",background:"rgba(99,102,241,0.12)",border:"1px solid rgba(99,102,241,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.1rem"}}>💪</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.85rem",color:C.white,lineHeight:1,marginBottom:"0.25rem"}}>{s_.name}</div>
+            <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>
+              Last: {s_.currentWeight}kg × {s_.currentReps} reps · {s_.daysSince}d ago
+            </div>
+          </div>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.1rem",color:C.lime,lineHeight:1}}>{s_.nextWeight}kg</div>
+            <div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>Try this</div>
+          </div>
+        </div>
+      ))}
+
+      <button onClick={()=>onStartWorkout()} style={{...s.btn,width:"100%",padding:"0.75rem",marginTop:"0.35rem",fontSize:"0.85rem"}}>
+        Start Today's Workout →
+      </button>
+    </div>
+  );
+}
+
+// ─── COACH CHECK-IN ───────────────────────────────────────────────────────────
+function CoachCheckIn(){
+  const storageKey="fb_checkin_"+new Date().toISOString().slice(0,7); // monthly
+  const[done,setDone]=useState(()=>!!localStorage.getItem(storageKey));
+  const[selected,setSelected]=useState(null);
+
+  const OPTIONS=[
+    {id:"great",icon:"🔥",label:"Crushing it",color:"rgba(204,255,0,0.15)",border:"rgba(204,255,0,0.4)",text:C.lime},
+    {id:"good",icon:"💪",label:"Making progress",color:"rgba(59,130,246,0.12)",border:"rgba(59,130,246,0.3)",text:"#60a5fa"},
+    {id:"okay",icon:"😐",label:"Getting there",color:"rgba(251,191,36,0.12)",border:"rgba(251,191,36,0.3)",text:"#fbbf24"},
+    {id:"hard",icon:"😤",label:"Finding it tough",color:"rgba(239,68,68,0.1)",border:"rgba(239,68,68,0.25)",text:"#f87171"},
+  ];
+
+  if(done)return null;
+
+  return(
+    <div style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-15px",left:"-15px",width:"70px",height:"70px",borderRadius:"50%",background:"rgba(168,85,247,0.08)",filter:"blur(15px)",pointerEvents:"none"}}/>
+      <Eyebrow label="Monthly Check-In"/>
+      <div style={{fontSize:"1.1rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.25rem",lineHeight:1}}>How's your programme feeling?</div>
+      <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1rem"}}>Your feedback helps us improve your plan.</div>
+
+      {!selected?(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem"}}>
+          {OPTIONS.map(o=>(
+            <button key={o.id} onClick={()=>setSelected(o)} style={{background:o.color,border:`1px solid ${o.border}`,borderRadius:"14px",padding:"0.85rem 0.5rem",cursor:"pointer",textAlign:"center",transition:"all 0.2s"}}>
+              <div style={{fontSize:"1.5rem",marginBottom:"0.3rem"}}>{o.icon}</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.78rem",textTransform:"uppercase",color:o.text}}>{o.label}</div>
+            </button>
+          ))}
+        </div>
+      ):(
+        <div style={{textAlign:"center",padding:"0.75rem 0"}}>
+          <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>{selected.icon}</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1rem",color:C.white,marginBottom:"0.35rem"}}>Thanks for sharing!</div>
+          <div style={{fontSize:"0.82rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.85rem",lineHeight:1.5}}>
+            {selected.id==="great"?"You're killing it. Keep the intensity up.":selected.id==="good"?"Progress takes time. You're doing exactly right.":selected.id==="okay"?"Check in with the AI coach — it can adjust your plan.":"Talk to the AI coach. It can make this easier for you."}
+          </div>
+          <button onClick={()=>{localStorage.setItem(storageKey,selected.id);setDone(true);}} style={{...s.btn,padding:"0.75rem 2rem",fontSize:"0.85rem"}}>Got it 💪</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -3621,8 +3789,10 @@ function BadgesScreen(){
   const photos=JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");
   const meals=JSON.parse(localStorage.getItem("fb_meal_log")||"{}");
   const water=JSON.parse(localStorage.getItem("fb_water_log")||"{}");
+  const runs=JSON.parse(localStorage.getItem("fb_runs")||"[]");
   const total=completedDates.length;
   const profile=JSON.parse(localStorage.getItem("fb_profile")||"{}");
+  const totalRunDist=runs.reduce((a,r)=>a+(r.distance||0),0);
 
   let streak=0;
   for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))streak++;else if(i>0)break;}
@@ -3693,7 +3863,24 @@ function BadgesScreen(){
       ]
     },
     {
-      name:"🎖️ Special Achievements",
+      name:"🏃 Road Runner",
+      badges:[
+        {id:"run1",icon:"👟",name:"First Run",desc:"Log your first run",unlocked:runs.length>=1,rarity:"common"},
+        {id:"run5",icon:"🏃",name:"5 Runs Done",desc:"Log 5 runs",unlocked:runs.length>=5,rarity:"common"},
+        {id:"run10",icon:"🌟",name:"10 Runs Strong",desc:"Log 10 runs",unlocked:runs.length>=10,rarity:"rare"},
+        {id:"run25",icon:"⚡",name:"25 Runs",desc:"Log 25 runs",unlocked:runs.length>=25,rarity:"rare"},
+        {id:"run50",icon:"🏅",name:"50 Runs",desc:"Log 50 runs",unlocked:runs.length>=50,rarity:"epic"},
+        {id:"run100",icon:"🏆",name:"Century Runner",desc:"Log 100 runs",unlocked:runs.length>=100,rarity:"legendary"},
+        {id:"dist10",icon:"🗺️",name:"10km Club",desc:"Run 10km total",unlocked:totalRunDist>=10,rarity:"common"},
+        {id:"dist50",icon:"🌍",name:"50km Club",desc:"Run 50km total",unlocked:totalRunDist>=50,rarity:"rare"},
+        {id:"dist100",icon:"💯",name:"100km Club",desc:"Run 100km total",unlocked:totalRunDist>=100,rarity:"epic"},
+        {id:"dist500",icon:"🌏",name:"500km Legend",desc:"Run 500km total",unlocked:totalRunDist>=500,rarity:"legendary"},
+        {id:"sub30",icon:"⏱️",name:"Sub-30 5km",desc:"Run 5km in under 30 min",unlocked:(()=>{const pb=JSON.parse(localStorage.getItem("fb_run_pbs")||"{}");return pb["dist_5"]&&pb["dist_5"]<6;})(),rarity:"epic"},
+        {id:"sub25",icon:"🚀",name:"Sub-25 5km",desc:"Run 5km in under 25 min",unlocked:(()=>{const pb=JSON.parse(localStorage.getItem("fb_run_pbs")||"{}");return pb["dist_5"]&&pb["dist_5"]<5;})(),rarity:"legendary"},
+        {id:"marathon",icon:"🏁",name:"Marathoner",desc:"Complete a marathon distance",unlocked:runs.some(r=>r.distance>=42),rarity:"legendary"},
+        {id:"halfmarathon",icon:"🎖️",name:"Half Marathoner",desc:"Complete a half marathon",unlocked:runs.some(r=>r.distance>=21),rarity:"epic"},
+      ]
+    },
       badges:[
         {id:"earlybird",icon:"🌅",name:"Early Bird",desc:"Complete a workout before 7am",unlocked:completedDates.some(d=>new Date(d).getHours()<7),rarity:"rare"},
         {id:"nightowl",icon:"🦉",name:"Night Owl",desc:"Complete a workout after 9pm",unlocked:completedDates.some(d=>new Date(d).getHours()>=21),rarity:"rare"},
