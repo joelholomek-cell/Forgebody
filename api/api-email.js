@@ -11,190 +11,125 @@ export default async function handler(req, res) {
   const { type, email, name } = req.body;
   if (!type || !email) return res.status(400).json({ error: 'Missing type or email' });
 
-  const FROM = 'ForgeBody <hello@forgebody.fit>';
+  const FROM = 'Joel from ForgeBody <hello@forgebody.fit>';
+  const firstName = (name || 'Athlete').split(' ')[0];
+
+  const base = (content) => `<!DOCTYPE html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;min-height:100vh;">
+<tr><td align="center" style="padding:48px 20px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+<tr><td align="center" style="padding-bottom:28px;">
+  <span style="font-size:20px;font-weight:900;letter-spacing:3px;color:#fff;font-family:'Helvetica Neue',Arial,sans-serif;text-transform:uppercase;">FORGE<span style="color:#CCFF00">/</span>BODY</span>
+</td></tr>
+${content}
+<tr><td style="padding-top:28px;text-align:center;border-top:1px solid rgba(255,255,255,0.07);">
+  <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0 0 4px;font-family:'Helvetica Neue',Arial,sans-serif;">Questions? Just hit reply — I actually read them.</p>
+  <p style="color:rgba(255,255,255,0.12);font-size:11px;margin:0;font-family:'Helvetica Neue',Arial,sans-serif;">ForgeBody · forgebody.fit · Joel Holomek</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+
+  const card = (content) => `<tr><td style="background:#111111;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px 32px;">${content}</td></tr><tr><td height="20"></td></tr>`;
+
+  const cta = (text) => `<table cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;"><tr><td style="background:#CCFF00;border-radius:12px;padding:14px 28px;text-align:center;"><a href="https://forgebody.fit" style="color:#000;font-weight:900;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1.5px;font-family:'Helvetica Neue',Arial,sans-serif;">${text}</a></td></tr></table>`;
+
+  const quote = (text, byline='— Joel') => `
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:20px;">
+      <tr><td style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;">
+        <p style="color:rgba(255,255,255,0.5);font-size:13px;line-height:1.8;font-style:italic;margin:0 0 10px;font-family:'Helvetica Neue',Arial,sans-serif;">${text}</p>
+        <p style="color:rgba(255,255,255,0.25);font-size:11px;margin:0;font-family:'Helvetica Neue',Arial,sans-serif;">${byline}</p>
+      </td></tr>
+    </table>`;
+
+  const limeBox = (label, content) => `
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:20px;">
+      <tr><td style="background:rgba(204,255,0,0.07);border:1px solid rgba(204,255,0,0.2);border-radius:14px;padding:20px;">
+        <p style="color:#CCFF00;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;font-family:'Helvetica Neue',Arial,sans-serif;">${label}</p>
+        ${content}
+      </td></tr>
+    </table>`;
+
+  const step = (num, title, desc) => `
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:14px;">
+      <tr>
+        <td width="34" valign="top">
+          <div style="width:26px;height:26px;background:rgba(204,255,0,0.15);border-radius:7px;text-align:center;line-height:26px;font-size:13px;font-weight:900;color:#CCFF00;font-family:'Helvetica Neue',Arial,sans-serif;">${num}</div>
+        </td>
+        <td>
+          <p style="color:#fff;font-size:13px;font-weight:700;margin:0 0 3px;font-family:'Helvetica Neue',Arial,sans-serif;">${title}</p>
+          <p style="color:rgba(255,255,255,0.4);font-size:12px;line-height:1.5;margin:0;font-family:'Helvetica Neue',Arial,sans-serif;">${desc}</p>
+        </td>
+      </tr>
+    </table>`;
 
   const emails = {
     welcome: {
-      subject: `Welcome to ForgeBody, ${name || 'Athlete'} 💪`,
-      html: `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Welcome to ForgeBody</title>
-</head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;min-height:100vh;">
-<tr><td align="center" style="padding:40px 20px;">
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-
-  <!-- Logo -->
-  <tr><td align="center" style="padding-bottom:32px;">
-    <span style="font-size:24px;font-weight:900;letter-spacing:2px;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;text-transform:uppercase;">FORGE<span style="color:#CCFF00">/</span>BODY</span>
-  </td></tr>
-
-  <!-- Hero card -->
-  <tr><td style="background:linear-gradient(135deg,rgba(204,255,0,0.1),rgba(0,0,0,0.8));border:1px solid rgba(204,255,0,0.25);border-radius:20px;padding:40px 32px;text-align:center;">
-    <div style="font-size:48px;margin-bottom:16px;">💪</div>
-    <h1 style="color:#ffffff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;margin:0 0 8px;line-height:1.1;">Welcome, ${name || 'Athlete'}.</h1>
-    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin:0 0 28px;line-height:1.6;">Your 7-day free trial has started. Here's how to get the most out of it.</p>
-
-    <!-- Steps -->
-    <table width="100%" cellpadding="0" cellspacing="0">
-      ${[
-        ['🏋️', 'Start Your Workout', 'Go to the Train tab. Your personalised split is ready. Tap Start Workout.'],
-        ['🍽️', 'Set Up Your Meals', 'Open the Nutrition tab. Your meal plan is built around your goal and diet.'],
-        ['🤖', 'Meet Your AI Coach', 'Ask the AI Coach anything — workouts, nutrition, recovery. It knows your programme.'],
-        ['📋', 'Start the 12-Week Programme', 'Go to the sidebar and tap 12-Week Programme. Claude will build your plan in seconds.'],
-      ].map(([icon, title, desc]) => `
-      <tr><td style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:8px;text-align:left;display:block;margin-bottom:8px;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-            <td width="40" style="font-size:20px;vertical-align:top;padding-top:2px;">${icon}</td>
-            <td>
-              <div style="color:#ffffff;font-weight:700;font-size:14px;margin-bottom:4px;">${title}</div>
-              <div style="color:rgba(255,255,255,0.45);font-size:13px;line-height:1.5;">${desc}</div>
-            </td>
-          </tr>
-        </table>
-      </td></tr>
-      <tr><td height="8"></td></tr>
-      `).join('')}
-    </table>
-
-    <!-- CTA -->
-    <table cellpadding="0" cellspacing="0" style="margin:28px auto 0;">
-      <tr><td style="background:#CCFF00;border-radius:12px;padding:14px 32px;text-align:center;">
-        <a href="https://forgebody.fit" style="color:#000000;font-weight:900;font-size:15px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Open ForgeBody →</a>
-      </td></tr>
-    </table>
-  </td></tr>
-
-  <!-- Trial reminder -->
-  <tr><td style="padding:20px 0;text-align:center;">
-    <p style="color:rgba(255,255,255,0.25);font-size:12px;margin:0;line-height:1.6;">
-      Your free trial runs for 7 days. After that it's $19/month — cancel anytime before then and you won't be charged.<br/>
-      Questions? Reply to this email or WhatsApp us at +61 493 434 408.
-    </p>
-  </td></tr>
-
-  <!-- Footer -->
-  <tr><td style="text-align:center;padding-top:8px;">
-    <p style="color:rgba(255,255,255,0.15);font-size:11px;margin:0;">ForgeBody · forgebody.fit</p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`
+      subject: `You just made a decision most people never make.`,
+      html: base(card(`
+        <div style="font-size:44px;text-align:center;margin-bottom:16px;">🔥</div>
+        <h1 style="color:#fff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;margin:0 0 12px;line-height:1.1;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">${firstName}.<br/><span style="color:#CCFF00;">You're in.</span></h1>
+        <p style="color:rgba(255,255,255,0.5);font-size:14px;margin:0 0 24px;line-height:1.75;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">Most people say they'll start Monday.<br/>You just did something most people never do —<br/><strong style="color:rgba(255,255,255,0.85);">you actually started.</strong></p>
+        ${limeBox('Your first 3 steps',
+          step('1','Open the app','Go to forgebody.fit. Tap Train. Your personalised workout is waiting.') +
+          step('2','Start the 12-week programme','Tap the sidebar menu. Hit "12-Week Programme". Claude builds your entire plan in seconds.') +
+          step('3','Ask the AI coach anything','What to eat. How to lift. When to rest. It knows your exact programme.')
+        )}
+        <table cellpadding="0" cellspacing="0" style="width:100%;"><tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;"></td></tr></table>
+        ${quote(`Honestly? I built this app out of frustration. I couldn't keep paying $150 every time I wanted to train properly. I figured if I was feeling that way, other people probably were too.<br/><br/>I really hope ForgeBody changes something for you. Even if it's just feeling a bit more in control of your health — that's enough for me.`, '— Joel, Founder · Reply to this email anytime. I actually read them.')}
+        ${cta('Open ForgeBody →')}
+      `))
     },
 
-    trial_ending: {
-      subject: `Your ForgeBody trial ends tomorrow ⏰`,
-      html: `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;min-height:100vh;">
-<tr><td align="center" style="padding:40px 20px;">
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+    day3: {
+      subject: `3 days in. How's it going, ${firstName}?`,
+      html: base(card(`
+        <div style="font-size:44px;text-align:center;margin-bottom:16px;">💪</div>
+        <h1 style="color:#fff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;margin:0 0 12px;line-height:1.1;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">3 days in,<br/><span style="color:#CCFF00;">${firstName}.</span></h1>
+        <p style="color:rgba(255,255,255,0.5);font-size:14px;margin:0 0 24px;line-height:1.75;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">You know what the hardest part of any transformation is?<br/><strong style="color:rgba(255,255,255,0.85);">The first 3 days.</strong><br/>You've already done it.</p>
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:20px;"><tr><td style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;">
+          <p style="color:rgba(255,255,255,0.3);font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;font-family:'Helvetica Neue',Arial,sans-serif;">Have you tried these yet?</p>
+          ${[['📋','12-Week Programme','Let Claude build your complete plan. 84 sessions. Progressive overload built in. Zero guesswork.'],['🤖','AI Coach','Ask it anything. What to eat. How to lift. It knows your exact programme.'],['🏃','Run Tracker','Log every run. Track your pace zones. See yourself getting faster.']].map(([icon,title,desc])=>`
+          <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:12px;"><tr>
+            <td width="32" valign="top" style="font-size:18px;padding-top:2px;">${icon}</td>
+            <td><p style="color:#fff;font-size:13px;font-weight:700;margin:0 0 2px;font-family:'Helvetica Neue',Arial,sans-serif;">${title}</p><p style="color:rgba(255,255,255,0.4);font-size:12px;line-height:1.5;margin:0;font-family:'Helvetica Neue',Arial,sans-serif;">${desc}</p></td>
+          </tr></table>`).join('')}
+        </td></tr></table>
+        <table cellpadding="0" cellspacing="0" style="width:100%;"><tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;"></td></tr></table>
+        ${quote(`Day 3 is actually where most people quietly disappear. They sign up excited, life gets in the way, and they tell themselves they'll get back to it.<br/><br/>You're still here. That already puts you ahead of most people.<br/><br/>Keep going. It gets easier from here — not because it gets less hard, but because it becomes who you are.`)}
+        ${cta("Let's Train →")}
+      `))
+    },
 
-  <tr><td align="center" style="padding-bottom:32px;">
-    <span style="font-size:24px;font-weight:900;letter-spacing:2px;color:#ffffff;text-transform:uppercase;">FORGE<span style="color:#CCFF00">/</span>BODY</span>
-  </td></tr>
-
-  <tr><td style="background:linear-gradient(135deg,rgba(251,146,60,0.12),rgba(0,0,0,0.8));border:1px solid rgba(251,146,60,0.3);border-radius:20px;padding:40px 32px;text-align:center;">
-    <div style="font-size:48px;margin-bottom:16px;">⏰</div>
-    <h1 style="color:#ffffff;font-size:26px;font-weight:900;text-transform:uppercase;margin:0 0 12px;line-height:1.1;">Your trial ends<br/>tomorrow, ${name || 'Athlete'}.</h1>
-    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin:0 0 28px;line-height:1.6;">Keep everything you've built — your workouts, progress, meal plans and AI coach — for just $19/month.</p>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      ${[
-        ['🏋️', 'Your workout programme'],
-        ['🍽️', 'Your personalised meal plans'],
-        ['📊', 'Your progress & personal bests'],
-        ['🤖', 'AI coach access 24/7'],
-        ['📋', 'Your 12-week programme'],
-      ].map(([icon, text]) => `
-      <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-            <td width="32" style="font-size:16px;">${icon}</td>
-            <td style="color:rgba(255,255,255,0.7);font-size:14px;text-align:left;">${text}</td>
-            <td width="24" style="color:#CCFF00;font-size:14px;">✓</td>
-          </tr>
-        </table>
-      </td></tr>`).join('')}
-    </table>
-
-    <table cellpadding="0" cellspacing="0" style="margin:0 auto 16px;">
-      <tr><td style="background:#CCFF00;border-radius:12px;padding:14px 32px;text-align:center;">
-        <a href="https://forgebody.fit" style="color:#000000;font-weight:900;font-size:15px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Keep My Access →</a>
-      </td></tr>
-    </table>
-
-    <p style="color:rgba(255,255,255,0.3);font-size:12px;margin:0;">If you'd like to cancel, just tap Manage Subscription in the app. No hard feelings.</p>
-  </td></tr>
-
-  <tr><td style="text-align:center;padding-top:20px;">
-    <p style="color:rgba(255,255,255,0.15);font-size:11px;margin:0;">ForgeBody · forgebody.fit</p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`
+    week1: {
+      subject: `One week. You're already different, ${firstName}.`,
+      html: base(card(`
+        <div style="font-size:44px;text-align:center;margin-bottom:16px;">🏆</div>
+        <h1 style="color:#fff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;margin:0 0 12px;line-height:1.1;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">One week.<br/><span style="color:#CCFF00;">You showed up.</span></h1>
+        <p style="color:rgba(255,255,255,0.5);font-size:14px;margin:0 0 24px;line-height:1.75;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">Most people who download a fitness app never make it past day 3.<br/><strong style="color:rgba(255,255,255,0.85);">You just finished week one.</strong></p>
+        ${limeBox('This week, go deeper',`<p style="color:rgba(255,255,255,0.55);font-size:13px;line-height:1.7;margin:0;font-family:'Helvetica Neue',Arial,sans-serif;">Log your measurements. Take a progress photo — even if you don't feel like you've changed yet. Start the 12-week programme if you haven't.<br/><br/><strong style="color:rgba(255,255,255,0.75);">Week two is where the habit forms. Don't skip it.</strong></p>`)}
+        <table cellpadding="0" cellspacing="0" style="width:100%;"><tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;"></td></tr></table>
+        ${quote(`I won't pretend I know exactly what your first week looked like. Maybe you smashed it. Maybe it was harder than you expected. Maybe a bit of both.<br/><br/>Either way — you came back. And that's genuinely all that matters at this stage.<br/><br/>Week two. Let's go.`)}
+        ${cta('Open ForgeBody →')}
+      `))
     },
 
     streak_broken: {
-      subject: `Your streak is gone. But it's not over 🔥`,
-      html: `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;min-height:100vh;">
-<tr><td align="center" style="padding:40px 20px;">
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-
-  <tr><td align="center" style="padding-bottom:32px;">
-    <span style="font-size:24px;font-weight:900;letter-spacing:2px;color:#ffffff;text-transform:uppercase;">FORGE<span style="color:#CCFF00">/</span>BODY</span>
-  </td></tr>
-
-  <tr><td style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 32px;text-align:center;">
-    <div style="font-size:48px;margin-bottom:16px;">💪</div>
-    <h1 style="color:#ffffff;font-size:26px;font-weight:900;text-transform:uppercase;margin:0 0 12px;line-height:1.1;">Streaks break.<br/>Champions don't.</h1>
-    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin:0 0 24px;line-height:1.6;">Hey ${name || 'Athlete'}, you missed a day. That's fine. Every athlete misses days. What matters is what you do next.</p>
-
-    <div style="background:rgba(204,255,0,0.08);border:1px solid rgba(204,255,0,0.2);border-radius:12px;padding:20px;margin-bottom:24px;">
-      <p style="color:rgba(255,255,255,0.6);font-size:14px;font-style:italic;margin:0;line-height:1.6;">"The only workout you regret is the one you didn't do."</p>
-    </div>
-
-    <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
-      <tr><td style="background:#CCFF00;border-radius:12px;padding:14px 32px;text-align:center;">
-        <a href="https://forgebody.fit" style="color:#000000;font-weight:900;font-size:15px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Start New Streak →</a>
-      </td></tr>
-    </table>
-  </td></tr>
-
-  <tr><td style="text-align:center;padding-top:20px;">
-    <p style="color:rgba(255,255,255,0.15);font-size:11px;margin:0;">ForgeBody · forgebody.fit</p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`
+      subject: `${firstName}, your streak broke. Here's the truth about that.`,
+      html: base(card(`
+        <div style="font-size:44px;text-align:center;margin-bottom:16px;">💪</div>
+        <h1 style="color:#fff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;margin:0 0 12px;line-height:1.1;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">Streaks break.<br/><span style="color:#CCFF00;">Champions don't.</span></h1>
+        <p style="color:rgba(255,255,255,0.5);font-size:14px;margin:0 0 24px;line-height:1.75;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;">You missed a day, ${firstName}. That's just life.<br/><strong style="color:rgba(255,255,255,0.85);">It doesn't undo anything.</strong></p>
+        ${limeBox('',`<p style="color:rgba(255,255,255,0.6);font-size:14px;font-style:italic;line-height:1.75;margin:0;font-family:'Helvetica Neue',Arial,sans-serif;">Your workouts are still there. Your progress is still there. Your programme is still there. Nothing was lost.</p>`)}
+        <table cellpadding="0" cellspacing="0" style="width:100%;"><tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;"></td></tr></table>
+        ${quote(`I've missed days too. Everyone has. The people who transform aren't the ones who never miss — they're the ones who don't let one missed day become two.<br/><br/>That's it. That's the whole secret.<br/><br/>See you back in the app.`)}
+        ${cta('Start My New Streak →')}
+      `))
     }
   };
 
-  const emailData = emails[type];
-  if (!emailData) return res.status(400).json({ error: 'Unknown email type' });
+  const emailTemplate = emails[type];
+  if (!emailTemplate) return res.status(400).json({ error: `Unknown email type: ${type}` });
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -206,20 +141,20 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: FROM,
         to: [email],
-        subject: emailData.subject,
-        html: emailData.html,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
       }),
     });
 
     const data = await response.json();
     if (!response.ok) {
-      console.error('Resend error:', data);
-      return res.status(response.status).json({ error: data.message || 'Email failed' });
+      console.error('Resend error:', response.status, data);
+      return res.status(response.status).json({ error: data.message || 'Email send failed' });
     }
 
     return res.status(200).json({ success: true, id: data.id });
   } catch (error) {
-    console.error('Email handler error:', error);
+    console.error('Email error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
