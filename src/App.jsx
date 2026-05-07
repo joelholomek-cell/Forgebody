@@ -2901,8 +2901,6 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
           </div>
         </div>
       </div>
-    );        </div>
-      </div>
     );
   }
 
