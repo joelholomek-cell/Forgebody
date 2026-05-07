@@ -4205,43 +4205,53 @@ Start yours → forgebody.fit`;try{if(navigator.share)await navigator.share({tit
     );
   }
 
-  // Day detail
+  // Day detail — use full WorkoutSession for logging, rest timer, PBs
   if(showDay!==null){
     const dayW=workouts[showDay]||workouts[0]||{label:'Session',exercises:[]};
     const isDone=completed.includes(`w${currentWeek}d${showDay}`);
-    const ALL_EX_FLAT=Object.entries(EXERCISES).flatMap(([,exs])=>exs.map(ex=>({...ex})));
+
+    if(!isDone){
+      const customWorkout={
+        name:`Week ${currentWeek} · ${dayW.label}`,
+        label:dayW.label,
+        exercises:(dayW.exercises||[]).map(ex=>({
+          name:ex.name,
+          sets:parseInt(ex.sets)||3,
+          reps:ex.reps||'8-10',
+          rest:ex.rest||'90 sec',
+          notes:ex.cue||'',
+          muscle:'chest',
+        }))
+      };
+      return <WorkoutSession customWorkout={customWorkout} onDone={()=>markDone(currentWeek,showDay)}/>;
+    }
+
+    // Already done — show completed summary
+    const ALL_EX_FLAT=Object.entries(EXERCISES).flatMap(([muscle,exs])=>exs.map(ex=>({...ex,muscle})));
     return(
-      <div style={{minHeight:'100vh',background:'#0a0a0a',padding:'1.5rem 1.25rem 4rem',position:'relative',animation:'fadeUp 0.3s ease'}}>
+      <div style={{minHeight:'100vh',background:'#0a0a0a',padding:'1.5rem 1.25rem 4rem',position:'relative'}}>
         <div style={{position:'absolute',inset:0,background:`radial-gradient(ellipse 80% 35% at 15% 5%,${GS.bg} 0%,transparent 50%)`,pointerEvents:'none'}}/>
         <div style={{maxWidth:'440px',margin:'0 auto',position:'relative',zIndex:1}}>
           <button onClick={()=>setShowDay(null)} style={{...s.btnSm,marginBottom:'1.25rem'}}>← Back</button>
-          <div style={{fontSize:'0.6rem',fontWeight:800,letterSpacing:'0.15em',textTransform:'uppercase',color:GS.accent,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:'0.35rem'}}>Week {currentWeek} · {phase}</div>
-          <div style={{fontSize:'2.4rem',fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:'uppercase',color:'#fff',marginBottom:'0.2rem',lineHeight:1}}>{dayW.label}</div>
-          <div style={{fontSize:'0.82rem',color:'rgba(255,255,255,0.4)',fontFamily:"'Barlow',sans-serif",marginBottom:'1.5rem'}}>{(dayW.exercises||[]).length} exercises · {config?.level} · {phase}</div>
+          <div style={{textAlign:'center',padding:'1.5rem 0',marginBottom:'1rem'}}>
+            <div style={{fontSize:'3rem',marginBottom:'0.75rem'}}>✅</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:'uppercase',fontSize:'1.5rem',color:'#fff',marginBottom:'0.25rem'}}>{dayW.label}</div>
+            <div style={{fontSize:'0.85rem',color:'rgba(255,255,255,0.4)',fontFamily:"'Barlow',sans-serif"}}>Session complete · Week {currentWeek}</div>
+          </div>
           {(dayW.exercises||[]).map((ex,i)=>{
             const match=ALL_EX_FLAT.find(e=>e.name?.toLowerCase()===ex.name?.toLowerCase());
             return(
-              <div key={i} className="card-anim" style={{animationDelay:`${i*0.06}s`,background:'rgba(255,255,255,0.05)',backdropFilter:'blur(15px)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:'18px',padding:'0.9rem 1rem',marginBottom:'0.5rem',display:'flex',alignItems:'center',gap:'0.9rem'}}>
-                {match?.gif
-                  ?<div style={{width:'50px',height:'50px',borderRadius:'12px',overflow:'hidden',background:'rgba(255,255,255,0.06)',flexShrink:0}}><ExerciseAnimation exName={match.name} muscle={match.muscle}/></div>
-                  :<div style={{width:'50px',height:'50px',borderRadius:'12px',background:GS.bg,border:`1px solid ${GS.border}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:'1.1rem',color:GS.accent}}>{i+1}</div>
-                }
+              <div key={i} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'0.85rem 1rem',marginBottom:'0.4rem',display:'flex',alignItems:'center',gap:'0.85rem',opacity:0.65}}>
+                {match?<div style={{width:'44px',height:'44px',borderRadius:'10px',overflow:'hidden',flexShrink:0}}><ExerciseAnimation exName={match.name} muscle={match.muscle}/></div>
+                :<div style={{width:'44px',height:'44px',borderRadius:'10px',background:GS.bg,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:GS.accent,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900}}>{i+1}</div>}
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:'uppercase',fontSize:'0.9rem',color:'#fff',marginBottom:'0.25rem'}}>{ex.name}</div>
-                  <div style={{display:'flex',gap:'0.35rem',flexWrap:'wrap'}}>
-                    <span style={s.tag}>{ex.sets} sets</span>
-                    <span style={s.tagGray}>{ex.reps} reps</span>
-                    {ex.rest&&<span style={s.tagGray}>{ex.rest}</span>}
-                  </div>
-                  {ex.cue&&<div style={{fontSize:'0.7rem',color:'rgba(255,255,255,0.3)',fontFamily:"'Barlow',sans-serif",marginTop:'0.3rem',fontStyle:'italic'}}>{ex.cue}</div>}
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:'uppercase',fontSize:'0.88rem',color:'rgba(255,255,255,0.6)'}}>{ex.name}</div>
+                  <div style={{fontSize:'0.72rem',color:'rgba(255,255,255,0.3)',fontFamily:"'Barlow',sans-serif"}}>{ex.sets} sets · {ex.reps} reps</div>
                 </div>
               </div>
             );
           })}
-          {!isDone
-            ?<button onClick={()=>markDone(currentWeek,showDay)} style={{width:'100%',padding:'1.1rem',background:GS.accent,color:GS.accent==='#CCFF00'?'#000':'#fff',border:'none',borderRadius:'14px',fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:'1rem',letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer',boxShadow:`0 0 30px ${GS.glow}`,marginTop:'1rem',animation:'glowPulse 2s ease-in-out infinite'}}>Mark Session Complete ✓</button>
-            :<div style={{textAlign:'center',padding:'1rem',color:GS.accent,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:'uppercase',fontSize:'0.9rem',marginTop:'1rem'}}>✓ Session Complete</div>
-          }
+          <button onClick={()=>setShowDay(null)} style={{...s.btn,width:'100%',padding:'1rem',marginTop:'1rem'}}>Back to Programme →</button>
         </div>
       </div>
     );
