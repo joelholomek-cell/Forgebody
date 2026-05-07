@@ -21,13 +21,29 @@ const GLASS = `
   input,select,textarea{color:#fff!important;-webkit-text-fill-color:#fff!important}
   input::placeholder,textarea::placeholder{color:rgba(255,255,255,0.3)!important}
   select option{background:#111;color:#fff}
-  *{box-sizing:border-box}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
   @keyframes gradSpin{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
   @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+  @keyframes scaleIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes glowPulse{0%,100%{box-shadow:0 0 12px rgba(204,255,0,0.15)}50%{box-shadow:0 0 28px rgba(204,255,0,0.4)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.07)}28%{transform:scale(1)}}
+  @keyframes shimmer{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
+  @keyframes spin360{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .anim-fadeUp{animation:fadeUp 0.4s ease both}
+  .anim-scaleIn{animation:scaleIn 0.25s ease both}
+  .anim-slideUp{animation:slideUp 0.35s ease both}
+  .anim-float{animation:float 3s ease-in-out infinite}
+  .anim-glowPulse{animation:glowPulse 2s ease-in-out infinite}
+  .anim-heartbeat{animation:heartbeat 1.5s ease-in-out infinite}
+  .press{transition:transform 0.12s ease} .press:active{transform:scale(0.97)}
+  .card-anim{animation:scaleIn 0.3s ease both}
 `;
+
 
 const s = {
   app:{ minHeight:"100vh", background:"#0a0a0a", color:C.white, fontFamily:"'Barlow Condensed','Barlow',sans-serif", paddingBottom:"72px", position:"relative", zIndex:1 },
@@ -2315,10 +2331,14 @@ function HomeScreen({profile,user,onNavigate}){
       )}
 
       {/* 12-WEEK PROGRAMME CARD */}
-      <ProgrammeHomeCard onNavigate={onNavigate}/>
+      <div className="anim-slideUp" style={{animationDelay:"0.05s"}}>
+        <ProgrammeHomeCard onNavigate={onNavigate}/>
+      </div>
 
       {/* STREAK PROTECTION */}
-      <StreakProtectionAlert streak={streak} onNavigate={onNavigate}/>
+      <div className="anim-slideUp" style={{animationDelay:"0.1s"}}>
+        <StreakProtectionAlert streak={streak} onNavigate={onNavigate}/>
+      </div>
 
       {/* COACH CHECK-IN */}
       <CoachCheckIn/>
@@ -4140,8 +4160,29 @@ function ProgrammeScreen({onStartWorkout}){
   const completedCount=completedSessions.length;
   const progressPct=Math.round((completedCount/totalSessions)*100);
   const currentWeekData=prog?.weeks?.[currentWeek-1];
-  const workouts=currentWeekData?.sessions||buildSessions(config?.days||4,config?.level||"intermediate",config?.goal||"muscle",currentWeek);
-  const todayWorkout=workouts[currentDay];
+
+  // Normalize sessions — handle different AI response structures
+  function normalizeSessions(weekData){
+    const raw=weekData?.sessions||weekData?.workouts||weekData?.days||[];
+    if(!Array.isArray(raw)||raw.length===0){
+      return buildSessions(config?.days||4,config?.level||"intermediate",config?.goal||"muscle",currentWeek);
+    }
+    return raw.map((s,i)=>({
+      day:s.day||`Day ${i+1}`,
+      label:s.label||s.name||s.title||`Session ${i+1}`,
+      focus:s.focus||"",
+      exercises:(s.exercises||s.workout||[]).map(ex=>({
+        name:ex.name||ex.exercise||"Exercise",
+        sets:String(ex.sets||"3"),
+        reps:String(ex.reps||"10-12"),
+        rest:ex.rest||"",
+        cue:ex.cue||ex.notes||""
+      }))
+    }));
+  }
+
+  const workouts=normalizeSessions(currentWeekData);
+  const todayWorkout=workouts[currentDay]||workouts[0]||{label:"Session",exercises:[]};
 
   // Certificate
   if(showComplete){
@@ -4184,8 +4225,7 @@ Start yours free → forgebody.fit`;try{if(navigator.share)await navigator.share
 
   // Day detail view
   if(showDay!==null){
-    const dayW=workouts[showDay];
-    if(!dayW)return <div style={{background:"#0a0a0a",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Session not found</div></div>;
+    const dayW=workouts[showDay]||workouts[0]||{label:"Session",exercises:[]};
     const sessionKey=`w${currentWeek}d${showDay}`;
     const isDone=completedSessions.includes(sessionKey);
     // Match exercises to our database for gifs
@@ -5203,7 +5243,7 @@ function FirstTimeFlow({onDone}){
 function MilestoneAlert({milestone,onDone}){
   useEffect(()=>{const t=setTimeout(onDone,4000);return()=>clearTimeout(t);},[]);
   return(
-    <div onClick={onDone} style={{position:"fixed",top:"1.5rem",left:"50%",transform:"translateX(-50%)",zIndex:600,width:"calc(100% - 2.5rem)",maxWidth:"400px",background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(150,220,0,0.08))",backdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"1.1rem 1.25rem",display:"flex",alignItems:"center",gap:"1rem",boxShadow:"0 8px 40px rgba(204,255,0,0.15)",animation:"slideDown 0.4s ease",cursor:"pointer"}}>
+    <div onClick={onDone} style={{position:"fixed",top:"1.5rem",left:"50%",transform:"translateX(-50%)",zIndex:600,width:"calc(100% - 2.5rem)",maxWidth:"400px",background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(150,220,0,0.08))",backdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"1.1rem 1.25rem",display:"flex",alignItems:"center",gap:"1rem",boxShadow:"0 8px 40px rgba(204,255,0,0.15)",animation:"slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)",cursor:"pointer"}}>
       <style>{`@keyframes slideDown{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}`}</style>
       <div style={{fontSize:"2rem",flexShrink:0}}>{milestone.icon}</div>
       <div>
