@@ -5147,6 +5147,26 @@ function useMilestones(){
     const shown=JSON.parse(localStorage.getItem("fb_milestones_shown")||"[]");
     const dates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
     const workoutCount=dates.length;
+
+    // Check streak broken — if had streak yesterday but not today
+    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    const today=new Date().toDateString();
+    const trainedToday=dates.some(d=>new Date(d).toDateString()===today);
+    const trainedYesterday=dates.some(d=>new Date(d).toDateString()===yesterday.toDateString());
+    const streakBrokenKey="streak_broken_"+today;
+    if(!trainedToday&&trainedYesterday&&!shown.includes(streakBrokenKey)){
+      // Check if had a streak of 3+
+      let streak=0;
+      for(let i=1;i<10;i++){const d=new Date();d.setDate(d.getDate()-i);if(dates.some(c=>new Date(c).toDateString()===d.toDateString()))streak++;else break;}
+      if(streak>=3){
+        localStorage.setItem("fb_milestones_shown",JSON.stringify([...shown,streakBrokenKey]));
+        // Trigger streak broken email
+        const user=JSON.parse(localStorage.getItem("fb_profile")||"{}");
+        if(user.email){
+          fetch("/api/email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"streak_broken",email:user.email,name:user.name||"Athlete"})}).catch(()=>{});
+        }
+      }
+    }
     const MILESTONES=[
       {id:"first_workout",check:()=>workoutCount>=1,icon:"🎉",title:"First Workout Done!",desc:"You started. That's the hardest part."},
       {id:"three_workouts",check:()=>workoutCount>=3,icon:"🔥",title:"3 Workouts Complete!",desc:"Consistency is building. Keep going."},
@@ -5511,14 +5531,22 @@ export default function ForgeBodyApp(){
     return()=>listener.subscription.unsubscribe();
   },[]);
 
+  async function sendEmail(type,email,name){
+    try{
+      await fetch("/api/email",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({type,email,name})
+      });
+    }catch(e){console.error("Email failed:",e);}
+  }
+
   async function saveSubscription(uid){
     const plan=localStorage.getItem("fb_pending_plan")||"monthly";
-    // Update existing row
     const{error}=await supabase.from("profiles")
       .update({subscribed:true,plan,subscribed_at:new Date().toISOString()})
       .eq("user_id",uid);
     if(error){
-      // No row yet — insert
       await supabase.from("profiles").insert({
         user_id:uid,subscribed:true,plan,
         subscribed_at:new Date().toISOString(),onboarded:false
@@ -5535,7 +5563,22 @@ export default function ForgeBodyApp(){
       const{data}=await supabase.from("profiles").select("*").eq("user_id",user.id).single();
       if(!data||!data.onboarded){setShowOnboarding(true);setPage("app");return;}
       setProfile(data);
-      // Dev bypass skips subscription check
+
+      // Send welcome email once
+      if(!localStorage.getItem("fb_welcome_sent")){
+        localStorage.setItem("fb_welcome_sent","true");
+        sendEmail("welcome",user.email,data.name||"Athlete");
+      }
+
+      // Send day 6 trial reminder
+      if(data.subscribed_at&&!localStorage.getItem("fb_trial_email_sent")){
+        const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
+        if(daysSince>=6){
+          localStorage.setItem("fb_trial_email_sent","true");
+          sendEmail("trial_ending",user.email,data.name||"Athlete");
+        }
+      }
+
       const devBypass=localStorage.getItem("fb_dev_bypass")==="true";
       if(!data.subscribed&&!devBypass)setShowSubscription(true);
       setPage("app");
