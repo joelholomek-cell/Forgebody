@@ -863,6 +863,482 @@ function ExitIntentPopup({onClaim,onDismiss}){
   );
 }
 
+// ─── FULL RUNNING FEATURE ────────────────────────────────────────────────────
+function RunFeature(){
+  const[tab,setTab]=useState("log"); // log | history | goals | pbs
+  const[runs,setRuns]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_runs")||"[]");}catch{return[];}});
+  const[unit,setUnit]=useState(()=>localStorage.getItem("fb_run_unit")||"km");
+
+  // Log form state
+  const[dist,setDist]=useState("");
+  const[hours,setHours]=useState("");
+  const[mins,setMins]=useState("");
+  const[secs,setSecs]=useState("");
+  const[type,setType]=useState("easy");
+  const[notes,setNotes]=useState("");
+  const[saved,setSaved]=useState(false);
+
+  // Goals
+  const[goals,setGoals]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_run_goals")||"{}");}catch{return{};}});
+
+  function getTotalMins(){return(parseInt(hours||0)*60)+(parseInt(mins||0))+(parseInt(secs||0)/60);}
+  function getPace(distance,totalMins){if(!distance||!totalMins)return 0;return totalMins/distance;}
+  function formatPace(pace){if(!pace||!isFinite(pace)||pace<=0)return"—";const m=Math.floor(pace);const s=Math.round((pace-m)*60);return`${m}:${s.toString().padStart(2,"0")}`;}
+  function formatTime(totalMins){if(!totalMins)return"—";const h=Math.floor(totalMins/60);const m=Math.floor(totalMins%60);const s=Math.round((totalMins*60)%60);if(h>0)return`${h}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;return`${m}:${s.toString().padStart(2,"0")}`;}
+  function getSpeedKph(distance,totalMins){if(!distance||!totalMins)return 0;return(distance/(totalMins/60));}
+
+  function getPaceZone(pace){
+    // pace = min/km
+    if(pace<=3.5)return{zone:"Race Pace",color:"#ef4444",desc:"Max effort"};
+    if(pace<=4.2)return{zone:"Threshold",color:"#f97316",desc:"Hard but sustainable"};
+    if(pace<=5.0)return{zone:"Tempo",color:"#fbbf24",desc:"Comfortably hard"};
+    if(pace<=6.0)return{zone:"Aerobic",color:"#22c55e",desc:"Conversational"};
+    return{zone:"Easy",color:"#60a5fa",desc:"Recovery pace"};
+  }
+
+  function saveRun(){
+    const totalMins=getTotalMins();
+    if(!dist||totalMins<=0)return;
+    const distance=parseFloat(dist);
+    const pace=getPace(distance,totalMins);
+    const speed=getSpeedKph(distance,totalMins);
+    const calories=Math.round(totalMins*8.5); // rough estimate
+    const run={
+      id:Date.now(),distance,time:totalMins,unit,pace,speed,calories,
+      type,notes,date:new Date().toISOString(),
+    };
+    const updated=[run,...runs];
+    setRuns(updated);
+    localStorage.setItem("fb_runs",JSON.stringify(updated));
+
+    // Check PBs
+    checkRunPBs(run,runs);
+
+    setDist("");setHours("");setMins("");setSecs("");setNotes("");setSaved(true);
+    setTimeout(()=>{setSaved(false);},2500);
+  }
+
+  function checkRunPBs(newRun,existingRuns){
+    const pbs=JSON.parse(localStorage.getItem("fb_run_pbs")||"{}");
+    let newPB=false;
+    // Best pace PB
+    if(!pbs.bestPace||newRun.pace<pbs.bestPace){pbs.bestPace=newRun.pace;newPB=true;}
+    // Distance PBs for common distances
+    const distances=[1,3,5,10,21.1,42.2];
+    distances.forEach(d=>{
+      const tolerance=d*0.02; // 2% tolerance
+      if(Math.abs(newRun.distance-d)<=tolerance){
+        const key=`dist_${d}`;
+        if(!pbs[key]||newRun.pace<pbs[key]){pbs[key]=newRun.pace;newPB=true;}
+      }
+    });
+    // Longest run PB
+    if(!pbs.longest||newRun.distance>pbs.longest){pbs.longest=newRun.distance;newPB=true;}
+    localStorage.setItem("fb_run_pbs",JSON.stringify(pbs));
+  }
+
+  function deleteRun(id){const updated=runs.filter(r=>r.id!==id);setRuns(updated);localStorage.setItem("fb_runs",JSON.stringify(updated));}
+
+  // Stats
+  const totalDist=runs.reduce((a,r)=>a+(r.distance||0),0);
+  const totalTime=runs.reduce((a,r)=>a+(r.time||0),0);
+  const totalCals=runs.reduce((a,r)=>a+(r.calories||0),0);
+  const bestPace=runs.filter(r=>r.pace>0).length?Math.min(...runs.filter(r=>r.pace>0).map(r=>r.pace)):0;
+  const longestRun=runs.length?Math.max(...runs.map(r=>r.distance)):0;
+  const thisWeekRuns=runs.filter(r=>{const d=new Date(r.date);const now=new Date();const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay());return d>=weekStart;});
+  const thisWeekDist=thisWeekRuns.reduce((a,r)=>a+(r.distance||0),0);
+
+  const RUN_TYPES=[
+    {id:"easy",label:"Easy Run",icon:"🌿",color:"#60a5fa"},
+    {id:"tempo",label:"Tempo",icon:"⚡",color:"#fbbf24"},
+    {id:"intervals",label:"Intervals",icon:"🔥",color:"#ef4444"},
+    {id:"long",label:"Long Run",icon:"🏃",color:"#a855f7"},
+    {id:"race",label:"Race",icon:"🏁",color:"#f97316"},
+    {id:"recovery",label:"Recovery",icon:"💆",color:"#22c55e"},
+  ];
+
+  const currentPace=getPace(parseFloat(dist)||0,getTotalMins());
+  const currentZone=currentPace>0?getPaceZone(currentPace):null;
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Cardio"/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
+        <h2 style={{...s.sectionTitle,marginBottom:0}}>Run Tracker</h2>
+        <div style={{display:"flex",background:"rgba(255,255,255,0.06)",borderRadius:"8px",overflow:"hidden",border:"1px solid rgba(255,255,255,0.1)"}}>
+          {["km","mi"].map(u=>(
+            <button key={u} onClick={()=>{setUnit(u);localStorage.setItem("fb_run_unit",u);}} style={{padding:"0.3rem 0.65rem",background:unit===u?C.lime:"transparent",color:unit===u?"#000":"rgba(255,255,255,0.5)",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",textTransform:"uppercase"}}>{u}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab nav */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0.4rem",marginBottom:"1rem"}}>
+        {[{id:"log",label:"Log",icon:"➕"},{id:"history",label:"History",icon:"📋"},{id:"pbs",label:"PBs",icon:"🏆"},{id:"goals",label:"Goals",icon:"🎯"}].map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"0.55rem 0.25rem",background:tab===t.id?"rgba(204,255,0,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${tab===t.id?"rgba(204,255,0,0.3)":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:tab===t.id?C.lime:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",textTransform:"uppercase",cursor:"pointer",letterSpacing:"0.04em"}}>
+            <div style={{fontSize:"1rem",marginBottom:"2px"}}>{t.icon}</div>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* STATS BAR - always visible */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem",marginBottom:"0.75rem"}}>
+        {[
+          {n:`${thisWeekDist.toFixed(1)}`,l:`This Week (${unit})`,icon:"📅"},
+          {n:`${totalDist.toFixed(1)}`,l:`Total ${unit}`,icon:"🗺️"},
+          {n:bestPace>0?formatPace(bestPace):"—",l:`Best Pace`,icon:"⚡"},
+        ].map((x,i)=>(
+          <div key={i} style={{...s.card,textAlign:"center",padding:"0.75rem 0.4rem",marginBottom:0}}>
+            <div style={{fontSize:"1.1rem",marginBottom:"0.2rem"}}>{x.icon}</div>
+            <div style={{fontSize:"1.3rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+            <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1.3}}>{x.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* LOG TAB */}
+      {tab==="log"&&(
+        <div>
+          {/* Run type selector */}
+          <div style={{...s.card,marginBottom:"0.75rem"}}>
+            <label style={{...s.label,marginBottom:"0.6rem",display:"block"}}>Run Type</label>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.4rem"}}>
+              {RUN_TYPES.map(rt=>(
+                <button key={rt.id} onClick={()=>setType(rt.id)} style={{padding:"0.6rem 0.4rem",background:type===rt.id?`${rt.color}20`:"rgba(255,255,255,0.04)",border:`1px solid ${type===rt.id?rt.color:"rgba(255,255,255,0.08)"}`,borderRadius:"10px",cursor:"pointer",textAlign:"center"}}>
+                  <div style={{fontSize:"1.1rem",marginBottom:"2px"}}>{rt.icon}</div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.65rem",textTransform:"uppercase",color:type===rt.id?rt.color:"rgba(255,255,255,0.4)"}}>{rt.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Distance + Time */}
+          <div style={s.card}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem",marginBottom:"0.75rem"}}>
+              <div>
+                <label style={s.label}>Distance ({unit})</label>
+                <input type="number" step="0.01" placeholder="5.00" value={dist} onChange={e=>setDist(e.target.value)} style={{...s.input,marginBottom:0,fontSize:"1.1rem",fontWeight:700}}/>
+              </div>
+              <div>
+                <label style={s.label}>Time</label>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"4px"}}>
+                  {[{v:hours,set:setHours,ph:"0",l:"h"},{v:mins,set:setMins,ph:"25",l:"m"},{v:secs,set:setSecs,ph:"00",l:"s"}].map((f,i)=>(
+                    <div key={i} style={{position:"relative"}}>
+                      <input type="number" min="0" placeholder={f.ph} value={f.v} onChange={e=>f.set(e.target.value)} style={{...s.input,marginBottom:0,padding:"0.6rem 0.4rem",paddingRight:"1.2rem",fontSize:"0.9rem",textAlign:"center"}}/>
+                      <span style={{position:"absolute",right:"4px",top:"50%",transform:"translateY(-50%)",fontSize:"0.62rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800}}>{f.l}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Live pace indicator */}
+            {currentPace>0&&currentZone&&(
+              <div style={{background:`${currentZone.color}15`,border:`1px solid ${currentZone.color}40`,borderRadius:"12px",padding:"0.75rem 1rem",marginBottom:"0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.5rem",color:currentZone.color,lineHeight:1}}>{formatPace(currentPace)}<span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",marginLeft:"4px"}}>min/{unit}</span></div>
+                  <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif"}}>{getSpeedKph(parseFloat(dist),getTotalMins()).toFixed(1)} km/h</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.85rem",color:currentZone.color,textTransform:"uppercase"}}>{currentZone.zone}</div>
+                  <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{currentZone.desc}</div>
+                </div>
+              </div>
+            )}
+
+            <input style={{...s.input,marginBottom:"0.75rem"}} placeholder="Notes (optional — route, how you felt...)" value={notes} onChange={e=>setNotes(e.target.value)}/>
+            <button onClick={saveRun} disabled={!dist||getTotalMins()<=0} style={{...s.btn,width:"100%",padding:"1rem",opacity:dist&&getTotalMins()>0?1:0.4,fontSize:"0.95rem"}}>
+              {saved?"Run Saved! 🎉 Great work!":"Save Run →"}
+            </button>
+          </div>
+
+          {/* Pace zone guide */}
+          <div style={s.card}>
+            <label style={{...s.label,marginBottom:"0.6rem",display:"block"}}>Pace Zones</label>
+            {[
+              {zone:"Easy",range:"6:00+",color:"#60a5fa",desc:"Recovery & base building"},
+              {zone:"Aerobic",range:"5:00–6:00",color:"#22c55e",desc:"Conversational pace"},
+              {zone:"Tempo",range:"4:10–5:00",color:"#fbbf24",desc:"Comfortably hard"},
+              {zone:"Threshold",range:"3:30–4:10",color:"#f97316",desc:"Race day effort"},
+              {zone:"Race Pace",range:"<3:30",color:"#ef4444",desc:"Maximum effort"},
+            ].map((z,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.4rem 0",borderBottom:i<4?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                <div style={{width:"10px",height:"10px",borderRadius:"50%",background:z.color,flexShrink:0,boxShadow:`0 0 6px ${z.color}60`}}/>
+                <div style={{flex:1,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.8rem",color:"rgba(255,255,255,0.7)"}}>{z.zone}</div>
+                <div style={{fontSize:"0.75rem",color:z.color,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800}}>{z.range}</div>
+                <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",textAlign:"right",maxWidth:"100px"}}>{z.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* HISTORY TAB */}
+      {tab==="history"&&(
+        <div>
+          {runs.length===0?(
+            <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+              <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>🏃</div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No runs logged yet</div>
+              <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>Log your first run in the Log tab.</div>
+            </div>
+          ):(
+            <>
+              {/* Weekly summary */}
+              <div style={{...s.card,marginBottom:"0.75rem"}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.75rem"}}>
+                  {[
+                    {n:runs.length,l:"Total Runs",icon:"🏃"},
+                    {n:`${totalDist.toFixed(1)}${unit}`,l:"Total Distance",icon:"🗺️"},
+                    {n:Math.round(totalTime/60)+"h "+Math.round(totalTime%60)+"m",l:"Total Time",icon:"⏱️"},
+                    {n:`${totalCals.toLocaleString()} kcal`,l:"Calories Burned",icon:"🔥"},
+                  ].map((x,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem"}}>
+                      <span style={{fontSize:"1.2rem"}}>{x.icon}</span>
+                      <div>
+                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",color:C.white,lineHeight:1}}>{x.n}</div>
+                        <div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.06em"}}>{x.l}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {runs.map((run,i)=>{
+                const rt=RUN_TYPES.find(r=>r.id===run.type)||RUN_TYPES[0];
+                const zone=run.pace>0?getPaceZone(run.pace):null;
+                return(
+                  <div key={run.id||i} style={{...s.card,marginBottom:"0.5rem",position:"relative"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"0.85rem",marginBottom:run.notes?"0.5rem":"0"}}>
+                      <div style={{width:"40px",height:"40px",borderRadius:"12px",background:`${rt.color}15`,border:`1px solid ${rt.color}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.2rem"}}>{rt.icon}</div>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.2rem"}}>
+                          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.9rem",color:C.white}}>{run.distance.toFixed(2)}{run.unit}</div>
+                          {zone&&<div style={{background:`${zone.color}20`,border:`1px solid ${zone.color}30`,borderRadius:"4px",padding:"1px 6px",fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",color:zone.color,fontFamily:"'Barlow Condensed',sans-serif"}}>{zone.zone}</div>}
+                        </div>
+                        <div style={{display:"flex",gap:"0.75rem",flexWrap:"wrap"}}>
+                          <span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>⏱ {formatTime(run.time)}</span>
+                          <span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>🏃 {formatPace(run.pace)} /km</span>
+                          {run.calories>0&&<span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>🔥 {run.calories} kcal</span>}
+                        </div>
+                      </div>
+                      <div style={{textAlign:"right",flexShrink:0}}>
+                        <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{new Date(run.date).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}</div>
+                        <button onClick={()=>deleteRun(run.id)} style={{background:"transparent",border:"none",color:"rgba(255,100,100,0.4)",cursor:"pointer",fontSize:"1rem",padding:"0.15rem",marginTop:"0.2rem"}}>×</button>
+                      </div>
+                    </div>
+                    {run.notes&&<div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",fontStyle:"italic",paddingTop:"0.4rem",borderTop:"1px solid rgba(255,255,255,0.05)"}}>{run.notes}</div>}
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* PBs TAB */}
+      {tab==="pbs"&&(()=>{
+        const pbs=JSON.parse(localStorage.getItem("fb_run_pbs")||"{}");
+        const distancePBs=[
+          {key:"dist_1",label:"1km",icon:"🟢"},
+          {key:"dist_3",label:"3km",icon:"🟡"},
+          {key:"dist_5",label:"5km",icon:"🟠"},
+          {key:"dist_10",label:"10km",icon:"🔴"},
+          {key:"dist_21.1",label:"Half Marathon",icon:"🏅"},
+          {key:"dist_42.2",label:"Marathon",icon:"🏆"},
+        ];
+        return(
+          <div>
+            <div style={s.card}>
+              <label style={{...s.label,color:C.white,marginBottom:"0.75rem",display:"block"}}>Distance PBs</label>
+              {distancePBs.map((d,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.65rem 0",borderBottom:i<distancePBs.length-1?"1px solid rgba(255,255,255,0.06)":"none"}}>
+                  <span style={{fontSize:"1.2rem",flexShrink:0}}>{d.icon}</span>
+                  <div style={{flex:1,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>{d.label}</div>
+                  <div style={{textAlign:"right"}}>
+                    {pbs[d.key]?(
+                      <>
+                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.1rem",color:C.lime}}>{formatPace(pbs[d.key])}<span style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.4)",marginLeft:"3px"}}>min/km</span></div>
+                      </>
+                    ):(
+                      <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>Not set yet</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={s.card}>
+              <label style={{...s.label,color:C.white,marginBottom:"0.75rem",display:"block"}}>Other Records</label>
+              {[
+                {label:"Longest Run",value:pbs.longest?`${pbs.longest.toFixed(2)} ${unit}`:"Not set",icon:"🗺️"},
+                {label:"Best Pace (any distance)",value:pbs.bestPace?`${formatPace(pbs.bestPace)} min/km`:"Not set",icon:"⚡"},
+              ].map((r,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.65rem 0",borderBottom:i<1?"1px solid rgba(255,255,255,0.06)":"none"}}>
+                  <span style={{fontSize:"1.3rem"}}>{r.icon}</span>
+                  <div style={{flex:1,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.85rem",color:C.white}}>{r.label}</div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.95rem",color:r.value==="Not set"?"rgba(255,255,255,0.25)":C.lime}}>{r.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* GOALS TAB */}
+      {tab==="goals"&&(()=>{
+        const[localGoals,setLocalGoals]=useState(goals);
+        const[goalSaved,setGoalSaved]=useState(false);
+        function saveGoals(){localStorage.setItem("fb_run_goals",JSON.stringify(localGoals));setGoals(localGoals);setGoalSaved(true);setTimeout(()=>setGoalSaved(false),2000);}
+        const weeklyProgress=(thisWeekDist/((localGoals.weeklyDist||0)*1)).toFixed(1);
+        return(
+          <div>
+            {localGoals.weeklyDist>0&&(
+              <div style={{...s.card,marginBottom:"0.75rem"}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:"0.5rem"}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>Weekly Goal</div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.88rem",color:C.lime}}>{thisWeekDist.toFixed(1)} / {localGoals.weeklyDist} {unit}</div>
+                </div>
+                <div style={s.progressBar}><div style={{...s.progressFill,width:`${Math.min(100,Math.round((thisWeekDist/(localGoals.weeklyDist||1))*100))}%`}}/></div>
+                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",marginTop:"0.35rem"}}>{Math.round((thisWeekDist/(localGoals.weeklyDist||1))*100)}% complete this week</div>
+              </div>
+            )}
+            <div style={s.card}>
+              <label style={{...s.label,color:C.white,marginBottom:"0.75rem",display:"block"}}>Set Your Running Goals</label>
+              {[
+                {k:"weeklyDist",l:`Weekly Distance (${unit})`,ph:"20",icon:"📅"},
+                {k:"weeklyRuns",l:"Weekly Runs",ph:"3",icon:"🏃"},
+                {k:"targetPace",l:`Target Pace (min/${unit})`,ph:"5.30",icon:"⚡"},
+                {k:"goalRace",l:"Goal Race Distance",ph:"5km, 10km, Half...",icon:"🏁",text:true},
+              ].map(({k,l,ph,icon,text})=>(
+                <div key={k} style={{marginBottom:"0.85rem"}}>
+                  <label style={{...s.label,marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}}><span>{icon}</span>{l}</label>
+                  <input type={text?"text":"number"} step="0.01" placeholder={ph} value={localGoals[k]||""} onChange={e=>setLocalGoals(p=>({...p,[k]:e.target.value}))} style={{...s.input,marginBottom:0}}/>
+                </div>
+              ))}
+              <button onClick={saveGoals} style={{...s.btn,width:"100%",padding:"0.9rem"}}>{goalSaved?"Goals Saved ✓":"Save Goals"}</button>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ─── MACRO SETTINGS ───────────────────────────────────────────────────────────
+function MacroSettings(){
+  const[targets,setTargets]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_macro_targets")||"{}");}catch{return{};}});
+  const[saved,setSaved]=useState(false);
+  function update(k,v){setTargets(p=>({...p,[k]:parseInt(v)||0}));}
+  function save(){localStorage.setItem("fb_macro_targets",JSON.stringify(targets));setSaved(true);setTimeout(()=>setSaved(false),2000);}
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Nutrition Settings"/>
+      <h2 style={s.sectionTitle}>Custom Macro Targets</h2>
+      <p style={s.sectionSub}>Override the auto-calculated targets with your own.</p>
+      <div style={s.card}>
+        {[
+          {k:"cal",l:"Daily Calories",icon:"🔥",unit:"kcal",color:"#fb923c"},
+          {k:"p",l:"Protein",icon:"🥩",unit:"g",color:"#60a5fa"},
+          {k:"c",l:"Carbohydrates",icon:"🍚",unit:"g",color:"#fbbf24"},
+          {k:"f",l:"Fats",icon:"🥑",unit:"g",color:"#34d399"},
+        ].map(({k,l,icon,unit:u,color})=>(
+          <div key={k} style={{marginBottom:"1rem"}}>
+            <label style={{...s.label,marginBottom:"0.4rem",display:"flex",alignItems:"center",gap:"0.4rem"}}><span>{icon}</span>{l} <span style={{color:"rgba(255,255,255,0.3)"}}>({u})</span></label>
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+              <input type="number" value={targets[k]||""} onChange={e=>update(k,e.target.value)} style={{...s.input,marginBottom:0,flex:1,borderColor:color+"40"}} placeholder="0"/>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.1rem",color,minWidth:"50px",textAlign:"right"}}>{targets[k]||0}{u}</div>
+            </div>
+          </div>
+        ))}
+        <button onClick={save} style={{...s.btn,width:"100%",padding:"0.9rem",marginTop:"0.25rem"}}>{saved?"Saved ✓":"Save Targets"}</button>
+      </div>
+      <div style={{...s.card,background:"rgba(255,255,255,0.03)"}}>
+        <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.5rem"}}>💡 Tip</div>
+        <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.45)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>Your targets were auto-calculated from your goal and bodyweight during onboarding. Only change these if you have specific targets from a nutritionist or coach.</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SHARE WORKOUT CARD ───────────────────────────────────────────────────────
+function ShareWorkoutCard({workoutName,sets,calories,duration}){
+  const[shared,setShared]=useState(false);
+  async function share(){
+    const text=`Just crushed ${workoutName} on ForgeBody 💪\n${sets} sets · ~${calories} kcal · ${duration} min\nTry it free → forgebody.fit`;
+    try{
+      if(navigator.share){await navigator.share({title:"ForgeBody Workout",text});}
+      else{await navigator.clipboard.writeText(text);}
+      setShared(true);setTimeout(()=>setShared(false),2000);
+    }catch(e){}
+  }
+  return(
+    <div style={{background:"linear-gradient(135deg,rgba(204,255,0,0.08),rgba(150,220,0,0.03))",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"16px",padding:"1rem 1.1rem",marginBottom:"0.75rem"}}>
+      <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.5rem"}}>Share Your Workout</div>
+      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1rem",color:C.white,marginBottom:"0.25rem"}}>{workoutName}</div>
+      <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>{sets} sets · ~{calories} kcal · {duration} min</div>
+      <button onClick={share} style={{...s.btnGlass,width:"100%",padding:"0.65rem",fontSize:"0.82rem"}}>
+        {shared?"Copied to clipboard! 📋":"Share to Instagram / WhatsApp 📤"}
+      </button>
+    </div>
+  );
+}
+
+// ─── WORKOUT HISTORY SCREEN ───────────────────────────────────────────────────
+function WorkoutHistoryScreen({user}){
+  const[history,setHistory]=useState([]);
+  const[loading,setLoading]=useState(true);
+  useEffect(()=>{
+    async function load(){
+      try{
+        const{data}=await supabase.from("workout_history").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);
+        setHistory(data||[]);
+      }catch(e){}
+      setLoading(false);
+    }
+    load();
+  },[user.id]);
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Training Log"/>
+      <h2 style={s.sectionTitle}>Workout History</h2>
+      <p style={s.sectionSub}>Every session you've ever completed.</p>
+      {loading?(
+        <div style={{textAlign:"center",padding:"2rem"}}><LoadingDots/></div>
+      ):history.length===0?(
+        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+          <div style={{fontSize:"2.5rem",marginBottom:"0.75rem"}}>🏋️</div>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No workouts yet</div>
+          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem"}}>Complete your first workout to see it here.</div>
+        </div>
+      ):(
+        <>
+          <div style={{...s.card,background:"rgba(204,255,0,0.06)",borderColor:"rgba(204,255,0,0.2)",marginBottom:"0.75rem",display:"flex",gap:"1.5rem",justifyContent:"center"}}>
+            {[{n:history.length,l:"Sessions"},{n:history.reduce((a,w)=>a+(w.sets_completed||0),0),l:"Total Sets"},{n:[...new Set(history.map(w=>w.split))].length,l:"Splits"}].map((x,i)=>(
+              <div key={i} style={{textAlign:"center"}}>
+                <div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+                <div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.4)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",fontFamily:"'Barlow Condensed',sans-serif"}}>{x.l}</div>
+              </div>
+            ))}
+          </div>
+          {history.map((w,i)=>(
+            <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"0.85rem",marginBottom:"0.5rem"}}>
+              <div style={{width:"38px",height:"38px",borderRadius:"10px",background:"rgba(204,255,0,0.08)",border:"1px solid rgba(204,255,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.1rem"}}>💪</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.9rem",color:C.white}}>{w.day_label||"Workout"}</div>
+                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>{w.exercises} exercises · {w.sets_completed} sets · {w.split}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{new Date(w.created_at).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}</div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── WORKOUT NOTES ────────────────────────────────────────────────────────────
 function WorkoutNotes({workoutKey}){
   const storageKey=`fb_note_${workoutKey}`;
@@ -2370,6 +2846,7 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
           <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Based on {setsCompleted} sets · {weight}kg bodyweight</div>
         </div>
         <WorkoutCalendar completedDates={JSON.parse(localStorage.getItem("fb_workout_dates")||"[]")}/>
+        <ShareWorkoutCard workoutName={day?.label||customWorkout?.name||"Workout"} sets={setsCompleted} calories={calsBurned} duration={duration}/>
         <WorkoutNotes workoutKey={`${new Date().toISOString().split('T')[0]}_${day?.label||"custom"}`}/>
         <button onClick={onDone} style={{...s.btn,width:"100%",padding:"1rem",marginTop:"0.65rem",borderRadius:"14px"}}>Back to Training 💪</button>
       </div>
@@ -4022,6 +4499,9 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
           {[
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
             {label:"Strength Charts",icon:"💹",id:"strength"},
+            {label:"Run Tracker",icon:"🏃",id:"runs"},
+            {label:"Workout History",icon:"🗓️",id:"history"},
+            {label:"Custom Macro Targets",icon:"🎯",id:"macros"},
             {label:"Transformation Timeline",icon:"📈",id:"transformation"},
             {label:"Progress Photos",icon:"📸",id:"photos"},
             {label:"Rest Day & Recovery",icon:"😴",id:"restday"},
@@ -4363,6 +4843,9 @@ export default function ForgeBodyApp(){
 
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
           {sidePanel?.screen==="strength"&&<StrengthCharts/>}
+          {sidePanel?.screen==="runs"&&<RunFeature/>}
+          {sidePanel?.screen==="history"&&<WorkoutHistoryScreen user={session.user}/>}
+          {sidePanel?.screen==="macros"&&<MacroSettings/>}
           {sidePanel?.screen==="restday"&&<RestDayContent/>}
           {sidePanel?.screen==="photos"&&<ProgressPhotos/>}
           {sidePanel?.screen==="schedule"&&<WorkoutSchedule/>}
