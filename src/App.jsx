@@ -337,7 +337,13 @@ const EXERCISE_IMAGES={
   "Close-Grip Push-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/1.jpg"},
   "Chest Press Machine":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Press_Machine/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Press_Machine/1.jpg"},
   "Landmine Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Landmine_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Landmine_Press/1.jpg"},
-  "Deadlift":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/1.jpg"},
+  "Walking Lunge":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/1.jpg"},
+  "Glute Bridge":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/1.jpg"},
+  "Leg Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls/1.jpg"},
+  "Spider Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Spider_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Spider_Curl/1.jpg"},
+  "Cable Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Row/1.jpg"},
+  "Push-Up Wide":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/1.jpg"},
+  "Rope Tricep Pushdown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/1.jpg"},
   "Barbell Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/1.jpg"},
   "Pull-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/1.jpg"},
   "Lat Pulldown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/1.jpg"},
@@ -449,7 +455,13 @@ function ExerciseAnimation({exName,muscle,size="full"}){
 
   // Small thumbnail mode — used in exercise list
   if(size==="thumb"){
-    if(!imgs||error) return null; // caller shows number fallback
+    if(!imgs||error){
+      return(
+        <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)",borderRadius:"14px"}}>
+          <span style={{fontWeight:900,fontSize:"1.1rem",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{exName?.slice(0,2).toUpperCase()}</span>
+        </div>
+      );
+    }
     const bothLoaded=loaded0&&loaded1;
     return(
       <div style={{width:"100%",height:"100%",position:"relative",borderRadius:"12px",overflow:"hidden",background:mc}}>
@@ -2730,13 +2742,8 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
         <div style={s.label}>Exercise Plan</div>
         {exercises.map((ex,i)=>(
           <div key={i} style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"0.85rem 1rem",marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
-            <div style={{width:"58px",height:"58px",borderRadius:"14px",overflow:"hidden",background:"rgba(255,255,255,0.06)",flexShrink:0,position:"relative"}}>
-              {EXERCISE_IMAGES[ex.name]
-                ?<ExerciseAnimation exName={ex.name} muscle={ex.muscle} size="thumb"/>
-                :<div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)"}}>
-                  <span style={{fontWeight:900,fontSize:"1.1rem",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif"}}>{i+1}</span>
-                </div>
-              }
+            <div style={{width:"58px",height:"58px",borderRadius:"14px",overflow:"hidden",flexShrink:0,position:"relative"}}>
+              <ExerciseAnimation exName={ex.name} muscle={ex.muscle} size="thumb"/>
             </div>
             <div style={{flex:1}}>
               <div style={{fontWeight:900,fontSize:"0.9rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{ex.name}</div>
