@@ -3962,22 +3962,48 @@ Rules: exactly 4 weeks numbered 9-12, ${days} sessions each, maximum intensity, 
     return(
       <div style={{minHeight:"100vh",background:"#0a0a0a",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",position:"relative"}}>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 30%,rgba(204,255,0,0.07) 0%,transparent 60%)",pointerEvents:"none"}}/>
+        <style>{`
+          @keyframes robotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+          @keyframes earWiggle{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}
+          @keyframes spinStep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+          @keyframes fadeSlide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+        `}</style>
         <div style={{position:"relative",zIndex:1,textAlign:"center",width:"100%",maxWidth:"380px"}}>
-          <div style={{fontSize:"4rem",marginBottom:"1.5rem"}}>🤖</div>
-          <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.5rem",lineHeight:1}}>Building Your<br/><span style={{color:"#CCFF00"}}>Programme</span></div>
-          <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"2.5rem",lineHeight:1.6}}>AI-personalised for your exact goal,<br/>level and schedule.</div>
+
+          {/* Animated robot */}
+          <div style={{position:"relative",display:"inline-block",marginBottom:"1.5rem",animation:"robotBounce 2s ease-in-out infinite"}}>
+            {/* Ears */}
+            <div style={{position:"absolute",top:"8px",left:"-12px",width:"10px",height:"20px",background:"rgba(204,255,0,0.3)",borderRadius:"4px",animation:"earWiggle 1s ease-in-out infinite"}}/>
+            <div style={{position:"absolute",top:"8px",right:"-12px",width:"10px",height:"20px",background:"rgba(204,255,0,0.3)",borderRadius:"4px",animation:"earWiggle 1s ease-in-out infinite 0.2s"}}/>
+            <div style={{fontSize:"3.5rem",lineHeight:1}}>🤖</div>
+          </div>
+
+          <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.4rem",lineHeight:1}}>Building Your<br/><span style={{color:"#CCFF00"}}>Programme</span></div>
+          <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",marginBottom:"2rem",lineHeight:1.6}}>This takes about 30 seconds.<br/>Claude is building all 12 weeks.</div>
 
           {/* Step progress */}
-          <div style={{background:"rgba(255,255,255,0.05)",borderRadius:"16px",padding:"1.25rem",marginBottom:"1.5rem"}}>
+          <div style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"1.1rem",marginBottom:"1.5rem",width:"100%"}}>
             {GEN_STEPS.map((step,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:i<GEN_STEPS.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
-                <div style={{width:"20px",height:"20px",borderRadius:"50%",background:i<genStep?"rgba(204,255,0,0.2)":i===genStep?"rgba(204,255,0,0.1)":"rgba(255,255,255,0.06)",border:`1px solid ${i<genStep?"rgba(204,255,0,0.5)":i===genStep?"rgba(204,255,0,0.3)":"rgba(255,255,255,0.08)"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"0.65rem"}}>
-                  {i<genStep?"✓":i===genStep?"⟳":""}
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:i<GEN_STEPS.length-1?"1px solid rgba(255,255,255,0.05)":"none",animation:i===genStep?"fadeSlide 0.3s ease":"none"}}>
+                <div style={{width:"22px",height:"22px",borderRadius:"50%",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.7rem",
+                  background:i<genStep?"rgba(204,255,0,0.2)":i===genStep?"rgba(204,255,0,0.12)":"rgba(255,255,255,0.05)",
+                  border:`1px solid ${i<genStep?"rgba(204,255,0,0.5)":i===genStep?"rgba(204,255,0,0.4)":"rgba(255,255,255,0.08)"}`,
+                  animation:i===genStep?"spinStep 1s linear infinite":"none"
+                }}>
+                  {i<genStep?<span style={{color:"#CCFF00",fontSize:"0.65rem"}}>✓</span>:i===genStep?<span style={{color:"#CCFF00"}}>⟳</span>:""}
                 </div>
-                <span style={{fontSize:"0.82rem",fontFamily:"'Barlow',sans-serif",color:i<genStep?"rgba(255,255,255,0.6)":i===genStep?"#fff":"rgba(255,255,255,0.2)",transition:"color 0.3s"}}>{step}</span>
+                <span style={{
+                  fontSize:"0.82rem",
+                  fontFamily:"'Barlow',sans-serif",
+                  color:i<genStep?"rgba(255,255,255,0.5)":i===genStep?"#fff":"rgba(255,255,255,0.2)",
+                  transition:"color 0.3s",
+                  textDecoration:i<genStep?"line-through":"none"
+                }}>{step}</span>
+                {i===genStep&&<div style={{marginLeft:"auto",width:"6px",height:"6px",borderRadius:"50%",background:"#CCFF00",flexShrink:0,boxShadow:"0 0 6px #CCFF00"}}/>}
               </div>
             ))}
           </div>
+
           <LoadingDots/>
         </div>
       </div>
@@ -4159,21 +4185,23 @@ Start yours free → forgebody.fit`;try{if(navigator.share)await navigator.share
   // Day detail view
   if(showDay!==null){
     const dayW=workouts[showDay];
+    if(!dayW)return <div style={{background:"#0a0a0a",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Session not found</div></div>;
     const sessionKey=`w${currentWeek}d${showDay}`;
     const isDone=completedSessions.includes(sessionKey);
-    // Get exercise media if available
-    const allExercises=Object.values(EXERCISES).flat();
+    // Match exercises to our database for gifs
+    const ALL_EX=Object.entries(EXERCISES).flatMap(([muscle,exs])=>exs.map(ex=>({...ex,muscle})));
     return(
       <div style={{minHeight:"100vh",background:"#0a0a0a",padding:"1.5rem 1.25rem 4rem",position:"relative"}}>
         <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 80% 40% at 15% 5%,${GS.color} 0%,transparent 55%)`,pointerEvents:"none"}}/>
         <div style={{maxWidth:"440px",margin:"0 auto",position:"relative",zIndex:1}}>
           <button onClick={()=>setShowDay(null)} style={{...s.btnSm,marginBottom:"1.25rem"}}>← Back</button>
           <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:GS.accent,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>Week {currentWeek} · {currentWeekData?.phase||"Foundation"}</div>
-          <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.2rem",lineHeight:1}}>{dayW?.label}</div>
-          <div style={{fontSize:"0.82rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1.5rem"}}>{dayW?.exercises?.length} exercises · {config?.level}</div>
+          <div style={{fontSize:"2.4rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.2rem",lineHeight:1}}>{dayW.label}</div>
+          <div style={{fontSize:"0.82rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1.5rem"}}>{dayW.exercises?.length||0} exercises · {config?.level}</div>
 
-          {dayW?.exercises?.map((ex,i)=>{
-            const matchEx=allExercises.find(e=>e.name===ex.name);
+          {(dayW.exercises||[]).map((ex,i)=>{
+            // Safe gif lookup
+            const matchEx=ALL_EX.find(e=>e.name&&ex.name&&e.name.toLowerCase()===ex.name.toLowerCase());
             return(
               <div key={i} style={{background:"rgba(255,255,255,0.05)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:"18px",padding:"1rem 1.1rem",marginBottom:"0.6rem",display:"flex",alignItems:"center",gap:"0.9rem"}}>
                 {matchEx?.gif?(
@@ -4181,14 +4209,16 @@ Start yours free → forgebody.fit`;try{if(navigator.share)await navigator.share
                     <ExerciseGif exercise={matchEx} size={52}/>
                   </div>
                 ):(
-                  <div style={{width:"52px",height:"52px",borderRadius:"12px",background:`${GS.color}`,border:`1px solid ${GS.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.1rem",color:GS.accent}}>{i+1}</div>
+                  <div style={{width:"52px",height:"52px",borderRadius:"12px",background:GS.color,border:`1px solid ${GS.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1.2rem",color:GS.accent}}>{i+1}</div>
                 )}
                 <div style={{flex:1}}>
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"0.92rem",color:"#fff",marginBottom:"0.25rem"}}>{ex.name}</div>
                   <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap"}}>
                     <span style={s.tag}>{ex.sets} sets</span>
                     <span style={s.tagGray}>{ex.reps} reps</span>
+                    {ex.rest&&<span style={s.tagGray}>{ex.rest}</span>}
                   </div>
+                  {ex.cue&&<div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",marginTop:"0.3rem",fontStyle:"italic"}}>{ex.cue}</div>}
                 </div>
               </div>
             );
@@ -4346,12 +4376,17 @@ function ProgrammeHomeCard({onNavigate}){
     return(
       <div onClick={()=>onNavigate("sidebar","programme")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.08),rgba(0,0,0,0.3))",backdropFilter:"blur(20px)",border:"1px solid rgba(204,255,0,0.2)",borderRadius:"20px",padding:"1.25rem",marginBottom:"0.75rem",cursor:"pointer",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:"-20px",right:"-20px",width:"80px",height:"80px",borderRadius:"50%",background:"rgba(204,255,0,0.06)",filter:"blur(20px)",pointerEvents:"none"}}/>
-        <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"6px"}}>New Feature</div>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1.4rem",color:"#fff",lineHeight:1,marginBottom:"6px"}}>12-Week<br/><span style={{color:"#CCFF00"}}>AI Programme</span></div>
-        <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"1rem",lineHeight:1.5}}>Claude builds your personalised programme. 84 sessions. Progressive overload. Your goal.</div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(204,255,0,0.08)",border:"1px solid rgba(204,255,0,0.15)",borderRadius:"10px",padding:"0.65rem 0.85rem"}}>
-          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.82rem",textTransform:"uppercase",letterSpacing:"0.06em",color:"#CCFF00"}}>Generate My Programme</span>
-          <span style={{color:"#CCFF00",fontSize:"1.1rem"}}>→</span>
+        <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"0.85rem"}}>
+          <div style={{width:"48px",height:"48px",borderRadius:"13px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"1.4rem"}}>📋</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"2px"}}>New Feature</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,textTransform:"uppercase",fontSize:"1.3rem",color:"#fff",lineHeight:1}}>12-Week AI <span style={{color:"#CCFF00"}}>Programme</span></div>
+          </div>
+          <div style={{color:"rgba(255,255,255,0.3)",fontSize:"1.1rem",flexShrink:0}}>→</div>
+        </div>
+        <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginBottom:"0.85rem",lineHeight:1.5}}>Claude builds your complete personalised plan. 84 sessions, progressive overload, your goal.</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(204,255,0,0.08)",border:"1px solid rgba(204,255,0,0.15)",borderRadius:"10px",padding:"0.6rem 0.85rem"}}>
+          <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.82rem",textTransform:"uppercase",letterSpacing:"0.06em",color:"#CCFF00"}}>Generate My Programme →</span>
         </div>
       </div>
     );
