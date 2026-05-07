@@ -13,6 +13,10 @@ export default async function handler(req, res) {
     const { messages, system } = req.body;
     if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Invalid messages' });
 
+    // Use higher token limit for programme generation
+    const isProgramme = system && system.includes('personal trainer');
+    const maxTokens = isProgramme ? 8000 : 1024;
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -22,7 +26,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: maxTokens,
         system: system || 'You are ForgeBody AI — an expert personal fitness coach.',
         messages,
       }),
@@ -32,7 +36,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       console.error('Anthropic error:', response.status, JSON.stringify(data));
-      return res.status(response.status).json({ 
+      return res.status(response.status).json({
         error: data?.error?.message || 'API error',
         type: data?.error?.type,
         status: response.status
