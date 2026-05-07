@@ -801,26 +801,31 @@ function FAQSection(){
 // ─── SOCIAL PROOF COUNTER ─────────────────────────────────────────────────────
 function getTimeBasedCount(){
   const h=new Date().getHours();
-  // Peak times: 6-9am and 5-8pm. Low: 1-5am
-  if(h>=1&&h<5)return Math.floor(Math.random()*80)+120;      // night: 120-200
-  if(h>=5&&h<7)return Math.floor(Math.random()*200)+400;     // early morning: 400-600
-  if(h>=7&&h<10)return Math.floor(Math.random()*600)+1800;   // morning peak: 1800-2400
-  if(h>=10&&h<12)return Math.floor(Math.random()*400)+1200;  // late morning: 1200-1600
-  if(h>=12&&h<14)return Math.floor(Math.random()*500)+900;   // lunch: 900-1400
-  if(h>=14&&h<17)return Math.floor(Math.random()*400)+700;   // afternoon: 700-1100
-  if(h>=17&&h<20)return Math.floor(Math.random()*800)+2200;  // evening peak: 2200-3000
-  if(h>=20&&h<22)return Math.floor(Math.random()*500)+1200;  // late evening: 1200-1700
-  return Math.floor(Math.random()*300)+500;                   // late night: 500-800
+  if(h>=1&&h<5)return 142;
+  if(h>=5&&h<7)return 487;
+  if(h>=7&&h<10)return 2156;
+  if(h>=10&&h<12)return 1423;
+  if(h>=12&&h<14)return 1087;
+  if(h>=14&&h<17)return 834;
+  if(h>=17&&h<20)return 2634;
+  if(h>=20&&h<22)return 1456;
+  return 623;
 }
 
 function SocialProofBar(){
   const[count,setCount]=useState(()=>getTimeBasedCount());
   useEffect(()=>{
-    // Slowly drift the number every 12 seconds
+    // Drift by 1-3 every 45 seconds — feels real not fake
     const t=setInterval(()=>{
       const base=getTimeBasedCount();
-      setCount(base+Math.floor(Math.random()*15)-7);
-    },12000);
+      setCount(prev=>{
+        const drift=Math.floor(Math.random()*5)-2; // -2 to +2
+        const next=prev+drift;
+        // Keep within 8% of base
+        if(next>base*1.08||next<base*0.92)return base;
+        return next;
+      });
+    },45000);
     return()=>clearInterval(t);
   },[]);
   return(
@@ -2784,10 +2789,26 @@ function AICoach(){
     const newMsgs=[...messages,userMsg];
     setMessages(newMsgs);setInput("");setLoading(true);
     try{
-      const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system:SYSTEM,messages:newMsgs.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}))})});
+      const res=await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          system:SYSTEM,
+          messages:newMsgs.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}))
+        })
+      });
+      if(!res.ok){
+        const err=await res.json().catch(()=>({}));
+        throw new Error(err.error||`Status ${res.status}`);
+      }
       const data=await res.json();
-      setMessages(prev=>[...prev,{role:"assistant",text:data.content?.[0]?.text||"Sorry, try again."}]);
-    }catch{setMessages(prev=>[...prev,{role:"assistant",text:"Connection error. Please try again."}]);}
+      const reply=data.content?.[0]?.text;
+      if(!reply)throw new Error("Empty response");
+      setMessages(prev=>[...prev,{role:"assistant",text:reply}]);
+    }catch(e){
+      console.error("AI Coach error:",e);
+      setMessages(prev=>[...prev,{role:"assistant",text:"I'm having trouble connecting right now. Please try again in a moment. If this keeps happening, the AI coach may need a top-up at console.anthropic.com 🔧"}]);
+    }
     setLoading(false);
   }
 
