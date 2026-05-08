@@ -344,6 +344,38 @@ const EXERCISE_IMAGES={
   "Cable Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Row/1.jpg"},
   "Push-Up Wide":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/1.jpg"},
   "Rope Tricep Pushdown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/1.jpg"},
+  "Pec Deck Machine":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pec_Deck_Fly/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pec_Deck_Fly/1.jpg"},
+  "Chest-Supported Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Row/1.jpg"},
+  "Meadows Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/1.jpg"},
+  "Pendlay Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/1.jpg"},
+  "Machine Shoulder Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Shoulder_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Shoulder_Press/1.jpg"},
+  "Cable Y-Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rear_Delt_Fly/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rear_Delt_Fly/1.jpg"},
+  "Reverse Pec Deck":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pec_Deck_Fly/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pec_Deck_Fly/1.jpg"},
+  "Cable Hammer Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Hammer_Curls_-_Rope_Attachment/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Hammer_Curls_-_Rope_Attachment/1.jpg"},
+  "Cross-Body Hammer Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cross_Body_Hammer_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cross_Body_Hammer_Curl/1.jpg"},
+  "21s":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/1.jpg"},
+  "Single-Arm Pushdown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/1.jpg"},
+  "Tate Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Tricep_Extension/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Tricep_Extension/1.jpg"},
+  "JM Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/1.jpg"},
+  "Cable Overhead Extension":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Overhead_Triceps_Extension/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Overhead_Triceps_Extension/1.jpg"},
+  "Sissy Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sissy_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sissy_Squat/1.jpg"},
+  "Narrow Stance Leg Press":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/1.jpg"},
+  "Cyclist Squat":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/1.jpg"},
+  "Glute-Ham Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Ham_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Ham_Raise/1.jpg"},
+  "Cable Pull-Through":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Pull_Through/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Pull_Through/1.jpg"},
+  "Swiss Ball Leg Curl":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Exercise_Ball_Hamstring_Curl/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Exercise_Ball_Hamstring_Curl/1.jpg"},
+  "Reverse Hyper":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hyperextensions_-_With_Round_Back/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hyperextensions_-_With_Round_Back/1.jpg"},
+  "Frog Pump":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/1.jpg"},
+  "Leg Press Calf Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press_Calf_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press_Calf_Raise/1.jpg"},
+  "Jump Rope":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Jump/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Jump/1.jpg"},
+  "Tib Bar Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ankle_Circles/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ankle_Circles/1.jpg"},
+  "Smith Machine Calf Raise":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Calf_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Calf_Raise/1.jpg"},
+  "Dragon Flag":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dragon_Flag/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dragon_Flag/1.jpg"},
+  "Hollow Hold":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hollow_Rock/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hollow_Rock/1.jpg"},
+  "Landmine Rotation":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Landmine_Rotation/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Landmine_Rotation/1.jpg"},
+  "Toes-to-Bar":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/1.jpg"},
+  "Plank to Push-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Ups/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Ups/1.jpg"},
+  "Lateral Bound":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lateral_Bound/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lateral_Bound/1.jpg"},
   "Barbell Row":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/1.jpg"},
   "Pull-Up":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/1.jpg"},
   "Lat Pulldown":{img0:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",img1:"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/1.jpg"},
@@ -438,55 +470,98 @@ const EXERCISE_IMAGES={
 
 function ExerciseAnimation({exName,muscle,size="full"}){
   const imgs=EXERCISE_IMAGES[exName];
-  const[opacity,setOpacity]=useState(0);
+  const[frame,setFrame]=useState(0);
+  const[transitioning,setTransitioning]=useState(false);
   const[loaded0,setLoaded0]=useState(false);
   const[loaded1,setLoaded1]=useState(false);
   const[error,setError]=useState(false);
 
   useEffect(()=>{
-    if(!imgs)return;
-    setOpacity(0);setLoaded0(false);setLoaded1(false);setError(false);
-    const t=setInterval(()=>setOpacity(o=>o===0?1:0),1000);
-    return()=>clearInterval(t);
+    if(!imgs||error)return;
+    setFrame(0);setTransitioning(false);setLoaded0(false);setLoaded1(false);
   },[exName]);
 
-  const muscleColors={chest:"rgba(239,68,68,0.15)",back:"rgba(59,130,246,0.15)",shoulders:"rgba(168,85,247,0.15)",biceps:"rgba(34,197,94,0.15)",triceps:"rgba(251,146,60,0.15)",quads:"rgba(236,72,153,0.15)",hamstrings:"rgba(20,184,166,0.15)",glutes:"rgba(251,191,36,0.15)",calves:"rgba(99,102,241,0.15)",core:"rgba(204,255,0,0.15)",hiit:"rgba(239,68,68,0.15)"};
-  const mc=muscleColors[muscle]||"rgba(204,255,0,0.15)";
+  useEffect(()=>{
+    if(!imgs||error||(!loaded0&&!loaded1))return;
+    // Show each frame for 1.8s, then fade over 0.6s — never overlap
+    const hold=setTimeout(()=>{
+      setTransitioning(true);
+      setTimeout(()=>{
+        setFrame(f=>f===0?1:0);
+        setTransitioning(false);
+      },600);
+    },1800);
+    return()=>clearTimeout(hold);
+  },[frame,loaded0,loaded1,imgs,error]);
 
-  // Small thumbnail mode — used in exercise list
+  const muscleColors={chest:"rgba(239,68,68,0.2)",back:"rgba(59,130,246,0.2)",shoulders:"rgba(168,85,247,0.2)",biceps:"rgba(34,197,94,0.2)",triceps:"rgba(251,146,60,0.2)",quads:"rgba(236,72,153,0.2)",hamstrings:"rgba(20,184,166,0.2)",glutes:"rgba(251,191,36,0.2)",calves:"rgba(99,102,241,0.2)",core:"rgba(204,255,0,0.2)",hiit:"rgba(239,68,68,0.2)"};
+  const mc=muscleColors[muscle]||"rgba(204,255,0,0.15)";
+  const bothLoaded=loaded0&&loaded1;
+
+  // THUMB mode — exercise list preview
   if(size==="thumb"){
     if(!imgs||error){
       return(
         <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)",borderRadius:"14px"}}>
-          <span style={{fontWeight:900,fontSize:"1.1rem",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{exName?.slice(0,2).toUpperCase()}</span>
+          <span style={{fontWeight:900,fontSize:"1rem",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{(exName||"").slice(0,2).toUpperCase()}</span>
         </div>
       );
     }
-    const bothLoaded=loaded0&&loaded1;
     return(
-      <div style={{width:"100%",height:"100%",position:"relative",borderRadius:"12px",overflow:"hidden",background:mc}}>
-        {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:"16px",height:"16px",borderRadius:"50%",border:"2px solid rgba(255,255,255,0.2)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
-        <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?1-opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
-        <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
+      <div style={{width:"100%",height:"100%",position:"relative",overflow:"hidden",background:mc}}>
+        {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>
+          <div style={{width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/>
+        </div>}
+        <img src={imgs.img0} alt="" onLoad={()=>setLoaded0(true)} onError={()=>setError(true)}
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+            opacity:bothLoaded?(frame===0?( transitioning?0:1):( transitioning?1:0)):0,
+            transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
+        <img src={imgs.img1} alt="" onLoad={()=>setLoaded1(true)} onError={()=>setError(true)}
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+            opacity:bothLoaded?(frame===1?(transitioning?0:1):(transitioning?1:0)):0,
+            transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
       </div>
     );
   }
 
-  // Full size — used in active workout
+  // FULL mode — active workout hero
   if(!imgs||error){
     return(
-      <div style={{width:"100%",aspectRatio:"16/9",background:mc,borderRadius:"20px",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"1.25rem"}}>
-        <span style={{fontSize:"3rem"}}>💪</span>
+      <div style={{width:"100%",aspectRatio:"16/9",background:mc,borderRadius:"20px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",marginBottom:"1.25rem",border:"1px solid rgba(255,255,255,0.08)"}}>
+        <span style={{fontSize:"3rem",marginBottom:"0.5rem"}}>💪</span>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,textTransform:"uppercase",fontSize:"0.8rem",color:"rgba(255,255,255,0.4)",letterSpacing:"0.1em"}}>No demo available</span>
       </div>
     );
   }
 
-  const bothLoaded=loaded0&&loaded1;
   return(
-    <div style={{width:"100%",aspectRatio:"16/9",borderRadius:"20px",overflow:"hidden",position:"relative",background:mc,marginBottom:"1.25rem",boxShadow:"0 8px 32px rgba(0,0,0,0.4)"}}>
-      {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}><div style={{width:"28px",height:"28px",borderRadius:"50%",border:"2.5px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/></div>}
-      <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?1-opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
-      <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:bothLoaded?opacity:0,transition:"opacity 1000ms ease-in-out"}}/>
+    <div style={{width:"100%",aspectRatio:"16/9",borderRadius:"20px",overflow:"hidden",position:"relative",background:mc,marginBottom:"1.25rem",boxShadow:"0 8px 40px rgba(0,0,0,0.5)"}}>
+      {/* Loading spinner */}
+      {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:3,background:"rgba(0,0,0,0.4)"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{width:"32px",height:"32px",borderRadius:"50%",border:"2.5px solid rgba(204,255,0,0.2)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite",margin:"0 auto 8px"}}/>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.7rem",textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.4)"}}>Loading demo...</div>
+        </div>
+      </div>}
+
+      {/* Frame 0 */}
+      <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+          opacity:bothLoaded?(frame===0?(transitioning?0:1):(transitioning?1:0)):0,
+          transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
+
+      {/* Frame 1 */}
+      <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+          opacity:bothLoaded?(frame===1?(transitioning?0:1):(transitioning?1:0)):0,
+          transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
+
+      {/* Playing indicator — bottom right, subtle */}
+      {bothLoaded&&<div style={{position:"absolute",bottom:"10px",right:"12px",background:"rgba(0,0,0,0.55)",backdropFilter:"blur(8px)",borderRadius:"8px",padding:"4px 10px",display:"flex",alignItems:"center",gap:"5px",zIndex:4}}>
+        <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"#CCFF00",animation:"pulse 2s ease-in-out infinite"}}/>
+        <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.62rem",textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.7)"}}>Demo</span>
+      </div>}
+
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
