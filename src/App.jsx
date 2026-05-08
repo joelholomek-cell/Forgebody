@@ -337,8 +337,8 @@ const EXERCISE_IMAGES={
   "Close-Grip Push-Up":{img0:"https://ik.imagekit.io/yuhonas/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Close-Grip_Push-Up_off_of_a_Dumbbell/1.jpg"},
   "Chest Press Machine":{img0:"https://ik.imagekit.io/yuhonas/Chest_Press_Machine/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Chest_Press_Machine/1.jpg"},
   "Landmine Press":{img0:"https://ik.imagekit.io/yuhonas/Landmine_Press/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Landmine_Press/1.jpg"},
-  "Deadlift":{img0:"https://ik.imagekit.io/yuhonas/Deadlift/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Deadlift/1.jpg"},
-  "Barbell Deadlift":{img0:"https://ik.imagekit.io/yuhonas/Deadlift/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Deadlift/1.jpg"},
+  "Deadlift":{img0:"https://ik.imagekit.io/yuhonas/Barbell_Deadlift/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Barbell_Deadlift/1.jpg"},
+  "Barbell Deadlift":{img0:"https://ik.imagekit.io/yuhonas/Barbell_Deadlift/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Barbell_Deadlift/1.jpg"},
   "Walking Lunge":{img0:"https://ik.imagekit.io/yuhonas/Dumbbell_Lunges/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Dumbbell_Lunges/1.jpg"},
   "Glute Bridge":{img0:"https://ik.imagekit.io/yuhonas/Barbell_Glute_Bridge/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Barbell_Glute_Bridge/1.jpg"},
   "Leg Curl":{img0:"https://ik.imagekit.io/yuhonas/Lying_Leg_Curl/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Lying_Leg_Curl/1.jpg"},
@@ -389,7 +389,7 @@ const EXERCISE_IMAGES={
   "Close-Grip Lat Pulldown":{img0:"https://ik.imagekit.io/yuhonas/Close-Grip_Lat_Pulldown/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Close-Grip_Lat_Pulldown/1.jpg"},
   "Rack Pull":{img0:"https://ik.imagekit.io/yuhonas/Barbell_Rack_Pull/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Barbell_Rack_Pull/1.jpg"},
   "Straight-Arm Pulldown":{img0:"https://ik.imagekit.io/yuhonas/Straight-Arm_Pulldown/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Straight-Arm_Pulldown/1.jpg"},
-  "Overhead Press":{img0:"https://ik.imagekit.io/yuhonas/Barbell_Seated_Overhead_Press/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Barbell_Seated_Overhead_Press/1.jpg"},
+  "Overhead Press":{img0:"https://ik.imagekit.io/yuhonas/Barbell_Shoulder_Press/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Barbell_Seated_Overhead_Press/1.jpg"},
   "Dumbbell Shoulder Press":{img0:"https://ik.imagekit.io/yuhonas/Dumbbell_Seated_Overhead_Press/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Dumbbell_Seated_Overhead_Press/1.jpg"},
   "Dumbbell Lateral Raise":{img0:"https://ik.imagekit.io/yuhonas/Dumbbell_Lateral_Raise/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Dumbbell_Lateral_Raise/1.jpg"},
   "Cable Lateral Raise":{img0:"https://ik.imagekit.io/yuhonas/Cable_Lateral_Raise/0.jpg",img1:"https://ik.imagekit.io/yuhonas/Cable_Lateral_Raise/1.jpg"},
@@ -514,11 +514,13 @@ function ExerciseAnimation({exName,muscle,size="full"}){
         {!bothLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>
           <div style={{width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/>
         </div>}
-        <img src={imgs.img0} alt="" onLoad={()=>setLoaded0(true)} onError={()=>setError(true)}
+        <img src={imgs.img0} alt="" onLoad={()=>setLoaded0(true)}
+          onError={(e)=>{if(e.target.src.includes('imagekit')){e.target.src=imgs.img0.replace('ik.imagekit.io/yuhonas','raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises');}else setError(true);}}
           style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
             opacity:bothLoaded?(frame===0?( transitioning?0:1):( transitioning?1:0)):0,
             transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
-        <img src={imgs.img1} alt="" onLoad={()=>setLoaded1(true)} onError={()=>setError(true)}
+        <img src={imgs.img1} alt="" onLoad={()=>setLoaded1(true)}
+          onError={(e)=>{if(e.target.src.includes('imagekit')){e.target.src=imgs.img1.replace('ik.imagekit.io/yuhonas','raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises');}else setError(true);}}
           style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
             opacity:bothLoaded?(frame===1?(transitioning?0:1):(transitioning?1:0)):0,
             transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
@@ -547,13 +549,15 @@ function ExerciseAnimation({exName,muscle,size="full"}){
       </div>}
 
       {/* Frame 0 */}
-      <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)} onError={()=>setError(true)}
+      <img src={imgs.img0} alt={exName} onLoad={()=>setLoaded0(true)}
+        onError={(e)=>{if(e.target.src.includes('imagekit')){e.target.src=imgs.img0.replace('ik.imagekit.io/yuhonas','raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises');}else setError(true);}}
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
           opacity:bothLoaded?(frame===0?(transitioning?0:1):(transitioning?1:0)):0,
           transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
 
       {/* Frame 1 */}
-      <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)} onError={()=>setError(true)}
+      <img src={imgs.img1} alt={exName} onLoad={()=>setLoaded1(true)}
+        onError={(e)=>{if(e.target.src.includes('imagekit')){e.target.src=imgs.img1.replace('ik.imagekit.io/yuhonas','raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises');}else setError(true);}}
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
           opacity:bothLoaded?(frame===1?(transitioning?0:1):(transitioning?1:0)):0,
           transition:transitioning?"opacity 0.6s ease":"opacity 0s"}}/>
