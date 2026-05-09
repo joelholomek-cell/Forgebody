@@ -2536,6 +2536,100 @@ function TrainScreen({onStartWorkout,onSetupComplete,onNavigate}){
 }
 
 // ─── WORKOUT SESSION ─────────────────────────────────────────────────────────
+function ExerciseAnimation({exName,muscle,size="full"}){
+  const imgs=getExerciseImages(exName);
+  const[frame,setFrame]=useState(0);
+  const[transitioning,setTransitioning]=useState(false);
+  const[loaded0,setLoaded0]=useState(false);
+  const[loaded1,setLoaded1]=useState(false);
+  const[failed,setFailed]=useState(false);
+  const[src0,setSrc0]=useState(imgs?.img0||'');
+  const[src1,setSrc1]=useState(imgs?.img1||'');
+  const errCount=useRef(0);
+  const timerRef=useRef(null);
+
+  useEffect(()=>{
+    const i=getExerciseImages(exName);
+    setFrame(0);setTransitioning(false);setLoaded0(false);setLoaded1(false);setFailed(false);
+    setSrc0(i?.img0||'');setSrc1(i?.img1||'');errCount.current=0;
+    if(timerRef.current) clearTimeout(timerRef.current);
+    // Safety timeout — if nothing loads in 8s, show fallback
+    timerRef.current=setTimeout(()=>setFailed(true),8000);
+    return()=>clearTimeout(timerRef.current);
+  },[exName]);
+
+  useEffect(()=>{
+    if(loaded0||loaded1){clearTimeout(timerRef.current);}
+  },[loaded0,loaded1]);
+
+  useEffect(()=>{
+    if(failed||(!loaded0&&!loaded1))return;
+    const hold=setTimeout(()=>{
+      setTransitioning(true);
+      setTimeout(()=>{setFrame(f=>f===0?1:0);setTransitioning(false);},600);
+    },1800);
+    return()=>clearTimeout(hold);
+  },[frame,loaded0,loaded1,failed]);
+
+  function handleErr(){
+    errCount.current++;
+    if(errCount.current>=2) setFailed(true);
+  }
+
+  const mc={'chest':'rgba(239,68,68,0.2)','back':'rgba(59,130,246,0.2)','shoulders':'rgba(168,85,247,0.2)','biceps':'rgba(34,197,94,0.2)','triceps':'rgba(251,146,60,0.2)','quads':'rgba(236,72,153,0.2)','hamstrings':'rgba(20,184,166,0.2)','glutes':'rgba(251,191,36,0.2)','calves':'rgba(99,102,241,0.2)','core':'rgba(204,255,0,0.2)','hiit':'rgba(239,68,68,0.2)'}[muscle]||'rgba(204,255,0,0.15)';
+  const anyLoaded=loaded0||loaded1;
+  const bothLoaded=loaded0&&loaded1;
+
+  if(size==="thumb"){
+    if(failed||!imgs) return(
+      <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)",borderRadius:"14px"}}>
+        <span style={{fontWeight:900,fontSize:"1rem",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{(exName||"").slice(0,2).toUpperCase()}</span>
+      </div>
+    );
+    return(
+      <div style={{width:"100%",height:"100%",position:"relative",overflow:"hidden",background:mc}}>
+        {!anyLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>
+          <div style={{width:"14px",height:"14px",borderRadius:"50%",border:"2px solid rgba(204,255,0,0.3)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/>
+        </div>}
+        <img src={src0} alt="" onLoad={()=>setLoaded0(true)} onError={handleErr}
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+            opacity:loaded0?(bothLoaded?(frame===0?(transitioning?0:1):(transitioning?1:0)):1):0,
+            transition:transitioning?"opacity 0.6s ease":"opacity 0.3s"}}/>
+        <img src={src1} alt="" onLoad={()=>setLoaded1(true)} onError={handleErr}
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+            opacity:loaded1?(bothLoaded?(frame===1?(transitioning?0:1):(transitioning?1:0)):0):0,
+            transition:transitioning?"opacity 0.6s ease":"opacity 0.3s"}}/>
+      </div>
+    );
+  }
+
+  if(failed||!imgs) return(
+    <div style={{width:"100%",aspectRatio:"16/9",background:mc,borderRadius:"20px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",marginBottom:"1.25rem",border:"1px solid rgba(255,255,255,0.08)"}}>
+      <span style={{fontSize:"3rem",marginBottom:"0.5rem"}}>💪</span>
+    </div>
+  );
+
+  return(
+    <div style={{width:"100%",aspectRatio:"16/9",borderRadius:"20px",overflow:"hidden",position:"relative",background:mc,marginBottom:"1.25rem",boxShadow:"0 8px 40px rgba(0,0,0,0.5)"}}>
+      {!anyLoaded&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:3,background:"rgba(0,0,0,0.4)"}}>
+        <div style={{width:"32px",height:"32px",borderRadius:"50%",border:"2.5px solid rgba(204,255,0,0.2)",borderTopColor:"#CCFF00",animation:"spin 0.8s linear infinite"}}/>
+      </div>}
+      <img src={src0} alt={exName} onLoad={()=>setLoaded0(true)} onError={handleErr}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+          opacity:loaded0?(bothLoaded?(frame===0?(transitioning?0:1):(transitioning?1:0)):1):0,
+          transition:transitioning?"opacity 0.6s ease":"opacity 0.4s"}}/>
+      <img src={src1} alt={exName} onLoad={()=>setLoaded1(true)} onError={handleErr}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+          opacity:loaded1?(bothLoaded?(frame===1?(transitioning?0:1):(transitioning?1:0)):0):0,
+          transition:transitioning?"opacity 0.6s ease":"opacity 0.4s"}}/>
+      {bothLoaded&&<div style={{position:"absolute",bottom:"10px",left:"12px",zIndex:4}}>
+        <div style={{width:"7px",height:"7px",borderRadius:"50%",background:"#CCFF00",boxShadow:"0 0 6px rgba(204,255,0,0.8)",animation:"pulse 2s ease-in-out infinite"}}/>
+      </div>}
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
 function WorkoutSession({dayIndex,onDone,customWorkout=null}){
   const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
   const splitData=customWorkout?{name:"Custom Workout"}:SPLITS[settings.split||"ppl"];
