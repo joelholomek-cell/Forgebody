@@ -2546,29 +2546,37 @@ function TrainScreen({onStartWorkout,onSetupComplete,onNavigate}){
 
 // ─── WORKOUT SESSION ─────────────────────────────────────────────────────────
 function ExerciseAnimation({exName,muscle,size="full"}){
-  const imgs=getExerciseImages(exName);
   const[frame,setFrame]=useState(0);
   const[transitioning,setTransitioning]=useState(false);
   const[loaded0,setLoaded0]=useState(false);
   const[loaded1,setLoaded1]=useState(false);
   const[failed,setFailed]=useState(false);
-  const[src0,setSrc0]=useState(imgs?.img0||'');
-  const[src1,setSrc1]=useState(imgs?.img1||'');
+  const[src0,setSrc0]=useState('');
+  const[src1,setSrc1]=useState('');
   const errCount=useRef(0);
   const timerRef=useRef(null);
 
   useEffect(()=>{
+    // Full reset on exercise change
     const i=getExerciseImages(exName);
-    setFrame(0);setTransitioning(false);setLoaded0(false);setLoaded1(false);setFailed(false);
-    setSrc0(i?.img0||'');setSrc1(i?.img1||'');errCount.current=0;
+    errCount.current=0;
     if(timerRef.current) clearTimeout(timerRef.current);
-    // Safety timeout — if nothing loads in 8s, show fallback
-    timerRef.current=setTimeout(()=>setFailed(true),8000);
+    setFrame(0);
+    setTransitioning(false);
+    setLoaded0(false);
+    setLoaded1(false);
+    setFailed(false);
+    setSrc0(i?.img0||'');
+    setSrc1(i?.img1||'');
+    // Timeout — if nothing loads in 12s show fallback
+    if(i?.img0){
+      timerRef.current=setTimeout(()=>setFailed(true),12000);
+    }
     return()=>clearTimeout(timerRef.current);
   },[exName]);
 
   useEffect(()=>{
-    if(loaded0||loaded1){clearTimeout(timerRef.current);}
+    if(loaded0||loaded1) clearTimeout(timerRef.current);
   },[loaded0,loaded1]);
 
   useEffect(()=>{
