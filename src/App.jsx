@@ -2598,7 +2598,7 @@ function ExerciseAnimation({exName,muscle,size="full"}){
   const bothLoaded=loaded0&&loaded1;
 
   if(size==="thumb"){
-    if(failed||!imgs) return(
+    if(failed||!src0) return(
       <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)",borderRadius:"14px"}}>
         <span style={{fontWeight:900,fontSize:"1rem",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{(exName||"").slice(0,2).toUpperCase()}</span>
       </div>
@@ -2620,7 +2620,7 @@ function ExerciseAnimation({exName,muscle,size="full"}){
     );
   }
 
-  if(failed||!imgs) return(
+  if(failed||!src0) return(
     <div style={{width:"100%",aspectRatio:"16/9",background:mc,borderRadius:"20px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",marginBottom:"1.25rem",border:"1px solid rgba(255,255,255,0.08)"}}>
       <span style={{fontSize:"3rem",marginBottom:"0.5rem"}}>💪</span>
     </div>
