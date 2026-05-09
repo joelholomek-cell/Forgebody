@@ -377,7 +377,7 @@ const FOLDER_OVERRIDES = {
   "Skull Crusher": "Barbell_Lying_Triceps_Extension_Skull_Crusher",
   "Dips (chest lean)": "Dips_-_Chest_Version",
   "Dips (tricep focus)": "Dips_-_Triceps_Version",
-  "Diamond Push-Up": "Push-Up",
+  "Diamond Push-Up": "Push-Ups",
   "Kickback": "Dumbbell_Kickback",
   "JM Press": "Close-Grip_Barbell_Bench_Press",
   "Walking Lunges": "Barbell_Walking_Lunge",
@@ -416,13 +416,15 @@ const FOLDER_OVERRIDES = {
   "Jumping Lunge": "Dumbbell_Lunge",
   "Kettlebell Clean": "Advanced_Kettlebell_Windmill",
   "Tuck Jump": "Box_Jump_-_Multiple_Jumps",
-  "Plank to Push-Up": "Push-Up",
+  "Plank to Push-Up": "Push-Ups",
   "High Knees": "Lunge_Sprint",
   "Kettlebell Goblet Squat": "Dumbbell_Goblet_Squat",
   "Flat Dumbbell Press": "Dumbbell_Bench_Press",
   "Cable Chest Fly": "Cable_Crossover",
   "Low Cable Fly": "Cable_Crossover",
   "Close-Grip Push-Up": "Close-Grip_Push-Up_off_of_a_Dumbbell",
+  "Push-Up": "Push-Up",
+  "Chest Press Machine": "Chest_Press_Machine",
   "Barbell Row": "Bent_Over_Barbell_Row",
   "Straight-Arm Pulldown": "Straight-Arm_Pulldown",
   "Upright Row": "Barbell_Upright_Row",
@@ -440,7 +442,7 @@ const FOLDER_OVERRIDES = {
   "Bulgarian Split Squat": "Dumbbell_Bulgarian_Split_Squat",
   "Walking Lunge": "Dumbbell_Lunges",
   "Goblet Squat": "Dumbbell_Goblet_Squat",
-  "Front Squat": "Barbell_Front_Squat",
+  "Front Squat": "Front_Squat_-_Clean_Grip",
   "Leg Extension": "Leg_Extensions",
   "Romanian Deadlift": "Barbell_Romanian_Deadlift",
   "Seated Leg Curl": "Seated_Leg_Curl",
@@ -467,6 +469,12 @@ const FOLDER_OVERRIDES = {
   "Burpee": "Burpee",
   "Air Bike": "Air_Bike",
   "Lunge Sprint": "Lunge_Sprint",
+  "Dumbbell Fly": "Decline_Dumbbell_Flyes",
+  "Decline Bench Press": "Decline_Barbell_Bench_Press",
+  "Pec Deck Machine": "Pec_Deck_Fly",
+  "Rack Pull": "Barbell_Rack_Pull",
+  "3/4 Sit-Up": "3_4_Sit-Up",
+  "Jump Squat": "Barbell_Jump_Squat",
 };
 
 function getExerciseImages(exName) {
@@ -474,8 +482,9 @@ function getExerciseImages(exName) {
   // Check manual overrides first
   const override = FOLDER_OVERRIDES[exName];
   if(override) return {img0:`${SUPA_BASE}${override}/0.jpg`,img1:`${SUPA_BASE}${override}/1.jpg`};
-  // Auto-convert name to folder: spaces→underscores, keep special chars
-  const folder = exName.replace(/ /g,'_').replace(/\//g,'-').replace(/'/g,'');
+  // Auto-convert name to folder — try the exact name with underscores
+  // The bucket has 868 folders from free-exercise-db, all use underscores
+  const folder = exName.replace(/ /g,'_').replace(/\(/g,'').replace(/\)/g,'').replace(/'/g,'');
   return {img0:`${SUPA_BASE}${folder}/0.jpg`,img1:`${SUPA_BASE}${folder}/1.jpg`};
 }
 
