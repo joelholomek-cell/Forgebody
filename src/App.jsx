@@ -2843,7 +2843,7 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
 
         <div style={s.label}>Exercise Plan</div>
         {exercises.map((ex,i)=>(
-          <div key={i} style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"0.85rem 1rem",marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
+          <div key={ex.name} style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"0.85rem 1rem",marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
             <div style={{width:"58px",height:"58px",borderRadius:"14px",overflow:"hidden",flexShrink:0,position:"relative"}}>
               <ExerciseAnimation exName={ex.name} muscle={ex.muscle} size="thumb"/>
             </div>
