@@ -337,7 +337,7 @@ const EXERCISE_IMAGES={
   "Low Cable Fly":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Crossover/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Crossover/1.jpg"},
   "Close-Grip Push-Up":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/1.jpg"},
   "Chest Press Machine":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Chest_Press_Machine/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Chest_Press_Machine/1.jpg"},
-  "Landmine Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_Press/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_Press/1.jpg"},
+  "Landmine Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_180s/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_180s/1.jpg"},
   "Deadlift":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Deadlift/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Deadlift/1.jpg"},
   "Barbell Row":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bent_Over_Barbell_Row/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bent_Over_Barbell_Row/1.jpg"},
   "Pull-Up":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Pullups/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Pullups/1.jpg"},
@@ -358,7 +358,7 @@ const EXERCISE_IMAGES={
   "Dumbbell Lateral Raise":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lateral_Raise/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lateral_Raise/1.jpg"},
   "Cable Lateral Raise":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Lateral_Raise/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Lateral_Raise/1.jpg"},
   "Arnold Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Arnold_Dumbbell_Press/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Arnold_Dumbbell_Press/1.jpg"},
-  "Rear Delt Fly":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise/1.jpg"},
+  "Rear Delt Fly":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/1.jpg"},
   "Upright Row":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Upright_Row/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Upright_Row/1.jpg"},
   "Front Raise":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Front_Raise/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Front_Raise/1.jpg"},
   "Machine Shoulder Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Machine_Shoulder_Press_(AA)/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Machine_Shoulder_Press_(AA)/1.jpg"},
@@ -366,7 +366,7 @@ const EXERCISE_IMAGES={
   "Barbell Shrug":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Shrug/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Shrug/1.jpg"},
   "Dumbbell Shrug":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Shrug/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Shrug/1.jpg"},
   "Reverse Pec Deck":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Pec_Deck_Fly/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Pec_Deck_Fly/1.jpg"},
-  "Barbell Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/EZ-Bar_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/EZ-Bar_Curl/1.jpg"},
+  "Barbell Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Curl/1.jpg"},
   "Hammer Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Hammer_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Hammer_Curl/1.jpg"},
   "Incline Dumbbell Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Incline_Dumbbell_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Incline_Dumbbell_Curl/1.jpg"},
   "Cable Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Curl/1.jpg"},
@@ -377,7 +377,7 @@ const EXERCISE_IMAGES={
   "Cable Hammer Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Hammer_Curls_-_Rope_Attachment/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Hammer_Curls_-_Rope_Attachment/1.jpg"},
   "EZ-Bar Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/EZ-Bar_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/EZ-Bar_Curl/1.jpg"},
   "Cross-Body Hammer Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cross_Body_Hammer_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cross_Body_Hammer_Curl/1.jpg"},
-  "21s":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/EZ-Bar_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/EZ-Bar_Curl/1.jpg"},
+  "21s":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Curl/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Curl/1.jpg"},
   "Close-Grip Bench Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Close-Grip_Barbell_Bench_Press/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Close-Grip_Barbell_Bench_Press/1.jpg"},
   "Tricep Pushdown":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Triceps_Pushdown/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Triceps_Pushdown/1.jpg"},
   "Overhead Tricep Extension":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Seated_Triceps_Extension/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Seated_Triceps_Extension/1.jpg"},
@@ -390,14 +390,12 @@ const EXERCISE_IMAGES={
   "JM Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Close-Grip_Barbell_Bench_Press/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Close-Grip_Barbell_Bench_Press/1.jpg"},
   "Cable Overhead Extension":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Overhead_Triceps_Extension/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Overhead_Triceps_Extension/1.jpg"},
   "Kickback":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Kickback/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Kickback/1.jpg"},
-  "Rope Tricep Pushdown":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Triceps_Pushdown/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Triceps_Pushdown/1.jpg"},
   "Barbell Back Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Full_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Full_Squat/1.jpg"},
   "Front Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Front_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Front_Squat/1.jpg"},
   "Leg Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Leg_Press/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Leg_Press/1.jpg"},
   "Leg Extension":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Leg_Extensions/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Leg_Extensions/1.jpg"},
   "Bulgarian Split Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Bulgarian_Split_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Bulgarian_Split_Squat/1.jpg"},
   "Walking Lunges":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Walking_Lunge/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Walking_Lunge/1.jpg"},
-  "Walking Lunge":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lunges/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lunges/1.jpg"},
   "Goblet Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Goblet_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Goblet_Squat/1.jpg"},
   "Hack Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Hack_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Hack_Squat/1.jpg"},
   "Sissy Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Sissy_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Sissy_Squat/1.jpg"},
@@ -418,8 +416,9 @@ const EXERCISE_IMAGES={
   "Sumo Romanian Deadlift":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Sumo_Deadlift/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Sumo_Deadlift/1.jpg"},
   "Hip Thrust":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Hip_Thrust/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Hip_Thrust/1.jpg"},
   "Barbell Glute Bridge":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Glute_Bridge/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Glute_Bridge/1.jpg"},
-  "Glute Kickback":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Glute_Bridge/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Glute_Bridge/1.jpg"},
+  "Glute Kickback":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Glute_Kickback/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Glute_Kickback/1.jpg"},
   "Sumo Deadlift":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Sumo_Deadlift/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Sumo_Deadlift/1.jpg"},
+  "Walking Lunge":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lunges/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lunges/1.jpg"},
   "Abduction Machine":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Thigh_Abductor/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Thigh_Abductor/1.jpg"},
   "Cable Kickback":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Hip_Adduction/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Hip_Adduction/1.jpg"},
   "Reverse Hyper":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Hyperextensions/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Hyperextensions/1.jpg"},
@@ -446,16 +445,16 @@ const EXERCISE_IMAGES={
   "Hollow Hold":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Hollow_Rock/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Hollow_Rock/1.jpg"},
   "V-Up":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/V_Up/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/V_Up/1.jpg"},
   "Bicycle Crunch":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Air_Bike/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Air_Bike/1.jpg"},
-  "Landmine Rotation":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_180/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_180/1.jpg"},
+  "Landmine Rotation":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_180s/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Landmine_180s/1.jpg"},
   "Cable Woodchop":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Woodchoppers/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Woodchoppers/1.jpg"},
   "Toes-to-Bar":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Hanging_Leg_Raise/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Hanging_Leg_Raise/1.jpg"},
-  "Burpee":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Push-Up/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Push-Up/1.jpg"},
+  "Burpee":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Burpee/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Burpee/1.jpg"},
   "Box Jump":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Box_Jump_-_Multiple_Jumps/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Box_Jump_-_Multiple_Jumps/1.jpg"},
   "Mountain Climber":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Mountain_Climbers/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Mountain_Climbers/1.jpg"},
   "Jump Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Jump_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Jump_Squat/1.jpg"},
   "Kettlebell Swing":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Advanced_Kettlebell_Windmill/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Advanced_Kettlebell_Windmill/1.jpg"},
   "Sprint Intervals":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bench_Sprint/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Bench_Sprint/1.jpg"},
-  "Jumping Lunge":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Jump_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Jump_Squat/1.jpg"},
+  "Jumping Lunge":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lunge/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Lunge/1.jpg"},
   "Kettlebell Clean":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Advanced_Kettlebell_Windmill/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Advanced_Kettlebell_Windmill/1.jpg"},
   "Battle Ropes":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Battling_Ropes/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Battling_Ropes/1.jpg"},
   "Tuck Jump":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Box_Jump_-_Multiple_Jumps/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Box_Jump_-_Multiple_Jumps/1.jpg"},
@@ -463,49 +462,40 @@ const EXERCISE_IMAGES={
   "High Knees":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Lunge_Sprint/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Lunge_Sprint/1.jpg"},
   "Lateral Bound":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Lateral_Bound/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Lateral_Bound/1.jpg"},
   "Kettlebell Goblet Squat":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Goblet_Squat/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Goblet_Squat/1.jpg"},
-  "Barbell Deadlift":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Deadlift/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Barbell_Deadlift/1.jpg"},
-  "Dumbbell Row":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_One-Arm_Row/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_One-Arm_Row/1.jpg"},
-  "Dumbbell Press":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Bench_Press/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Dumbbell_Bench_Press/1.jpg"},
-  "Cable Row":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Seated_Row/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Cable_Seated_Row/1.jpg"},
-  "Leg Curl":{img0:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Lying_Leg_Curls/0.jpg",img1:"https://zuxsutxzockyqsisunww.supabase.co/storage/v1/object/public/exercises/Lying_Leg_Curls/1.jpg"},
 };
 
 function ExerciseAnimation({exName,muscle,size="full"}){
-  const imgs=EXERCISE_IMAGES[exName];
+  const imgs=EXERCISE_IMAGES[exName]||null;
   const[frame,setFrame]=useState(0);
   const[transitioning,setTransitioning]=useState(false);
   const[loaded0,setLoaded0]=useState(false);
   const[loaded1,setLoaded1]=useState(false);
-  const[error,setError]=useState(false);
+  const retriesRef=useRef(0);
   const[src0,setSrc0]=useState(()=>imgs?.img0||'');
   const[src1,setSrc1]=useState(()=>imgs?.img1||'');
-  const retriesRef=useRef(0);
 
   useEffect(()=>{
-    if(!imgs||error)return;
-    setFrame(0);setTransitioning(false);setLoaded0(false);setLoaded1(false);setError(false);
+    if(!imgs)return;
+    setFrame(0);setTransitioning(false);setLoaded0(false);setLoaded1(false);
     setSrc0(imgs.img0);setSrc1(imgs.img1);retriesRef.current=0;
   },[exName]);
 
   useEffect(()=>{
-    if(!imgs||error||(!loaded0&&!loaded1))return;
+    if(!imgs||(!loaded0&&!loaded1))return;
     const hold=setTimeout(()=>{
       setTransitioning(true);
       setTimeout(()=>{setFrame(f=>f===0?1:0);setTransitioning(false);},600);
     },1800);
     return()=>clearTimeout(hold);
-  },[frame,loaded0,loaded1,imgs,error]);
+  },[frame,loaded0,loaded1,imgs]);
 
   function handleImgError(which){
-    if(retriesRef.current<3){
+    if(retriesRef.current<2){
       retriesRef.current++;
-      const delay=1500*retriesRef.current;
       setTimeout(()=>{
         if(which===0) setSrc0(imgs.img0+'?r='+retriesRef.current);
         else setSrc1(imgs.img1+'?r='+retriesRef.current);
-      },delay);
-    } else {
-      setError(true);
+      },1500*retriesRef.current);
     }
   }
 
@@ -516,7 +506,7 @@ function ExerciseAnimation({exName,muscle,size="full"}){
 
   // THUMB mode — exercise list preview
   if(size==="thumb"){
-    if(!imgs||error){
+    if(!imgs){
       return(
         <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(204,255,0,0.08)",borderRadius:"14px"}}>
           <span style={{fontWeight:900,fontSize:"1rem",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{(exName||"").slice(0,2).toUpperCase()}</span>
@@ -541,7 +531,7 @@ function ExerciseAnimation({exName,muscle,size="full"}){
   }
 
   // FULL mode — active workout hero
-  if(!imgs||error){
+  if(!imgs){
     return(
       <div style={{width:"100%",aspectRatio:"16/9",background:mc,borderRadius:"20px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",marginBottom:"1.25rem",border:"1px solid rgba(255,255,255,0.08)"}}>
         <span style={{fontSize:"3rem",marginBottom:"0.5rem"}}>💪</span>
