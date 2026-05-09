@@ -2553,24 +2553,22 @@ function ExerciseAnimation({exName,muscle,size="full"}){
   const[failed,setFailed]=useState(false);
   const[src0,setSrc0]=useState('');
   const[src1,setSrc1]=useState('');
-  const errCount=useRef(0);
+  const[errCount,setErrCount]=useState(0);
   const timerRef=useRef(null);
 
   useEffect(()=>{
-    // Full reset on exercise change
     const i=getExerciseImages(exName);
-    errCount.current=0;
     if(timerRef.current) clearTimeout(timerRef.current);
     setFrame(0);
     setTransitioning(false);
     setLoaded0(false);
     setLoaded1(false);
     setFailed(false);
+    setErrCount(0);
     setSrc0(i?.img0||'');
     setSrc1(i?.img1||'');
-    // Timeout — if nothing loads in 12s show fallback
     if(i?.img0){
-      timerRef.current=setTimeout(()=>setFailed(true),12000);
+      timerRef.current=setTimeout(()=>setFailed(true),15000);
     }
     return()=>clearTimeout(timerRef.current);
   },[exName]);
@@ -2589,8 +2587,10 @@ function ExerciseAnimation({exName,muscle,size="full"}){
   },[frame,loaded0,loaded1,failed]);
 
   function handleErr(){
-    errCount.current++;
-    if(errCount.current>=2) setFailed(true);
+    setErrCount(c=>{
+      if(c+1>=2){ setFailed(true); }
+      return c+1;
+    });
   }
 
   const mc={'chest':'rgba(239,68,68,0.2)','back':'rgba(59,130,246,0.2)','shoulders':'rgba(168,85,247,0.2)','biceps':'rgba(34,197,94,0.2)','triceps':'rgba(251,146,60,0.2)','quads':'rgba(236,72,153,0.2)','hamstrings':'rgba(20,184,166,0.2)','glutes':'rgba(251,191,36,0.2)','calves':'rgba(99,102,241,0.2)','core':'rgba(204,255,0,0.2)','hiit':'rgba(239,68,68,0.2)'}[muscle]||'rgba(204,255,0,0.15)';
@@ -2845,7 +2845,7 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
         {exercises.map((ex,i)=>(
           <div key={ex.name} style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(15px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"0.85rem 1rem",marginBottom:"0.5rem",display:"flex",alignItems:"center",gap:"0.85rem"}}>
             <div style={{width:"58px",height:"58px",borderRadius:"14px",overflow:"hidden",flexShrink:0,position:"relative"}}>
-              <ExerciseAnimation exName={ex.name} muscle={ex.muscle} size="thumb"/>
+              <ExerciseAnimation key={ex.name} exName={ex.name} muscle={ex.muscle} size="thumb"/>
             </div>
             <div style={{flex:1}}>
               <div style={{fontWeight:900,fontSize:"0.9rem",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white}}>{ex.name}</div>
