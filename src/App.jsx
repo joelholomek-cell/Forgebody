@@ -2191,183 +2191,113 @@ function HomeScreen({profile,user,onNavigate}){
   const pbs=Object.values(getPBs()).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
 
   return(
-    <div style={{padding:"1.5rem 1.25rem 1rem",position:"relative",zIndex:1,maxWidth:"600px",margin:"0 auto"}}>
+    <div style={{minHeight:"100vh",background:"#080808",paddingBottom:"100px"}}>
 
-      {/* Greeting */}
-      <div style={{marginBottom:"1.5rem",paddingTop:"0.5rem"}}>
-        <div style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>{greet}</div>
-        <div style={{fontSize:"3.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.03em",color:C.white,lineHeight:0.9,
-          background:"linear-gradient(135deg,#ffffff,rgba(255,255,255,0.8))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"
-        }}>{profile?.name||"Athlete"}</div>
-        <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",marginTop:"0.4rem"}}>{todayDone?"You crushed it today. 🔥":"Ready to build. Let's go. 💪"}</div>
-      </div>
+      {/* Hero gradient */}
+      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,
+        background:"radial-gradient(ellipse 120% 60% at 50% -10%, rgba(204,255,0,0.12) 0%, transparent 60%)"}}/>
 
-      {/* Live member counter */}
-      <SocialProofBar/>
+      <div style={{padding:"0 1.1rem",position:"relative",zIndex:1,maxWidth:"600px",margin:"0 auto"}}>
 
-      {/* TODAY WORKOUT — hero card */}
-      <div onClick={()=>onNavigate("train")} style={{background:"linear-gradient(135deg,rgba(204,255,0,0.13),rgba(150,220,0,0.05))",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"22px",padding:"1.4rem",marginBottom:"0.65rem",cursor:"pointer",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:"-20px",right:"-20px",width:"100px",height:"100px",borderRadius:"50%",background:"rgba(204,255,0,0.1)",filter:"blur(20px)",pointerEvents:"none"}}/>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}>
-            <span style={{width:"5px",height:"5px",borderRadius:"50%",background:C.lime,display:"inline-block"}}/>
-            {todayDone?"Completed ✓":"Today's Training"}
+        {/* TOP BAR */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:"3.5rem",paddingBottom:"1.5rem"}}>
+          <div>
+            <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.18em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>{greet}</div>
+            <div style={{fontSize:"2.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:"#fff",lineHeight:0.95,marginTop:"2px"}}>{profile?.name||"Athlete"}</div>
           </div>
-          {todayDone&&<div style={{background:"rgba(204,255,0,0.2)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"2px 10px",fontSize:"0.62rem",fontWeight:800,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.06em"}}>DONE ✓</div>}
-        </div>
-        <div style={{fontSize:"1.9rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.white,lineHeight:1,marginBottom:"0.5rem"}}>
-          {todayWorkout?todayWorkout.label:settings.split?"Rest Day":"Set Up Programme"}
-        </div>
-        {todayWorkout&&<div style={{display:"flex",gap:"0.35rem",flexWrap:"wrap",marginBottom:"0.85rem"}}>{todayWorkout.muscles.slice(0,4).map(m=><span key={m} style={{...s.tag,fontSize:"0.6rem"}}>{m}</span>)}</div>}
-        <div style={{background:todayDone?"rgba(255,255,255,0.1)":C.lime,color:todayDone?"rgba(255,255,255,0.6)":"#000",borderRadius:"10px",padding:"0.65rem 1.25rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.88rem",letterSpacing:"0.06em",textTransform:"uppercase",display:"inline-block",boxShadow:todayDone?"none":"0 0 20px rgba(204,255,0,0.3)"}}>
-          {todayDone?"Train Again →":todayWorkout?"Start Workout →":"Build Programme →"}
-        </div>
-      </div>
-
-      {/* STATS ROW */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.55rem",marginBottom:"0.65rem"}}>
-        {[{n:totalWorkouts,l:"Workouts"},{n:thisWeek,l:"This Week"},{n:streak+"🔥",l:"Streak"}].map((x,i)=>(
-          <div key={i} style={{background:"rgba(255,255,255,0.08)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"16px",padding:"0.9rem",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.2)"}}>
-            <div style={{fontSize:"1.8rem",fontWeight:900,color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,textShadow:"0 0 20px rgba(204,255,0,0.4)"}}>{x.n}</div>
-            <div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"4px"}}>{x.l}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* NUTRITION DASHBOARD */}
-      <div onClick={()=>onNavigate("macros")} style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"22px",padding:"1.25rem",marginBottom:"0.65rem",cursor:"pointer"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.9rem"}}>
-          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:C.lime,fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"4px",height:"4px",borderRadius:"50%",background:C.lime,display:"inline-block"}}/>Today's Nutrition</div>
-          <span style={{fontSize:"0.7rem",fontWeight:800,color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.06em"}}>Log food →</span>
-        </div>
-        <div style={{display:"flex",gap:"1rem",alignItems:"center",marginBottom:"0.9rem"}}>
-          <div style={{flexShrink:0}}>
-            {(()=>{
-              const pct=Math.min(100,Math.round((totalCal/macroTargets.cal)*100));
-              const r=30,circ=2*Math.PI*r;
-              return(
-                <svg width="76" height="76" viewBox="0 0 76 76">
-                  <circle cx="38" cy="38" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="5"/>
-                  <circle cx="38" cy="38" r={r} fill="none" stroke={C.lime} strokeWidth="5"
-                    strokeDasharray={circ} strokeDashoffset={circ*(1-pct/100)}
-                    strokeLinecap="round" transform="rotate(-90 38 38)"
-                    style={{filter:"drop-shadow(0 0 6px rgba(204,255,0,0.5))"}}/>
-                  <text x="38" y="34" textAnchor="middle" fill={C.white} fontSize="13" fontWeight="900" fontFamily="Barlow Condensed,sans-serif">{totalCal}</text>
-                  <text x="38" y="47" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="Barlow Condensed,sans-serif">KCAL</text>
-                </svg>
-              );
-            })()}
-          </div>
-          <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
-            {[{l:"Kcal left",v:calLeft,c:C.lime},{l:"Protein left",v:pLeft+"g",c:"#4ade80"}].map((x,i)=>(
-              <div key={i} style={{background:"rgba(255,255,255,0.05)",borderRadius:"10px",padding:"0.45rem 0.65rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.08em"}}>{x.l}</span>
-                <span style={{fontSize:"1rem",fontWeight:900,color:x.c,fontFamily:"'Barlow Condensed',sans-serif"}}>{x.v}</span>
-              </div>
-            ))}
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:"2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",color:"#CCFF00",lineHeight:1,textShadow:"0 0 20px rgba(204,255,0,0.4)"}}>{streak}<span style={{fontSize:"1.2rem"}}>🔥</span></div>
+            <div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>Day Streak</div>
           </div>
         </div>
-        {[{l:"Protein",k:"p",c:"#4ade80"},{l:"Carbs",k:"c",c:"#60a5fa"},{l:"Fat",k:"f",c:"#f97316"}].map((m,i)=>{
-          const val=macroLog.reduce((a,x)=>a+(x[m.k]||0),0);
-          const tgt=macroTargets[m.k];
-          const pct=Math.min(100,Math.round((val/tgt)*100));
-          return(
-            <div key={i} style={{marginBottom:i<2?"0.35rem":0}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:"3px"}}>
-                <span style={{fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif"}}>{m.l}</span>
-                <span style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif"}}>{val}g/{tgt}g</span>
-              </div>
-              <div style={{height:"4px",background:"rgba(255,255,255,0.07)",borderRadius:"2px",overflow:"hidden"}}>
-                <div style={{height:"100%",width:pct+"%",background:m.c,borderRadius:"2px",transition:"width 1s ease"}}/>
-              </div>
+
+        {/* HERO — TODAY'S WORKOUT */}
+        <div onClick={()=>onNavigate("train")} className="press" style={{background:"linear-gradient(135deg,rgba(204,255,0,0.15),rgba(204,255,0,0.04))",border:"1px solid rgba(204,255,0,0.35)",borderRadius:"24px",padding:"1.5rem",marginBottom:"0.75rem",cursor:"pointer",position:"relative",overflow:"hidden",boxShadow:"0 0 40px rgba(204,255,0,0.08), inset 0 1px 0 rgba(204,255,0,0.15)"}}>
+          <div style={{position:"absolute",top:"-40px",right:"-40px",width:"160px",height:"160px",borderRadius:"50%",background:"rgba(204,255,0,0.12)",filter:"blur(40px)",pointerEvents:"none"}}/>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.6rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+              <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"#CCFF00",boxShadow:"0 0 8px rgba(204,255,0,0.8)",animation:"pulse 2s ease-in-out infinite"}}/>
+              <span style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif"}}>{todayDone?"Completed Today":"Today's Training"}</span>
             </div>
-          );
-        })}
-      </div>
-
-      {/* WATER + AI COACH */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.65rem"}}>
-        <div onClick={()=>onNavigate("sidebar","calculator")} style={{background:"rgba(59,130,246,0.08)",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.18)",borderRadius:"18px",padding:"1rem",cursor:"pointer"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-            <span style={{fontSize:"1.3rem"}}>💧</span>
-            <span style={{fontSize:"1.1rem",fontWeight:900,color:"#60a5fa",fontFamily:"'Barlow Condensed',sans-serif"}}>{water}/8</span>
+            {todayDone&&<div style={{background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"20px",padding:"3px 10px",fontSize:"0.6rem",fontWeight:800,color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"0.08em"}}>DONE ✓</div>}
           </div>
-          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.white,marginBottom:"0.4rem"}}>Water</div>
-          <div style={{height:"4px",background:"rgba(255,255,255,0.07)",borderRadius:"2px",overflow:"hidden",marginBottom:"0.3rem"}}>
-            <div style={{height:"100%",width:Math.min(100,(water/8)*100)+"%",background:"#3b82f6",borderRadius:"2px"}}/>
+          <div style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:"#fff",lineHeight:0.95,marginBottom:"0.6rem"}}>{todayWorkout?todayWorkout.label:settings.split?"Rest Day 😴":"Start Your Journey"}</div>
+          {todayWorkout&&<div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"1rem"}}>{todayWorkout.muscles.slice(0,4).map(m=>(<span key={m} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"3px 10px",fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif"}}>{m}</span>))}</div>}
+          <div style={{background:todayDone?"rgba(255,255,255,0.08)":"#CCFF00",color:todayDone?"rgba(255,255,255,0.5)":"#000",borderRadius:"14px",padding:"0.9rem 1.5rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",letterSpacing:"0.06em",textTransform:"uppercase",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:todayDone?"none":"0 4px 24px rgba(204,255,0,0.35)",border:todayDone?"1px solid rgba(255,255,255,0.1)":"none"}}>
+            <span>{todayDone?"Train Again":"Start Workout"}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={todayDone?"rgba(255,255,255,0.4)":"#000"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
-          <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{water>=8?"Goal hit! 🎉":8-water+" glasses to go"}</div>
         </div>
-        <div onClick={()=>onNavigate("coach")} style={{background:"rgba(168,85,247,0.08)",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",border:"1px solid rgba(168,85,247,0.18)",borderRadius:"18px",padding:"1rem",cursor:"pointer"}}>
-          <span style={{fontSize:"1.3rem",display:"block",marginBottom:"0.4rem"}}>🤖</span>
-          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:C.white,marginBottom:"0.2rem"}}>AI Coach</div>
-          <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.4}}>Ask me anything. 24/7.</div>
-        </div>
-      </div>
 
-      {/* QUICK ACTIONS */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.65rem"}}>
-        {[
-          {icon:"🍽️",label:"Meal Planner",desc:"Build today's meals",color:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)",action:()=>onNavigate("meal")},
-          {icon:"📊",label:"Log Macros",desc:"Track your food",color:"rgba(96,165,250,0.08)",border:"rgba(96,165,250,0.15)",action:()=>onNavigate("macros")},
-          {icon:"📈",label:"Progress",desc:"Log your weight",color:"rgba(74,222,128,0.08)",border:"rgba(74,222,128,0.15)",action:()=>onNavigate("sidebar","progress")},
-          {icon:"🧠",label:"Habits",desc:"Daily check-in",color:"rgba(204,255,0,0.06)",border:"rgba(204,255,0,0.15)",action:()=>onNavigate("sidebar","habits")},
-        ].map((item,i)=>(
-          <div key={i} onClick={item.action} style={{background:`linear-gradient(135deg,${item.color},rgba(255,255,255,0.02))`,backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",border:`1px solid ${item.border}`,borderRadius:"18px",padding:"1rem",cursor:"pointer"}}>
-            <span style={{fontSize:"1.3rem",display:"block",marginBottom:"0.4rem"}}>{item.icon}</span>
-            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.82rem",color:C.white,marginBottom:"0.15rem"}}>{item.label}</div>
-            <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* MOTIVATION */}
-      <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.65rem"}}>
-        <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.45rem",display:"flex",alignItems:"center",gap:"5px"}}>
-          <span style={{width:"4px",height:"4px",borderRadius:"50%",background:C.lime,display:"inline-block"}}/>Daily Motivation
-        </div>
-        <div style={{fontSize:"1rem",fontWeight:700,color:"rgba(255,255,255,0.7)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6,fontStyle:"italic"}}>"{quote}"</div>
-      </div>
-
-      {/* PBs */}
-      {pbs.length>0&&(
-        <div style={{background:"rgba(251,191,36,0.06)",backdropFilter:"blur(15px)",WebkitBackdropFilter:"blur(15px)",border:"1px solid rgba(251,191,36,0.15)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.65rem"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.6rem"}}>
-            <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"#fbbf24",fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"4px",height:"4px",borderRadius:"50%",background:"#fbbf24",display:"inline-block"}}/>Personal Bests</div>
-            <button onClick={()=>onNavigate("sidebar","pbs")} style={{background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"6px",padding:"2px 8px",color:"#fbbf24",fontSize:"0.62rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}>See all</button>
-          </div>
-          {pbs.map((pb,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.35rem 0",borderBottom:i<pbs.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
-              <span style={{fontSize:"0.95rem"}}>🏆</span>
-              <div style={{flex:1,fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:C.white}}>{pb.name}</div>
-              <span style={{background:"rgba(251,191,36,0.15)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"6px",padding:"2px 7px",fontSize:"0.65rem",fontWeight:800,color:"#fbbf24",fontFamily:"'Barlow Condensed',sans-serif"}}>{pb.weight}kg×{pb.reps}</span>
+        {/* STATS ROW */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.55rem",marginBottom:"0.75rem"}}>
+          {[{n:totalWorkouts,l:"Workouts"},{n:thisWeek,l:"This Week"},{n:streak,l:"Streak 🔥"}].map((x,i)=>(
+            <div key={i} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"18px",padding:"1rem 0.75rem",textAlign:"center"}}>
+              <div style={{fontSize:"1.7rem",fontWeight:900,color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,textShadow:"0 0 16px rgba(204,255,0,0.3)"}}>{x.n}</div>
+              <div style={{fontSize:"0.58rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"5px"}}>{x.l}</div>
             </div>
           ))}
         </div>
-      )}
 
-      {/* 12-WEEK PROGRAMME CARD */}
-      <div className="anim-slideUp" style={{animationDelay:"0.05s"}}>
-        <ProgrammeHomeCard onNavigate={onNavigate}/>
-      </div>
+        {/* CHALLENGE BUTTON */}
+        <div onClick={()=>onNavigate("programme")} className="press" style={{background:"linear-gradient(135deg,#CCFF00,#aaee00)",borderRadius:"20px",padding:"1.4rem 1.5rem",marginBottom:"0.75rem",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 8px 32px rgba(204,255,0,0.4), 0 2px 8px rgba(204,255,0,0.2)",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:"-20px",right:"60px",width:"100px",height:"100px",borderRadius:"50%",background:"rgba(255,255,255,0.15)",filter:"blur(20px)",pointerEvents:"none"}}/>
+          <div>
+            <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(0,0,0,0.5)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"3px"}}>12-Week Challenge</div>
+            <div style={{fontSize:"1.7rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:"#000",lineHeight:0.95}}>Your AI Programme</div>
+            <div style={{fontSize:"0.78rem",color:"rgba(0,0,0,0.55)",fontFamily:"'Barlow',sans-serif",marginTop:"4px"}}>Built for your body. Personalised daily.</div>
+          </div>
+          <div style={{background:"rgba(0,0,0,0.12)",borderRadius:"50%",width:"48px",height:"48px",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
 
-      {/* STREAK PROTECTION */}
-      <div className="anim-slideUp" style={{animationDelay:"0.1s"}}>
+        {/* NUTRITION + AI */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+          <div onClick={()=>onNavigate("macros")} className="press" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"1.1rem",cursor:"pointer"}}>
+            {(()=>{const pct=Math.min(100,Math.round((totalCal/macroTargets.cal)*100));const r=22,circ=2*Math.PI*r;return(<svg width="56" height="56" viewBox="0 0 56 56" style={{marginBottom:"0.5rem"}}><circle cx="28" cy="28" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4"/><circle cx="28" cy="28" r={r} fill="none" stroke="#CCFF00" strokeWidth="4" strokeDasharray={circ} strokeDashoffset={circ*(1-pct/100)} strokeLinecap="round" transform="rotate(-90 28 28)" style={{filter:"drop-shadow(0 0 4px rgba(204,255,0,0.6))"}}/><text x="28" y="25" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="900" fontFamily="Barlow Condensed,sans-serif">{totalCal}</text><text x="28" y="36" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="Barlow Condensed,sans-serif">KCAL</text></svg>);})()}
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:"#fff",marginBottom:"2px"}}>Nutrition</div>
+            <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>{calLeft} kcal left</div>
+          </div>
+          <div onClick={()=>onNavigate("ai")} className="press" style={{background:"rgba(168,85,247,0.08)",border:"1px solid rgba(168,85,247,0.2)",borderRadius:"20px",padding:"1.1rem",cursor:"pointer",display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
+            <div style={{width:"36px",height:"36px",borderRadius:"12px",background:"rgba(168,85,247,0.2)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"0.6rem",fontSize:"1.1rem"}}>🤖</div>
+            <div>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:"#fff",marginBottom:"2px"}}>AI Coach</div>
+              <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>Ask anything</div>
+            </div>
+          </div>
+        </div>
+
+        {/* QUICK ACTIONS */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+          {[{icon:"🍽️",label:"Meal Planner",desc:"Build today's meals",color:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)",action:()=>onNavigate("meal")},{icon:"📊",label:"Log Macros",desc:"Track your food",color:"rgba(96,165,250,0.08)",border:"rgba(96,165,250,0.15)",action:()=>onNavigate("macros")},{icon:"📈",label:"Progress",desc:"Log your weight",color:"rgba(74,222,128,0.08)",border:"rgba(74,222,128,0.15)",action:()=>onNavigate("sidebar","progress")},{icon:"🧠",label:"Habits",desc:"Daily check-in",color:"rgba(204,255,0,0.06)",border:"rgba(204,255,0,0.12)",action:()=>onNavigate("sidebar","habits")}].map((item,i)=>(
+            <div key={i} onClick={item.action} className="press" style={{background:`linear-gradient(135deg,${item.color},rgba(255,255,255,0.02))`,border:`1px solid ${item.border}`,borderRadius:"18px",padding:"1rem",cursor:"pointer"}}>
+              <span style={{fontSize:"1.3rem",display:"block",marginBottom:"0.4rem"}}>{item.icon}</span>
+              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:"#fff",marginBottom:"2px"}}>{item.label}</div>
+              <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        <SocialProofBar/>
+        <div style={{marginTop:"0.75rem"}}><ProgrammeHomeCard onNavigate={onNavigate}/></div>
         <StreakProtectionAlert streak={streak} onNavigate={onNavigate}/>
+
+        {/* QUOTE */}
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"18px",padding:"1.1rem",marginTop:"0.75rem",marginBottom:"0.75rem"}}>
+          <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.5rem"}}>Daily Motivation</div>
+          <div style={{fontSize:"0.95rem",fontWeight:600,color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6,fontStyle:"italic"}}>"{quote}"</div>
+        </div>
+
+        {/* PBs */}
+        {pbs.length>0&&(<div style={{background:"rgba(251,191,36,0.05)",border:"1px solid rgba(251,191,36,0.12)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.75rem"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.6rem"}}><div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:"#fbbf24",fontFamily:"'Barlow Condensed',sans-serif",display:"flex",alignItems:"center",gap:"5px"}}><span style={{width:"4px",height:"4px",borderRadius:"50%",background:"#fbbf24",display:"inline-block"}}/>Personal Bests</div><button onClick={()=>onNavigate("sidebar","pbs")} style={{background:"rgba(251,191,36,0.1)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"6px",padding:"2px 8px",color:"#fbbf24",fontSize:"0.62rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}>See all</button></div>{pbs.map((pb,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.35rem 0",borderBottom:i<pbs.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}><span style={{fontSize:"0.95rem"}}>🏆</span><div style={{flex:1,fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.8rem",color:"#fff"}}>{pb.name}</div><span style={{background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.2)",borderRadius:"6px",padding:"2px 7px",fontSize:"0.65rem",fontWeight:800,color:"#fbbf24",fontFamily:"'Barlow Condensed',sans-serif"}}>{pb.weight}kg×{pb.reps}</span></div>))}</div>)}
+
+        <CoachCheckIn/>
+        <ProgressiveOverloadCard onStartWorkout={()=>onNavigate("tab","train")}/>
+        <WeeklyRecap onNavigate={onNavigate}/>
+        <WorkoutCalendar completedDates={completedDates}/>
+        <div style={{height:"1rem"}}/>
       </div>
-
-      {/* COACH CHECK-IN */}
-      <CoachCheckIn/>
-
-      {/* PROGRESSIVE OVERLOAD */}
-      <ProgressiveOverloadCard onStartWorkout={()=>onNavigate("tab","train")}/>
-
-      {/* WEEKLY RECAP */}
-      <WeeklyRecap onNavigate={onNavigate}/>
-
-      {/* CALENDAR */}
-      <WorkoutCalendar completedDates={completedDates}/>
-      <div style={{height:"1rem"}}/>
     </div>
   );
 }
@@ -5365,30 +5295,125 @@ function CancelFlow({user,profile}){
 // ─── FIRST TIME USER FLOW ────────────────────────────────────────────────────
 function FirstTimeFlow({onDone}){
   const[step,setStep]=useState(0);
+  const[animating,setAnimating]=useState(false);
+  const profile=JSON.parse(localStorage.getItem("fb_profile")||"{}");
+  const name=profile.name||"Athlete";
+
   const STEPS=[
-    {icon:"🏋️",title:"Your Workout Plan",desc:"Go to the Train tab — your personalised workout is ready. Pick your split, start a session and log every set.",action:"Show me Training"},
-    {icon:"🍽️",title:"Your Meal Plan",desc:"Go to the Nutrition tab — your daily meal plan is built around your goal and diet. Swap meals you don't like.",action:"Show me Nutrition"},
-    {icon:"📊",title:"Track Your Macros",desc:"Log your food daily in the Macro Tracker. Hit your protein target every day and you WILL see results.",action:"Got it"},
-    {icon:"🤖",title:"Meet Your AI Coach",desc:"Tap the AI Coach anytime — ask about your programme, nutrition, recovery or mindset. It knows your exact setup.",action:"Let's Go 🔥"},
+    {
+      type:"welcome",
+      headline:`Welcome,\n${name}.`,
+      sub:"You just made the best investment you'll make this year.",
+      detail:"Your body transforms in the next 12 weeks. We built this around you — your goal, your schedule, your level.",
+      cta:"Let's Build You →",
+      bg:"rgba(204,255,0,0.06)",
+      accent:"#CCFF00",
+    },
+    {
+      type:"programme",
+      icon:"🧬",
+      headline:"Your AI\nProgramme",
+      sub:"Not a template. Built for you.",
+      detail:"Answer 4 questions and your 12-week programme generates in seconds. Exercises, sets, reps, rest — all calibrated to your body and goal. Adapts every 4 weeks.",
+      cta:"Got It →",
+      bg:"rgba(59,130,246,0.06)",
+      accent:"#60a5fa",
+    },
+    {
+      type:"workout",
+      icon:"🏋️",
+      headline:"Every Workout\nCounted",
+      sub:"Log sets. Track weight. Chase PBs.",
+      detail:"Every rep you log builds your history. The app spots when you're ready to go heavier and tells you. Your PRs are celebrated.",
+      cta:"Let's Go →",
+      bg:"rgba(168,85,247,0.06)",
+      accent:"#a855f7",
+    },
+    {
+      type:"coach",
+      icon:"🤖",
+      headline:"Your Coach\nNever Sleeps",
+      sub:"Ask anything. 3am, post-workout, pre-competition.",
+      detail:"Your AI coach knows your programme, your goal and your history. Ask about form, nutrition, recovery or motivation. It's built around you.",
+      cta:"Start ForgeBody 🔥",
+      bg:"rgba(251,146,60,0.06)",
+      accent:"#fb923c",
+      last:true,
+    },
   ];
-  const step_=STEPS[step];
+
+  const s=STEPS[step];
+
+  function next(){
+    if(animating)return;
+    if(s.last){localStorage.setItem("fb_onboarded_flow","true");onDone();return;}
+    setAnimating(true);
+    setTimeout(()=>{setStep(i=>i+1);setAnimating(false);},300);
+  }
+
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",backdropFilter:"blur(20px)",zIndex:600,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
-      <div style={{width:"100%",maxWidth:"480px",background:"rgba(18,18,18,0.99)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"28px 28px 0 0",padding:"2rem 1.75rem 3rem"}}>
-        <div style={{display:"flex",gap:"6px",marginBottom:"1.5rem"}}>
-          {STEPS.map((_,i)=><div key={i} style={{flex:1,height:"3px",borderRadius:"2px",background:i<=step?"#CCFF00":"rgba(255,255,255,0.1)",transition:"background 0.3s"}}/>)}
-        </div>
-        <div style={{textAlign:"center",marginBottom:"1.75rem"}}>
-          <div style={{fontSize:"3.5rem",marginBottom:"1rem"}}>{step_.icon}</div>
-          <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.5rem",lineHeight:1}}>{step_.title}</div>
-          <div style={{fontSize:"0.95rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.65}}>{step_.desc}</div>
-        </div>
-        <button onClick={()=>{if(step<STEPS.length-1){setStep(s=>s+1);}else{localStorage.setItem("fb_onboarded_flow","true");onDone();}}} style={{width:"100%",padding:"1rem",background:"#CCFF00",color:"#000",border:"none",borderRadius:"14px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"1rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.75rem"}}>
-          {step_.action} →
+    <div style={{position:"fixed",inset:0,background:"#080808",zIndex:600,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+
+      {/* Ambient bg glow */}
+      <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 80% 50% at 50% 0%, ${s.accent}22 0%, transparent 60%)`,transition:"background 0.6s ease",pointerEvents:"none"}}/>
+
+      {/* Progress dots */}
+      <div style={{position:"absolute",top:"3rem",left:0,right:0,display:"flex",justifyContent:"center",gap:"6px",zIndex:2}}>
+        {STEPS.map((_,i)=>(
+          <div key={i} style={{width:i===step?"24px":"6px",height:"6px",borderRadius:"3px",
+            background:i<=step?s.accent:"rgba(255,255,255,0.15)",
+            transition:"all 0.4s ease",boxShadow:i===step?`0 0 8px ${s.accent}88`:""}}/>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"0 1.75rem 3rem",position:"relative",zIndex:2,
+        opacity:animating?0:1,transform:animating?"translateY(20px)":"translateY(0)",transition:"all 0.3s ease"}}>
+
+        {step===0?(
+          // Welcome step — special treatment
+          <div>
+            <div style={{fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.2em",textTransform:"uppercase",
+              color:s.accent,fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"1rem"}}>ForgeBody</div>
+            <div style={{fontSize:"3.8rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",
+              textTransform:"uppercase",letterSpacing:"-0.03em",color:"#fff",lineHeight:0.9,marginBottom:"1.25rem",
+              whiteSpace:"pre-line"}}>{s.headline}</div>
+            <div style={{fontSize:"1.1rem",fontWeight:700,color:"rgba(255,255,255,0.7)",
+              fontFamily:"'Barlow',sans-serif",lineHeight:1.5,marginBottom:"0.75rem"}}>{s.sub}</div>
+            <div style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",
+              lineHeight:1.65,marginBottom:"2.5rem"}}>{s.detail}</div>
+          </div>
+        ):(
+          // Feature steps
+          <div>
+            <div style={{fontSize:"4rem",marginBottom:"1.5rem"}}>{s.icon}</div>
+            <div style={{fontSize:"3.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",
+              textTransform:"uppercase",letterSpacing:"-0.03em",color:"#fff",lineHeight:0.9,
+              marginBottom:"0.85rem",whiteSpace:"pre-line"}}>{s.headline}</div>
+            <div style={{fontSize:"1rem",fontWeight:700,color:s.accent,
+              fontFamily:"'Barlow',sans-serif",marginBottom:"0.75rem"}}>{s.sub}</div>
+            <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",
+              lineHeight:1.65,marginBottom:"2.5rem"}}>{s.detail}</div>
+          </div>
+        )}
+
+        <button onClick={next} style={{width:"100%",padding:"1.1rem",
+          background:s.last?"#CCFF00":s.accent,
+          color:s.last||s.accent==="#CCFF00"?"#000":"#fff",
+          border:"none",borderRadius:"16px",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,
+          fontSize:"1.05rem",letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",
+          boxShadow:`0 8px 32px ${s.accent}44`}}>
+          {s.cta}
         </button>
-        <button onClick={()=>{localStorage.setItem("fb_onboarded_flow","true");onDone();}} style={{width:"100%",padding:"0.75rem",background:"transparent",border:"none",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",cursor:"pointer"}}>
-          Skip intro
-        </button>
+
+        {!s.last&&(
+          <button onClick={()=>{localStorage.setItem("fb_onboarded_flow","true");onDone();}}
+            style={{width:"100%",padding:"0.85rem",background:"transparent",border:"none",
+              color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif",fontSize:"0.85rem",
+              cursor:"pointer",marginTop:"0.5rem"}}>
+            Skip
+          </button>
+        )}
       </div>
     </div>
   );
