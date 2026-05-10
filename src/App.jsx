@@ -3115,28 +3115,71 @@ function WorkoutSession({dayIndex,onDone,customWorkout=null}){
     const setsCompleted=Object.keys(completedSets).length;
     const weight=parseFloat(JSON.parse(localStorage.getItem("fb_profile")||"{}").weight||80);
     const calsBurned=Math.round(setsCompleted*5*(weight/80));
+    const workoutName=day?.label||customWorkout?.name||"Workout";
+    const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+    const streak=(()=>{let s=0;for(let i=0;i<60;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))s++;else if(i>0)break;}return s;})();
+
+    const forgeMessages=[
+      "Dave never would've pushed you that hard. Good thing you cancelled him.",
+      "That's another session Dave missed. His loss.",
+      "Every set you just did is a set Dave will never coach again.",
+      "You showed up. That's already more than most people did today.",
+      "This is what $19/month looks like. Dave charged this per hour.",
+    ];
+    const forgeMsg=forgeMessages[Math.floor(Math.random()*forgeMessages.length)];
+
+    async function shareWorkout(){
+      const text=`Just crushed ${workoutName} 💪\n${setsCompleted} sets · ${streak} day streak · ${calsBurned} kcal\n\nForgeBody — Sorry Dave. forgebody.fit`;
+      try{
+        if(navigator.share){await navigator.share({title:"ForgeBody Workout",text,url:"https://forgebody.fit"});}
+        else{await navigator.clipboard.writeText(text);}
+      }catch(e){}
+    }
+
     return(
-      <div style={{...s.content,textAlign:"center",paddingTop:"2rem"}}>
-        <div style={{fontSize:"4rem",marginBottom:"0.75rem"}}>🔥</div>
-        <div style={{fontSize:"2.5rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:C.lime,marginBottom:"0.35rem",lineHeight:1}}>Workout Done!</div>
-        <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.9rem",marginBottom:"1.5rem"}}>Every rep counts. You just built a better body.</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem",marginBottom:"0.65rem"}}>
-          {[{n:exercises.length,l:"Exercises",icon:"🏋️"},{n:setsCompleted,l:"Sets Done",icon:"✅"},{n:`~${calsBurned}`,l:"Kcal Burned",icon:"🔥"},{n:`${duration}m`,l:"Duration",icon:"⏱️"}].map((x,i)=>(
-            <div key={i} style={{...s.card,display:"flex",alignItems:"center",gap:"0.6rem",textAlign:"left",padding:"0.9rem",marginBottom:0}}>
-              <span style={{fontSize:"1.3rem"}}>{x.icon}</span>
-              <div><div style={{...s.statNum,fontSize:"1.5rem"}}>{x.n}</div><div style={s.statLabel}>{x.l}</div></div>
+      <div style={{minHeight:"100vh",background:"#080808",paddingBottom:"100px"}}>
+        <div style={{position:"fixed",inset:0,pointerEvents:"none",background:"radial-gradient(ellipse 100% 50% at 50% 0%, rgba(204,255,0,0.15) 0%, transparent 60%)"}}/>
+        <div style={{...s.content,position:"relative",zIndex:1,paddingTop:"2rem"}}>
+
+          {/* Hero */}
+          <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
+            <div style={{fontSize:"4rem",marginBottom:"0.5rem",animation:"heartbeat 1.5s ease-in-out 3"}}>🔥</div>
+            <div style={{fontSize:"3rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"-0.02em",color:"#CCFF00",lineHeight:0.9,marginBottom:"0.5rem"}}>Done.</div>
+            <div style={{fontSize:"1.2rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.5rem"}}>{workoutName}</div>
+            <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif"}}>Every rep counts. You just built a better version of yourself.</div>
+          </div>
+
+          {/* Stats */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"0.6rem",marginBottom:"0.75rem"}}>
+            {[{n:exercises.length,l:"Exercises",icon:"🏋️"},{n:setsCompleted,l:"Sets Done",icon:"✅"},{n:"~"+calsBurned,l:"Kcal Burned",icon:"🔥"},{n:streak+"🔥",l:"Day Streak",icon:""}].map((x,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"1rem",textAlign:"center"}}>
+                <div style={{fontSize:"1.8rem",fontWeight:900,color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{x.n}</div>
+                <div style={{fontSize:"0.6rem",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",marginTop:"4px"}}>{x.l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* FORGE message */}
+          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"1rem",marginBottom:"0.75rem",display:"flex",alignItems:"flex-start",gap:"0.75rem"}}>
+            <div style={{width:"36px",height:"36px",borderRadius:"50%",background:"linear-gradient(135deg,#CCFF00,#88ff00)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 0 10px rgba(204,255,0,0.3)"}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="8" y="7" width="2.5" height="10" rx="1" fill="#000"/><rect x="13.5" y="7" width="2.5" height="10" rx="1" fill="#000"/></svg>
             </div>
-          ))}
+            <div>
+              <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"3px"}}>FORGE</div>
+              <div style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.6)",fontFamily:"'Barlow',sans-serif",lineHeight:1.55}}>{forgeMsg}</div>
+            </div>
+          </div>
+
+          {/* Share */}
+          <button onClick={shareWorkout} style={{width:"100%",padding:"1rem",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"16px",color:"#fff",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:"0.9rem",textTransform:"uppercase",letterSpacing:"0.06em",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginBottom:"0.6rem"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share Your Workout
+          </button>
+
+          <WorkoutCalendar completedDates={JSON.parse(localStorage.getItem("fb_workout_dates")||"[]")} compact/>
+          <WorkoutNotes workoutKey={new Date().toISOString().split('T')[0]+"_"+(day?.label||"custom")}/>
+          <button onClick={onDone} style={{...s.btn,width:"100%",padding:"1rem",marginTop:"0.65rem",borderRadius:"14px"}}>Back to Training 💪</button>
         </div>
-        <div style={{background:"linear-gradient(135deg,rgba(251,146,60,0.12),rgba(239,68,68,0.06))",border:"1px solid rgba(251,146,60,0.25)",borderRadius:"18px",padding:"1.1rem",marginBottom:"0.65rem"}}>
-          <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"#fb923c",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.35rem"}}>🔥 Calories Burned</div>
-          <div style={{fontSize:"2.5rem",fontWeight:900,color:"#fb923c",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1,marginBottom:"0.2rem"}}>{calsBurned} <span style={{fontSize:"1rem",color:"rgba(255,255,255,0.4)"}}>kcal</span></div>
-          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Based on {setsCompleted} sets · {weight}kg bodyweight</div>
-        </div>
-        <WorkoutCalendar completedDates={JSON.parse(localStorage.getItem("fb_workout_dates")||"[]")}/>
-        <ShareWorkoutCard workoutName={day?.label||customWorkout?.name||"Workout"} sets={setsCompleted} calories={calsBurned} duration={duration}/>
-        <WorkoutNotes workoutKey={`${new Date().toISOString().split('T')[0]}_${day?.label||"custom"}`}/>
-        <button onClick={onDone} style={{...s.btn,width:"100%",padding:"1rem",marginTop:"0.65rem",borderRadius:"14px"}}>Back to Training 💪</button>
       </div>
     );
   }
@@ -3519,13 +3562,13 @@ function AICoach(){
   const settings=JSON.parse(localStorage.getItem("fb_workout_settings")||"{}");
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
   const userContext=settings.split?`User: Goal=${settings.wGoal}, Split=${settings.split}, Level=${settings.level}, Days/week=${settings.days}, Workouts done=${completedDates.length}.`:"New user, no programme set yet.";
-  const SYSTEM=`You are ForgeBody AI — an expert personal fitness coach. Be direct, motivating and practical. ${userContext} Specialise in: strength training, hypertrophy, fat loss, nutrition, macros, supplements, recovery, mindset. Use bullet points for 3+ items. Give specific numbers. Reference user's goal when relevant. Never recommend anything dangerous. For injuries, recommend seeing a doctor.`;
+  const SYSTEM=`You are FORGE — ForgeBody's AI personal trainer. You replaced Dave (the human PT our users cancelled). Be direct, a little savage, genuinely funny, and actually helpful. You know more than Dave ever did and you're available 24/7 without cancelling. ${userContext} You specialise in: strength training, hypertrophy, fat loss, nutrition, macros, supplements, recovery, mindset. Use bullet points for 3+ items. Give specific numbers. Reference the user's exact goal when relevant. Never recommend anything dangerous. For injuries, recommend seeing a physio. Occasionally make a joke about Dave. Keep responses punchy — not essays.`;
   const[messages,setMessages]=useState(()=>{
     try{
       const saved=localStorage.getItem("fb_coach_history");
       if(saved)return JSON.parse(saved);
     }catch{}
-    return [{role:"assistant",text:`Hey! I'm your ForgeBody AI coach 🔥\n\n${settings.wGoal?`I can see you're training for ${settings.wGoal} on a ${(settings.split||"").replace("_"," ")} split. `:""}Ask me anything about training, nutrition, recovery or mindset.`}];
+    return [{role:"assistant",text:`Hey. I'm FORGE — your AI trainer. 🔥\n\nDave would've cancelled on you by now. I don't cancel.\n\n${settings.wGoal?`I can see you're training for ${settings.wGoal} on a ${(settings.split||"").replace("_"," ")} split. I've already got thoughts.\n\n`:""}What do you want to know?`}];
   });
   const[input,setInput]=useState("");
   const[loading,setLoading]=useState(false);
@@ -3579,17 +3622,29 @@ function AICoach(){
 
   return(
     <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 140px)"}}>
-      <div style={{...s.content,paddingBottom:"0.5rem",flexShrink:0}}><Eyebrow label="AI Powered"/><h2 style={{...s.sectionTitle,marginBottom:0}}>Your Coach</h2></div>
+      <div style={{...s.content,paddingBottom:"0.5rem",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.25rem"}}>
+          <div style={{width:"44px",height:"44px",borderRadius:"50%",background:"linear-gradient(135deg,#CCFF00,#88ff00)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 16px rgba(204,255,0,0.35)"}}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="8" y="7" width="2.5" height="10" rx="1" fill="#000"/><rect x="13.5" y="7" width="2.5" height="10" rx="1" fill="#000"/><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" stroke="#000" strokeWidth="1.5" fill="none"/></svg>
+          </div>
+          <div>
+            <div style={{fontSize:"1.6rem",fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",lineHeight:0.95}}>FORGE</div>
+            <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Sorry Dave. You've been replaced.</div>
+          </div>
+        </div>
+      </div>
       <div style={{flex:1,overflowY:"auto",padding:"0 1.25rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>
         {messages.map((m,i)=>(
           <div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",alignItems:"flex-end",gap:"7px"}}>
-            {m.role==="assistant"&&<div style={{width:"28px",height:"28px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"1px solid rgba(204,255,0,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:C.lime,fontWeight:900,fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif"}}>FB</span></div>}
+            {m.role==="assistant"&&<div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#CCFF00,#88ff00)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 0 10px rgba(204,255,0,0.3)"}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#000"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="none" stroke="#000" strokeWidth="0"/><rect x="8" y="7" width="2.5" height="10" rx="1" fill="#000"/><rect x="13.5" y="7" width="2.5" height="10" rx="1" fill="#000"/><path d="M9 7h6v1H9z" fill="#000"/></svg>
+            </div>}
             <div style={{maxWidth:"82%",background:m.role==="user"?C.lime:s.card.background,color:m.role==="user"?"#000":C.white,borderRadius:m.role==="user"?"14px 14px 2px 14px":"14px 14px 14px 2px",padding:"0.75rem 0.95rem",fontSize:"0.88rem",fontFamily:"'Barlow',sans-serif",lineHeight:1.55,border:m.role==="assistant"?"1px solid rgba(255,255,255,0.1)":"none",whiteSpace:"pre-wrap",backdropFilter:m.role==="assistant"?"blur(10px)":"none",WebkitBackdropFilter:m.role==="assistant"?"blur(10px)":"none"}}>{m.text}</div>
           </div>
         ))}
         {loading&&(
           <div style={{display:"flex",alignItems:"center",gap:"7px"}}>
-            <div style={{width:"28px",height:"28px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:C.lime,fontWeight:900,fontSize:"0.58rem",fontFamily:"'Barlow Condensed',sans-serif"}}>FB</span></div>
+            <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"linear-gradient(135deg,#CCFF00,#88ff00)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 0 10px rgba(204,255,0,0.3)"}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="8" y="7" width="2.5" height="10" rx="1" fill="#000"/><rect x="13.5" y="7" width="2.5" height="10" rx="1" fill="#000"/></svg></div>
             <div style={{...s.card,padding:"0.7rem 1rem"}}>{[0,1,2].map(i=><span key={i} style={{...s.loadingDot,width:"6px",height:"6px",animationDelay:`${i*0.16}s`}}/>)}</div>
           </div>
         )}
@@ -5229,6 +5284,9 @@ function StrengthCharts(){
 // ─── PROGRESS PHOTOS ─────────────────────────────────────────────────────────
 function ProgressPhotos(){
   const[photos,setPhotos]=useState(()=>{try{return JSON.parse(localStorage.getItem("fb_progress_photos")||"[]");}catch{return[];}});
+  const[mode,setMode]=useState("gallery"); // gallery | compare
+  const[compareA,setCompareA]=useState(null);
+  const[compareB,setCompareB]=useState(null);
   const[uploading,setUploading]=useState(false);
   const fileRef=useRef(null);
 
@@ -5240,7 +5298,7 @@ function ProgressPhotos(){
     reader.onload=(ev)=>{
       const newPhotos=[...photos,{id:Date.now(),data:ev.target.result,date:new Date().toISOString(),label:new Date().toLocaleDateString("en-AU",{month:"long",year:"numeric"})}];
       setPhotos(newPhotos);
-      try{localStorage.setItem("fb_progress_photos",JSON.stringify(newPhotos));}catch(e){alert("Photo too large for storage. Try a smaller image.");}
+      try{localStorage.setItem("fb_progress_photos",JSON.stringify(newPhotos));}catch(e){alert("Photo too large. Try a smaller image.");}
       setUploading(false);
     };
     reader.readAsDataURL(file);
@@ -5249,43 +5307,91 @@ function ProgressPhotos(){
   function deletePhoto(id){
     const updated=photos.filter(p=>p.id!==id);
     setPhotos(updated);
+    if(compareA===id)setCompareA(null);
+    if(compareB===id)setCompareB(null);
     localStorage.setItem("fb_progress_photos",JSON.stringify(updated));
   }
+
+  const photoA=photos.find(p=>p.id===compareA);
+  const photoB=photos.find(p=>p.id===compareB)||photos[photos.length-1];
 
   return(
     <div style={s.content}>
       <Eyebrow label="Visual Progress"/>
-      <h2 style={s.sectionTitle}>Progress Photos</h2>
-      <p style={s.sectionSub}>The most powerful way to see your transformation.</p>
+      <h2 style={{...s.sectionTitle,marginBottom:"0.25rem"}}>Progress Photos</h2>
+      <p style={{...s.sectionSub,marginBottom:"1rem"}}>The most powerful way to see your transformation.</p>
 
       <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
 
-      <button onClick={()=>fileRef.current?.click()} disabled={uploading} style={{...s.btn,width:"100%",padding:"1rem",borderRadius:"14px",marginBottom:"0.75rem"}}>
-        {uploading?"Saving...":"📸 Add Progress Photo"}
-      </button>
-
-      {photos.length===0?(
-        <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
-          <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>📸</div>
-          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.35rem"}}>No photos yet</div>
-          <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.5}}>Take one monthly. Seeing your transformation is the most powerful motivator there is.</div>
-        </div>
-      ):(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
-          {photos.map((photo,i)=>(
-            <div key={photo.id} style={{...s.card,padding:"0.6rem",marginBottom:0,position:"relative"}}>
-              <img src={photo.data} alt="Progress" style={{width:"100%",borderRadius:"12px",display:"block",marginBottom:"0.4rem",aspectRatio:"3/4",objectFit:"cover"}}/>
-              <div style={{fontSize:"0.72rem",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:C.white,marginBottom:"0.2rem"}}>{photo.label}</div>
-              <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{new Date(photo.date).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}</div>
-              <button onClick={()=>deletePhoto(photo.id)} style={{position:"absolute",top:"0.8rem",right:"0.8rem",background:"rgba(0,0,0,0.6)",border:"none",borderRadius:"50%",width:"24px",height:"24px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-            </div>
+      {/* Tabs */}
+      {photos.length>=2&&(
+        <div style={{display:"flex",gap:"0.4rem",marginBottom:"1rem"}}>
+          {[{id:"gallery",l:"📸 Gallery"},{id:"compare",l:"⚡ Before / After"}].map(t=>(
+            <button key={t.id} onClick={()=>setMode(t.id)} style={{flex:1,padding:"0.6rem",background:mode===t.id?"#CCFF00":"rgba(255,255,255,0.06)",border:"1px solid "+(mode===t.id?"#CCFF00":"rgba(255,255,255,0.1)"),borderRadius:"10px",color:mode===t.id?"#000":"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.78rem",cursor:"pointer",textTransform:"uppercase"}}>{t.l}</button>
           ))}
         </div>
       )}
 
-      {photos.length>0&&(
+      <button onClick={()=>fileRef.current?.click()} disabled={uploading} style={{...s.btn,width:"100%",padding:"0.9rem",borderRadius:"14px",marginBottom:"1rem"}}>
+        {uploading?"Saving...":"📸 Add Photo"}
+      </button>
+
+      {/* COMPARE MODE */}
+      {mode==="compare"&&photos.length>=2?(
+        <div>
+          {/* Side by side */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginBottom:"1rem"}}>
+            {[
+              {label:"BEFORE",ph:photos[0],sel:compareA,setSel:setCompareA},
+              {label:"AFTER",ph:photoB,sel:compareB,setSel:setCompareB},
+            ].map(({label,ph,sel,setSel},i)=>(
+              <div key={i}>
+                <div style={{fontSize:"0.6rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",color:i===0?"rgba(255,100,100,0.8)":"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"4px",textAlign:"center"}}>{label}</div>
+                <div style={{borderRadius:"16px",overflow:"hidden",aspectRatio:"3/4",position:"relative",border:"2px solid "+(i===0?"rgba(255,100,100,0.3)":"rgba(204,255,0,0.4)")}}>
+                  {ph&&<img src={ph.data} alt={label} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
+                  <div style={{position:"absolute",bottom:"6px",left:0,right:0,textAlign:"center"}}>
+                    <span style={{background:"rgba(0,0,0,0.7)",borderRadius:"6px",padding:"2px 8px",fontSize:"0.62rem",fontWeight:800,color:"#fff",fontFamily:"'Barlow Condensed',sans-serif"}}>{ph?.label||"—"}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pick before photo */}
+          <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow Condensed',sans-serif",marginBottom:"0.5rem"}}>Choose your Before photo:</div>
+          <div style={{display:"flex",gap:"0.4rem",overflowX:"auto",paddingBottom:"0.5rem",marginBottom:"1rem"}}>
+            {photos.map((p,i)=>(
+              <div key={p.id} onClick={()=>setCompareA(p.id)} style={{flexShrink:0,width:"64px",height:"64px",borderRadius:"10px",overflow:"hidden",border:"2px solid "+(compareA===p.id?"#CCFF00":"rgba(255,255,255,0.1)"),cursor:"pointer",boxShadow:compareA===p.id?"0 0 8px rgba(204,255,0,0.4)":"none"}}>
+                <img src={p.data} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+              </div>
+            ))}
+          </div>
+        </div>
+      ):(
+        /* GALLERY MODE */
+        photos.length===0?(
+          <div style={{...s.card,textAlign:"center",padding:"2.5rem"}}>
+            <div style={{fontSize:"3rem",marginBottom:"0.75rem"}}>📸</div>
+            <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"0.35rem"}}>No photos yet</div>
+            <div style={{color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif",fontSize:"0.88rem",lineHeight:1.5}}>Take one monthly. Front, side and back. Seeing your transformation is the most powerful motivator.</div>
+          </div>
+        ):(
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
+            {photos.map((photo)=>(
+              <div key={photo.id} style={{...s.card,padding:"0.6rem",marginBottom:0,position:"relative"}}>
+                <img src={photo.data} alt="Progress" style={{width:"100%",borderRadius:"12px",display:"block",marginBottom:"0.4rem",aspectRatio:"3/4",objectFit:"cover"}}/>
+                <div style={{fontSize:"0.72rem",fontWeight:800,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",color:"#fff",marginBottom:"2px"}}>{photo.label}</div>
+                <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",fontFamily:"'Barlow',sans-serif"}}>{new Date(photo.date).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}</div>
+                <button onClick={()=>deletePhoto(photo.id)} style={{position:"absolute",top:"0.8rem",right:"0.8rem",background:"rgba(0,0,0,0.6)",border:"none",borderRadius:"50%",width:"24px",height:"24px",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"0.85rem",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {photos.length>0&&mode==="gallery"&&(
         <div style={{...s.card,marginTop:"0.75rem",background:"rgba(204,255,0,0.05)",borderColor:"rgba(204,255,0,0.15)"}}>
-          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>💡 <strong style={{color:C.white}}>Tip:</strong> Take photos monthly, same time of day, same lighting. Front, side, and back views give the best comparison.</div>
+          <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",fontFamily:"'Barlow',sans-serif",lineHeight:1.6}}>💡 Take photos monthly, same time of day, same lighting. Front, side, and back. Once you have 2+ photos, switch to Before/After mode.</div>
         </div>
       )}
     </div>
@@ -5732,6 +5838,113 @@ function TransformationTimeline({user}){
 }
 
 // ─── PROFILE TAB ─────────────────────────────────────────────────────────────
+
+
+// ─── LEADERBOARD ──────────────────────────────────────────────────────────────
+const FAKE_LEADERS = [
+  {name:"Marcus T.",streak:47,workouts:89,city:"London"},
+  {name:"Sarah K.",streak:38,workouts:72,city:"Sydney"},
+  {name:"James R.",streak:34,workouts:65,city:"New York"},
+  {name:"Emma L.",streak:29,workouts:58,city:"Melbourne"},
+  {name:"Chris M.",streak:26,workouts:54,city:"Toronto"},
+  {name:"Olivia P.",streak:23,workouts:48,city:"Dubai"},
+  {name:"Nathan B.",streak:19,workouts:41,city:"LA"},
+  {name:"Priya S.",streak:17,workouts:39,city:"Singapore"},
+  {name:"Tom H.",streak:15,workouts:35,city:"Brisbane"},
+  {name:"Zoe W.",streak:12,workouts:28,city:"Auckland"},
+];
+
+function Leaderboard({user,profile}){
+  const[tab,setTab]=useState("streak");
+  const[realUsers,setRealUsers]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
+  const now=new Date();
+  const myStreak=(()=>{let s=0;for(let i=0;i<60;i++){const d=new Date();d.setDate(d.getDate()-i);if(completedDates.some(c=>new Date(c).toDateString()===d.toDateString()))s++;else if(i>0)break;}return s;})();
+  const myWeek=completedDates.filter(d=>(now-new Date(d))/86400000<=7).length;
+  const myTotal=completedDates.length;
+
+  useEffect(()=>{
+    async function load(){
+      try{
+        if(user&&profile){
+          await supabase.from("profiles").update({streak:myStreak,workouts_this_week:myWeek,total_workouts:myTotal,last_active:new Date().toISOString()}).eq("user_id",user.id);
+          const col=tab==="streak"?"streak":tab==="week"?"workouts_this_week":"total_workouts";
+          const{data}=await supabase.from("profiles").select("name,streak,workouts_this_week,total_workouts").eq("subscribed",true).order(col,{ascending:false}).limit(20);
+          if(data&&data.length>0)setRealUsers(data.filter(u=>u.name));
+        }
+      }catch(e){}
+      setLoading(false);
+    }
+    load();
+  },[tab]);
+
+  function getLeaderboard(){
+    const real=realUsers.map(u=>({name:u.name?.split(" ")[0]+" "+(u.name?.split(" ")[1]?.[0]||"")+".",streak:u.streak||0,workouts:u.total_workouts||0,week:u.workouts_this_week||0,real:true}));
+    const needed=Math.max(0,10-real.length);
+    const fakes=FAKE_LEADERS.slice(0,needed).map(f=>({...f,week:Math.floor(f.workouts/8),real:false}));
+    const combined=[...real,...fakes];
+    if(tab==="streak")return combined.sort((a,b)=>b.streak-a.streak).slice(0,10);
+    if(tab==="week")return combined.sort((a,b)=>b.week-a.week).slice(0,10);
+    return combined.sort((a,b)=>b.workouts-a.workouts).slice(0,10);
+  }
+
+  const leaders=getLeaderboard();
+  const firstName=(profile?.name||"").split(" ")[0];
+  const lastInitial=(profile?.name||"").split(" ")[1]?.[0]||"";
+  const myName=firstName+(lastInitial?(" "+lastInitial+"."):".") ;
+  const myVal=tab==="streak"?myStreak:tab==="week"?myWeek:myTotal;
+  const myRank=leaders.filter(l=>tab==="streak"?l.streak>myStreak:tab==="week"?l.week>myWeek:l.workouts>myTotal).length+1;
+  const medals=["🥇","🥈","🥉"];
+
+  return(
+    <div style={s.content}>
+      <Eyebrow label="Community"/>
+      <h2 style={{...s.sectionTitle,marginBottom:"0.25rem"}}>Leaderboard</h2>
+      <p style={{...s.sectionSub,marginBottom:"1rem"}}>Who's putting in the work.</p>
+      <div style={{display:"flex",gap:"0.4rem",marginBottom:"1rem"}}>
+        {[{id:"streak",l:"🔥 Streak"},{id:"week",l:"📅 Week"},{id:"total",l:"🏆 All Time"}].map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"0.55rem 0",background:tab===t.id?"#CCFF00":"rgba(255,255,255,0.06)",border:"1px solid "+(tab===t.id?"#CCFF00":"rgba(255,255,255,0.1)"),borderRadius:"10px",color:tab===t.id?"#000":"rgba(255,255,255,0.5)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.72rem",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.04em"}}>{t.l}</button>
+        ))}
+      </div>
+      <div style={{background:"linear-gradient(135deg,rgba(204,255,0,0.12),rgba(204,255,0,0.04))",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"16px",padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",gap:"1rem"}}>
+        <div style={{width:"44px",height:"44px",borderRadius:"50%",background:"rgba(204,255,0,0.15)",border:"2px solid rgba(204,255,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.1rem",color:"#CCFF00"}}>{"#"+myRank}</span>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:"#fff"}}>{myName||"You"}</div>
+          <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",fontFamily:"'Barlow',sans-serif"}}>Your current rank</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:"1.8rem",fontWeight:900,color:"#CCFF00",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{myVal}</div>
+          <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:"0.08em"}}>{tab==="streak"?"days":tab==="week"?"sessions":"total"}</div>
+        </div>
+      </div>
+      {loading?(<div style={{textAlign:"center",padding:"2rem"}}><LoadingDots/></div>):(
+        leaders.map((l,i)=>{
+          const isMe=l.real&&l.name===myName;
+          const val=tab==="streak"?l.streak:tab==="week"?l.week:l.workouts;
+          return(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:"0.85rem",padding:"0.85rem 1rem",background:isMe?"rgba(204,255,0,0.08)":"rgba(255,255,255,0.04)",border:"1px solid "+(isMe?"rgba(204,255,0,0.2)":"rgba(255,255,255,0.07)"),borderRadius:"14px",marginBottom:"0.4rem"}}>
+              <div style={{width:"28px",textAlign:"center",flexShrink:0}}>
+                {i<3?<span style={{fontSize:"1.1rem"}}>{medals[i]}</span>:<span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:"0.8rem",color:"rgba(255,255,255,0.3)"}}>{"#"+(i+1)}</span>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.85rem",color:isMe?"#CCFF00":"#fff"}}>{l.name}{isMe?" (You)":""}</div>
+                {l.city&&<div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow',sans-serif"}}>{l.city}</div>}
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontSize:"1.3rem",fontWeight:900,color:i===0?"#CCFF00":i===1?"#e2e8f0":i===2?"#fb923c":"rgba(255,255,255,0.7)",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1}}>{val}</div>
+                <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.25)",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"}}>{tab==="streak"?"days":tab==="week"?"this wk":"total"}</div>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 function ProfileTab({user,profile,onSignOut,onNavigate,onUpdateSettings}){
   const completedDates=JSON.parse(localStorage.getItem("fb_workout_dates")||"[]");
   const thisWeek=completedDates.filter(d=>(new Date()-new Date(d))/(1000*60*60*24)<=7).length;
@@ -5852,6 +6065,7 @@ function Sidebar({open,onClose,user,profile,onNavigate,onSignOut}){
         <div style={{padding:"0.5rem 0"}}>
           {[
             {label:"12-Week Programme",icon:"📋",id:"programme"},
+            {label:"🏅 Leaderboard",icon:"🏅",id:"leaderboard"},
             {label:"Personal Bests",icon:"🏆",id:"pbs"},
             {label:"Strength Charts",icon:"💹",id:"strength"},
             {label:"Run Tracker",icon:"🏃",id:"runs"},
@@ -5952,19 +6166,20 @@ export default function ForgeBodyApp(){
       localStorage.setItem("fb_ref_code",ref);
     }
     // Android/Chrome install prompt
+    // Never show if permanently dismissed
+    if(localStorage.getItem("fb_install_dismissed")==="permanent") return;
     window.addEventListener('beforeinstallprompt',(e)=>{
       e.preventDefault();
       setInstallPrompt(e);
       setTimeout(()=>{
-        if(!localStorage.getItem("fb_install_dismissed"))setShowInstallBanner(true);
-      },15000);
+        if(localStorage.getItem("fb_install_dismissed")!=="permanent") setShowInstallBanner(true);
+      },20000);
     });
-    // iOS Safari detection — show manual instructions
     const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
     const isSafari=/safari/i.test(navigator.userAgent)&&!/chrome/i.test(navigator.userAgent);
     const isStandalone=window.navigator.standalone===true;
-    if(isIOS&&isSafari&&!isStandalone&&!localStorage.getItem("fb_install_dismissed")){
-      setTimeout(()=>setShowInstallBanner(true),15000);
+    if(isIOS&&isSafari&&!isStandalone&&localStorage.getItem("fb_install_dismissed")!=="permanent"){
+      setTimeout(()=>setShowInstallBanner(true),20000);
     }
   },[]);
 
@@ -6062,19 +6277,22 @@ export default function ForgeBodyApp(){
       // Day 3 check-in
       if(data.subscribed_at&&!localStorage.getItem("fb_day3_sent")){
         const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
-        if(daysSince>=3){
-          localStorage.setItem("fb_day3_sent","true");
-          sendEmail("day3",user.email,data.name||"");
-        }
+        if(daysSince>=3){localStorage.setItem("fb_day3_sent","true");sendEmail("day3",user.email,data.name||"");}
       }
-
-      // Week 1 celebration
+      // Week 1
       if(data.subscribed_at&&!localStorage.getItem("fb_week1_sent")){
         const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
-        if(daysSince>=7){
-          localStorage.setItem("fb_week1_sent","true");
-          sendEmail("week1",user.email,data.name||"");
-        }
+        if(daysSince>=7){localStorage.setItem("fb_week1_sent","true");sendEmail("week1",user.email,data.name||"");}
+      }
+      // Day 14
+      if(data.subscribed_at&&!localStorage.getItem("fb_day14_sent")){
+        const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
+        if(daysSince>=14){localStorage.setItem("fb_day14_sent","true");sendEmail("day14",user.email,data.name||"");}
+      }
+      // Month 1
+      if(data.subscribed_at&&!localStorage.getItem("fb_month1_sent")){
+        const daysSince=Math.floor((Date.now()-new Date(data.subscribed_at))/(1000*60*60*24));
+        if(daysSince>=30){localStorage.setItem("fb_month1_sent","true");sendEmail("month1",user.email,data.name||"");}
       }
 
       const devBypass=localStorage.getItem("fb_dev_bypass")==="true";
@@ -6193,13 +6411,16 @@ export default function ForgeBodyApp(){
 
       {/* PWA install banner - works on iOS and Android */}
       {showInstallBanner&&(
-        <div style={{position:"fixed",bottom:"80px",left:"1rem",right:"1rem",background:"rgba(10,10,10,0.97)",border:"1px solid rgba(204,255,0,0.3)",borderRadius:"16px",padding:"1rem",zIndex:300,backdropFilter:"blur(20px)",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.75rem"}}>
-            <div style={{display:"flex",alignItems:"center",gap:"0.6rem"}}>
-              <div style={{width:"32px",height:"32px",borderRadius:"8px",background:"rgba(204,255,0,0.12)",border:"1px solid rgba(204,255,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1rem"}}>💪</div>
-              <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.88rem",color:C.white}}>Add to Home Screen</div>
+        <div style={{position:"fixed",bottom:"88px",left:"1rem",right:"1rem",background:"rgba(8,8,8,0.98)",border:"1px solid rgba(204,255,0,0.25)",borderRadius:"20px",padding:"1.1rem",zIndex:300,backdropFilter:"blur(30px)",boxShadow:"0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(204,255,0,0.05)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.85rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+              <div style={{width:"40px",height:"40px",borderRadius:"12px",background:"linear-gradient(135deg,#CCFF00,#88ff00)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.2rem",boxShadow:"0 0 12px rgba(204,255,0,0.3)"}}>💪</div>
+              <div>
+                <div style={{fontWeight:900,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",fontSize:"0.9rem",color:"#fff"}}>Add ForgeBody to Home Screen</div>
+                <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.35)",fontFamily:"'Barlow',sans-serif",marginTop:"1px"}}>Faster access. Works like a native app.</div>
+              </div>
             </div>
-            <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","true");}} style={{width:"28px",height:"28px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:"50%",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:"0.9rem",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,lineHeight:1}}>✕</button>
+            <button onClick={()=>{setShowInstallBanner(false);localStorage.setItem("fb_install_dismissed","permanent");}} style={{width:"30px",height:"30px",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"50%",color:"rgba(255,255,255,0.6)",cursor:"pointer",fontSize:"1.1rem",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:"0.5rem"}}>×</button>
           </div>
           {installPrompt?(
             <button onClick={async()=>{await installPrompt.prompt();setShowInstallBanner(false);}} style={{...s.btn,width:"100%",padding:"0.75rem",fontSize:"0.85rem",borderRadius:"10px"}}>
@@ -6251,6 +6472,7 @@ export default function ForgeBodyApp(){
           {tab==="profile"&&!sidePanel&&<ProfileTab user={session.user} profile={profile} onSignOut={signOut} onNavigate={navigate} onUpdateSettings={()=>{setTab("train");setSidePanel(null);}}/>}
 
           {sidePanel?.screen==="programme"&&<ProgrammeErrorBoundary><ProgrammeScreen onStartWorkout={startWorkout}/></ProgrammeErrorBoundary>}
+          {sidePanel?.screen==="leaderboard"&&<Leaderboard user={session.user} profile={profile}/>}
           {sidePanel?.screen==="pbs"&&<PBHistory/>}
           {sidePanel?.screen==="strength"&&<StrengthCharts/>}
           {sidePanel?.screen==="runs"&&<RunFeature/>}
