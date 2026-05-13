@@ -1,0 +1,97 @@
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+export default async function handler(req, res) {
+  // Always return 200 fast so Stripe stops retrying
+  if (req.method !== 'POST') {
+    return res.status(200).json({ received: true });
+  }
+
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    const chunks = [];
+    await new Promise((resolve, reject) => {
+      req.on('data', chunk => chunks.push(chunk));
+      req.on('end', resolve);
+      req.on('error', reject);
+    });
+    const rawBody = Buffer.concat(chunks);
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature failed:', err.message);
+    // Still return 200 so Stripe doesn't keep retrying bad signatures
+    return res.status(200).json({ received: true, error: err.message });
+  }
+
+  console.log('Webhook event:', event.type);
+
+  try {
+    const obj = event.data?.object;
+    const email =
+      obj?.customer_email ||
+      obj?.customer_details?.email ||
+      obj?.billing_details?.email ||
+      null;
+
+    switch (event.type) {
+      case 'checkout.session.completed':
+      case 'invoice.payment_succeeded': {
+        if (email) {
+          const plan = obj?.amount_total
+            ? obj.amount_total <= 2000 ? 'monthly'
+            : obj.amount_total <= 9000 ? 'sixmonth'
+            : obj.amount_total <= 13000 ? 'annual'
+            : 'lifetime'
+            : 'monthly';
+
+          const { error } = await supabase.from('profiles')
+            .update({
+              subscribed: true,
+              subscribed_at: new Date().toISOString(),
+              plan,
+            })
+            .eq('email', email);
+
+          if (error) console.error('Supabase update error:', error);
+          else console.log('Subscribed:', email, plan);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted':
+      case 'invoice.payment_failed':
+      case 'customer.subscription.paused': {
+        if (email) {
+          await supabase.from('profiles')
+            .update({ subscribed: false, plan: null })
+            .eq('email', email);
+          console.log('Unsubscribed:', email);
+        }
+        break;
+      }
+
+      default:
+        console.log('Unhandled event:', event.type);
+    }
+  } catch (err) {
+    console.error('Handler error:', err);
+    // Still return 200 — don't let errors cause Stripe to retry
+  }
+
+  return res.status(200).json({ received: true });
+}
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
