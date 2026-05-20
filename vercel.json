@@ -3,21 +3,14 @@
     {
       "source": "/.well-known/apple-app-site-association",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        }
+        { "key": "Content-Type", "value": "application/json" }
       ]
     }
   ],
   "rewrites": [
-    {
-      "source": "/join/:code",
-      "destination": "/join/index.html"
-    }
+    { "source": "/join", "destination": "/join.html" },
+    { "source": "/join/", "destination": "/join.html" },
+    { "source": "/join/:code", "destination": "/join.html" },
+    { "source": "/join/:code/", "destination": "/join.html" }
   ]
 }
