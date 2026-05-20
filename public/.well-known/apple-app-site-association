@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["D7S239DJ7R.fit.forgebody.app"],
+        "components": [
+          {
+            "/": "/join/*",
+            "comment": "Universal Link for crew invites"
+          }
+        ]
+      }
+    ]
+  }
+}
