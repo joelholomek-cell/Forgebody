@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aloud — Support</title>
+<meta name="description" content="Support and answers for Aloud, an offline audiobook reader for iPhone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#111111;
+    --paper:#F5F3EF;
+    --muted:#6B6B6B;
+    --rule:#DCD8D1;
+    --measure:34rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#F2F0EC; --paper:#111111; --muted:#96938E; --rule:#2A2A2A; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--measure);margin:0 auto;padding:11vh 1.5rem 8rem}
+
+  .lines{display:flex;flex-direction:column;gap:5px;width:44px;margin-bottom:2.5rem}
+  .lines i{display:block;height:4px;border-radius:2px;background:var(--ink);opacity:.28}
+  .lines i:first-child{opacity:1}
+  .lines i:nth-child(2){width:88%}
+  .lines i:nth-child(3){width:96%}
+  .lines i:nth-child(4){width:60%}
+
+  h1{
+    font-size:clamp(2.6rem,11vw,3.6rem);
+    font-weight:600;
+    letter-spacing:-.045em;
+    line-height:1;
+    margin:0;
+  }
+  .tagline{
+    margin:.85rem 0 0;
+    font-size:1.0625rem;
+    color:var(--muted);
+    letter-spacing:-.01em;
+  }
+
+  .contact{
+    margin-top:3.25rem;
+    padding-top:2rem;
+    border-top:1px solid var(--rule);
+  }
+  .contact p{margin:0;color:var(--muted);font-size:.9375rem}
+  a.mail{
+    display:inline-block;
+    margin-bottom:.4rem;
+    font-size:1.375rem;
+    font-weight:500;
+    letter-spacing:-.02em;
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:1px;
+  }
+  a.mail:hover{opacity:.6}
+  a.mail:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:2px}
+
+  .eyebrow{
+    margin:4.5rem 0 0;
+    font-size:.75rem;
+    font-weight:500;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  dl{margin:1.75rem 0 0}
+  dt{
+    font-weight:600;
+    letter-spacing:-.015em;
+    margin-top:2rem;
+  }
+  dt:first-of-type{margin-top:0}
+  dd{margin:.4rem 0 0;color:var(--muted)}
+  dd + dd{margin-top:.7rem}
+
+  footer{
+    margin-top:5rem;
+    padding-top:1.75rem;
+    border-top:1px solid var(--rule);
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    font-size:.875rem;
+    color:var(--muted);
+  }
+  footer a{color:var(--muted)}
+  footer a:hover{color:var(--ink)}
+  footer a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <h1>Aloud</h1>
+  <p class="tagline">Listen to any book. On your phone, offline.</p>
+
+  <section class="contact">
+    <a class="mail" href="mailto:joel.holomek@gmail.com">joel.holomek@gmail.com</a>
+    <p>One person reads every message. Expect a reply within a day or two.</p>
+  </section>
+
+  <p class="eyebrow">Questions</p>
+
+  <dl>
+    <dt>Can I import books from Kindle, Apple Books, or Audible?</dt>
+    <dd>No. Those files are locked by the companies that sold them, and no app can open them — not Aloud, not anything else. Aloud reads DRM-free files you own.</dd>
+
+    <dt>What file types work?</dt>
+    <dd>EPUB, PDF, and TXT.</dd>
+
+    <dt>Where does my audio go?</dt>
+    <dd>Nowhere. Aloud makes the audio on your phone, and it stays there. There is no account, no server, and nothing to upload.</dd>
+
+    <dt>Does it work without a connection?</dt>
+    <dd>Yes. After the first voice download, everything works on a plane, underground, or anywhere with no signal.</dd>
+
+    <dt>A name is pronounced wrong.</dt>
+    <dd>Email the book title and the word. Pronunciation fixes are quick to add, and once fixed they stick across the whole series.</dd>
+
+    <dt>Something is broken.</dt>
+    <dd>Email what happened and what you expected instead. Your phone model helps.</dd>
+
+    <dt>I paid, then reinstalled. Where did it go?</dt>
+    <dd>Purchases live with your Apple ID, not the app. Open Aloud, go to Settings, and choose Restore Purchases.</dd>
+  </dl>
+
+  <footer>
+    <span>Aloud</span>
+    <a href="privacy.html">Privacy</a>
+  </footer>
+
+</main>
+</body>
+</html>
