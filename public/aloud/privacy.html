@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aloud — Privacy</title>
+<meta name="description" content="Aloud collects no personal data. Everything stays on your device.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#111111;
+    --paper:#F5F3EF;
+    --muted:#6B6B6B;
+    --rule:#DCD8D1;
+    --measure:34rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#F2F0EC; --paper:#111111; --muted:#96938E; --rule:#2A2A2A; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--measure);margin:0 auto;padding:11vh 1.5rem 8rem}
+
+  .lines{display:flex;flex-direction:column;gap:5px;width:44px;margin-bottom:2.5rem}
+  .lines i{display:block;height:4px;border-radius:2px;background:var(--ink);opacity:.28}
+  .lines i:first-child{opacity:1}
+  .lines i:nth-child(2){width:88%}
+  .lines i:nth-child(3){width:96%}
+  .lines i:nth-child(4){width:60%}
+
+  h1{
+    font-size:clamp(2.2rem,8.5vw,3rem);
+    font-weight:600;
+    letter-spacing:-.045em;
+    line-height:1.02;
+    margin:0;
+  }
+  .updated{
+    margin:.85rem 0 0;
+    font-size:.875rem;
+    color:var(--muted);
+  }
+
+  .claim{
+    margin:3.25rem 0 0;
+    padding-top:2rem;
+    border-top:1px solid var(--rule);
+    font-size:1.375rem;
+    font-weight:500;
+    letter-spacing:-.02em;
+    line-height:1.35;
+  }
+
+  .eyebrow{
+    margin:3.5rem 0 0;
+    font-size:.75rem;
+    font-weight:500;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .eyebrow + p{margin:.75rem 0 0;color:var(--muted)}
+  .eyebrow + p + p{margin:.7rem 0 0;color:var(--muted)}
+
+  ul{margin:.75rem 0 0;padding-left:1.1rem;color:var(--muted)}
+  li{margin:.3rem 0}
+
+  a{color:var(--ink)}
+  a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
+
+  footer{
+    margin-top:5rem;
+    padding-top:1.75rem;
+    border-top:1px solid var(--rule);
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    font-size:.875rem;
+    color:var(--muted);
+  }
+  footer a{color:var(--muted);}
+  footer a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <h1>Privacy</h1>
+  <p class="updated">Last updated 10 August 2026</p>
+
+  <p class="claim">Aloud collects no personal data. There is no account, no login, and no email required to use it.</p>
+
+  <p class="eyebrow">What stays on your device</p>
+  <p>Your books, the audio Aloud generates from them, your listening history and statistics, and any voice recordings you make. None of it is transmitted anywhere. It is stored only on your device, and it is deleted when you delete the app.</p>
+
+  <p class="eyebrow">When Aloud uses the network</p>
+  <p>Only to download voice models, and to fetch books and cover images from public catalogues:</p>
+  <ul>
+    <li>Project Gutenberg</li>
+    <li>LibriVox</li>
+    <li>Open Library</li>
+  </ul>
+  <p>These requests carry no information identifying you, and Aloud never sends your books, your audio, or your reading history anywhere.</p>
+
+  <p class="eyebrow">Analytics and advertising</p>
+  <p>None. Aloud contains no analytics tools, no advertising, and no third-party trackers of any kind.</p>
+
+  <p class="eyebrow">Purchases</p>
+  <p>Handled entirely by Apple. Aloud never sees your payment details, and receives no personal information from the transaction.</p>
+
+  <p class="eyebrow">Children</p>
+  <p>Aloud collects no data from anyone, including children under 13.</p>
+
+  <p class="eyebrow">Changes</p>
+  <p>If this policy ever changes, the date at the top will change with it.</p>
+
+  <p class="eyebrow">Questions</p>
+  <p><a href="mailto:joel.holomek@gmail.com">joel.holomek@gmail.com</a></p>
+
+  <footer>
+    <span>Aloud</span>
+    <a href="index.html">Support</a>
+  </footer>
+
+</main>
+</body>
+</html>
